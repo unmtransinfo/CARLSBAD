@@ -8,14 +8,19 @@ DBPW="assword"
 #
 date
 #
+#KEGG_DISEASE_SKIP=894
+#
 time carlsbad_query.py \
-        --vv \
         --kegg_disease_links \
 	--dbhost $DBHOST \
 	--dbname $DBNAME \
 	--dbusr $DBUSR \
 	--dbpw $DBPW \
 	--o data/kegg2carlsbad.csv
+#
+#	--vv \
+#	--kegg_disease_skip $KEGG_DISEASE_SKIP \
+#	--o data/kegg2carlsbad_${KEGG_DISEASE_SKIP}.csv
 #
 date
 #
