@@ -20,6 +20,11 @@
 
     <dependency>
       <groupId>unmbiocomputing</groupId>
+      <artifactId>unm_biocomp_cytoscape</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>unmbiocomputing</groupId>
       <artifactId>unm_biocomp_kegg</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
