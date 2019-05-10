@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>JSME (JavaScript Molecular Editor)</title>
+<LINK REL="stylesheet" type="text/css" HREF="/css/biocomp.css" />
+<script type="text/javascript" language="javascript" src="/jsme/jsme/jsme.nocache.js"></script>
+<!-- script type="text/javascript" language="javascript" src="/js/upclick-min.js"></script -->
+<script type="text/javascript" language="javascript" src="/js/upclick.js"></script>
+<script type="text/javascript">
+function jsmeOnLoad() {
+  jsmeApplet = new JSApplet.JSME("jsmeContainer", "400px", "360px", {
+    "options" : "query,hydrogens,removehs,oldlook" //optional parameters
+  });
+  document.JSME = jsmeApplet; //for convenience
+}
+function getMolfile() {
+  document.getElementById("outtxt").value = document.JSME.molFile();
+}
+function getSmiles() {
+  document.getElementById("outtxt").value = document.JSME.smiles();
+}
+function getJMEstring() {
+  document.getElementById("outtxt").value = document.JSME.jmeFile();
+}
+function options_fix(form)
+{
+  if (form.qmode.checked) document.JSME.options("query");
+  else  document.JSME.options("noquery");
+  if (form.rmode.checked) document.JSME.options("reaction");
+  else  document.JSME.options("noreaction");
+  if (form.hmode.checked) document.JSME.options("hydrogens");
+  else  document.JSME.options("nohydrogens");
+  if (form.newlook.checked) document.JSME.options("newlook");
+  else  document.JSME.options("oldlook");
+}
+
+// See https://code.google.com/p/upload-at-click/
+
+function go_upclick(elem_id)
+{
+  //function from upclick-min.js:
+  upclick(
+    {
+      element: document.getElementById(elem_id),
+      dataname: 'Filedata',
+      action: '/php/upload.php', 
+      action_params: { fprefix: elem_id },
+      maxsize: 1000000,
+      //Why is filename "C\fakepath\..."???
+      onstart: function(fname) { alert('Start upload: '+fname); },
+      oncomplete:
+        function(response_data) 
+        {
+          alert(response_data);
+          alert('DEBUG: (oncomplete) file has been uploaded.');
+          //Copy file to textarea here...
+        }
+    });
+}
+</script>
+</head>
+<body>
+<center>
+<h2>JSME Molecular Editor</h2>
+<I>Hosted by the <A HREF="http://medicine.unm.edu/informatics/">UNM Translational Informatics Division</A></I>
+</center>
+<form>
+  <table width="400" align="center" cellpadding="1" cellspacing="0">
+    <tr align="center" bgcolor="#CCCCCC">
+      <td id="jsmeContainer" align="center"></td>
+    </tr>
+    <tr bgcolor="#CCCCCC">
+      <td align="center" bgcolor="#CCCCCC">
+        <B>options:</B>
+        <INPUT TYPE=CHECKBOX NAME="qmode" onChange="options_fix(this.form)" CHECKED>query 
+        <INPUT TYPE=CHECKBOX NAME="newlook" onChange="options_fix(this.form)">newlook 
+        <INPUT TYPE=CHECKBOX NAME="rmode" onChange="options_fix(this.form)" >reaction 
+        <INPUT TYPE=CHECKBOX NAME="hmode" onChange="options_fix(this.form)" >hydrogens 
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" bgcolor="#CCCCCC">
+        <button type="button" onclick='getMolfile();'>Get molfile</button> 
+        <button type="button" onclick='getSmiles();'>Get smiles</button> 
+        <button type="button" id="uploader" onClick="go_upclick('uploader')">Upload</button>
+      </td>
+    </tr>
+    <tr bgcolor="#CCCCCC">
+      <td align="center"><TEXTAREA id="outtxt" ROWS="8" COLS="50" WRAP="off"></TEXTAREA></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" bgcolor="#CCCCCC">
+Bruno Bienfait and Peter Ertl, <a href="http://www.jcheminf.com/content/5/1/24"><b>JSME: a free molecule editor in
+JavaScript</b></a>, J. Cheminformatics 5:24 (2013).
+      </td>
+    </tr>
+  </table>
+</form>
+</body>
+</html>

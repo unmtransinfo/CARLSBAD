@@ -17,10 +17,10 @@ import edu.unm.health.biocomp.cytoscape.*;
 */
 public class snake_app
 {
-  private static String DBHOST="habanero.health.unm.edu";
-  private static String DBNAME="carlsbad";
-  private static String DBUSR="dbc";
-  private static String DBPW="chem!nfo";
+  private static String DBHOST=null;
+  private static String DBNAME=null;
+  private static String DBUSR=null;
+  private static String DBPW=null;
   /////////////////////////////////////////////////////////////////////////////
   private static void Help(String msg)
   {

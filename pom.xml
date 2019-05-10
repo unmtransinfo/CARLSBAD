@@ -7,7 +7,7 @@
   <groupId>unmbiocomputing</groupId>
   <artifactId>unm_biocomp_carlsbad</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>jar</packaging>
   <name>UNM_BIOCOMP_CARLSBAD</name>
   <description>CARLSBAD web app and project code</description>
   <url>http://carlsbad.health.unm.edu</url>
@@ -130,6 +130,7 @@
 
   <build>
     <plugins>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -138,7 +139,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>edu.unm.health.biocomp.carlsbad.carlsbad_app</mainClass>
+              <mainClass>edu.unm.health.biocomp.carlsbad.carlsbadone_app</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -148,6 +149,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.2.2</version>
+        <executions>
+          <execution>
+            <id>make-a-war</id>
+            <phase>package</phase>
+            <goals> 
+              <goal>war</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <webResources>
             <resource>

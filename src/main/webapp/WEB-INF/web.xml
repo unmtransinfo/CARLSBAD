@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
   version="2.4">
   <display-name>CARLSBAD webapps</display-name>
-  <description>CARLSBAD project web applications</description>
+  <description>CARLSBAD web applications</description>
 
   <servlet>
     <servlet-name>carlsbadone</servlet-name>
@@ -30,8 +30,6 @@
       <param-value>chem!nfo</param-value> </init-param>
     <init-param> <param-name>CYWEBAPP</param-name>
       <param-value>/tomcat/carlsbad/cytoscapeview</param-value> </init-param>
-      <!-- param-value>/cgi-bin/cytoscapeview.cgi</param-value> </init-param -->
-      <!-- param-value>/cgi-jjy/cytoscapeview.cgi</param-value> </init-param -->
     <init-param> <param-name>HELP_FILE</param-name>
       <param-value>${catalina.home}/webapps/carlsbad/carlsbadone_help.html</param-value> </init-param>
     <init-param> <param-name>SCRATCHDIR</param-name>
@@ -70,10 +68,7 @@
     <init-param> <param-name>DBPW</param-name>
       <param-value>chem!nfo</param-value> </init-param>
     <init-param> <param-name>CYWEBAPP</param-name>
-      <param-value>/cgi-bin/cytoscapeview.cgi</param-value> </init-param>
-      <!-- param-value>/cgi-jjy/cytoscapeview.cgi</param-value> </init-param -->
-    <!-- OLD WAY --><!-- init-param> <param-name>MARVWINCGI</param-name -->
-    <!-- OLD WAY -->  <!-- param-value>/cgi-bin/marv_window.cgi</param-value> </init-param -->
+      <param-value>/tomcat/carlsbad/cytoscapeview</param-value> </init-param>
     <init-param> <param-name>JSMEWINURL</param-name>
       <param-value>/jsme_win.html</param-value> </init-param>
     <init-param> <param-name>LOGDIR</param-name>
@@ -95,7 +90,7 @@
 
   <servlet>
     <servlet-name>cytoscapeview</servlet-name>
-    <servlet-class>edu.unm.health.biocomp.carlsbad.cytoscapeview_servlet</servlet-class>
+    <servlet-class>edu.unm.health.biocomp.cytoscape.cytoscapeview_servlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>cytoscapeview</servlet-name>
