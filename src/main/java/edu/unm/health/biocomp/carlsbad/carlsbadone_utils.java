@@ -8,7 +8,7 @@ import java.sql.*;
 import chemaxon.struc.*;
 import chemaxon.formats.*;
 
-import edu.unm.health.biocomp.http.*;
+import edu.unm.health.biocomp.util.http.*;
 import edu.unm.health.biocomp.db.*;
 import edu.unm.health.biocomp.cytoscape.*;
 import edu.unm.health.biocomp.kegg.*;
