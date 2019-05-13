@@ -8,7 +8,7 @@ import java.net.*; //InetAddress
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import edu.unm.health.biocomp.http.*;
+import edu.unm.health.biocomp.util.http.*;
 
 /**	CytoscapeWeb container for Carlsbad.
 	<br>
