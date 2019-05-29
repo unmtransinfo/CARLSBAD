@@ -1,4 +1,4 @@
-# CARLSBAD <img aligh="right" src="/project/doc/images/carlsbad_logo.png" height="120">
+# CARLSBAD <img align="right" src="/project/doc/images/carlsbad_logo.png" height="120">
 
 Code for the CarlsbadOne web app and related libs and tools.
 
