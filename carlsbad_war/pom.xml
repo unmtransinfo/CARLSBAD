@@ -5,7 +5,7 @@
 
   <parent>
     <groupId>unmbiocomputing</groupId>
-    <artifactId>carlsbad</artifactId>
+    <artifactId>CARLSBAD</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
@@ -30,29 +30,6 @@
         <version>3.2.2</version>
         <configuration>
           <outputDirectory>${project.parent.basedir}/target</outputDirectory>
-          <webResources>
-            <resource>
-              <directory>${project.parent.basedir}/src/main/resources</directory>
-              <excludes>
-                <exclude>*.properties</exclude>
-                <exclude>data/**/*.*</exclude>
-              </excludes>
-            </resource>
-            <resource>
-              <directory>${project.parent.basedir}/src/main/resources</directory>
-              <includes>
-                <include>*.properties</include>
-              </includes>
-              <targetPath>WEB-INF/classes</targetPath>
-            </resource>
-            <!-- resource>
-              <directory>${project.parent.basedir}/src/main/resources/data</directory>
-              <includes>
-                <include>**/*.*</include>
-              </includes>
-              <targetPath>WEB-INF/data</targetPath>
-            </resource -->
-          </webResources>
         </configuration>
       </plugin>
 
@@ -62,7 +39,6 @@
         <version>9.4.18-SNAPSHOT</version>
       </plugin>
     </plugins>
-
   </build>
 
 </project>
