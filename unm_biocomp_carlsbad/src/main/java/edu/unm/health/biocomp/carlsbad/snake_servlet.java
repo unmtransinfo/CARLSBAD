@@ -20,10 +20,10 @@ import chemaxon.formats.*;
 
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.http.*;
-import edu.unm.health.biocomp.db.*;
+import edu.unm.health.biocomp.util.db.*;
+import edu.unm.health.biocomp.util.threads.*;
 import edu.unm.health.biocomp.smarts.smarts_utils;
 import edu.unm.health.biocomp.cytoscape.*;
-import edu.unm.health.biocomp.threads.*;
 
 /**	Uses PostgreSQL JDBC &amp; chemical cartrige gNova Chord DB.
 	<br>

@@ -6,8 +6,8 @@ import java.util.regex.*; // Pattern, Matcher
 import java.text.*;
 import java.sql.*;
 
-import edu.unm.health.biocomp.db.*; //DBCon
 import edu.unm.health.biocomp.util.*; //GetURI2List
+import edu.unm.health.biocomp.util.db.*; //DBCon
 
 /**	Handles KEGG disease list, names and KIDs.
 	Superclassed HashMap provides id2name.

@@ -7,7 +7,7 @@ import java.sql.*;
 
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.http.*;
-import edu.unm.health.biocomp.db.*;
+import edu.unm.health.biocomp.util.db.*;
 import edu.unm.health.biocomp.smarts.smarts_utils;
 import edu.unm.health.biocomp.cytoscape.*;
 

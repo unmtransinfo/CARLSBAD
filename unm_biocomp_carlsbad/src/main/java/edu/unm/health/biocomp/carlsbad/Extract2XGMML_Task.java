@@ -5,8 +5,8 @@ import java.util.*;
 import java.sql.*;
 import java.util.concurrent.*;
 
-import edu.unm.health.biocomp.threads.*;
-import edu.unm.health.biocomp.db.*;
+import edu.unm.health.biocomp.util.threads.*;
+import edu.unm.health.biocomp.util.db.*;
  
 /**	CARLSBAD subnet extraction via threaded Callable task.
 	@author Jeremy J Yang

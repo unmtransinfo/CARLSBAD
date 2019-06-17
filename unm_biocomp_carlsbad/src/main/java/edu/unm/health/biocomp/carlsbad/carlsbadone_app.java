@@ -5,10 +5,10 @@ import java.util.*;
 import java.util.regex.*;
 import java.sql.*;
 
-import edu.unm.health.biocomp.db.*;
 import edu.unm.health.biocomp.cytoscape.*;
 import edu.unm.health.biocomp.kegg.*;
 import edu.unm.health.biocomp.util.*;
+import edu.unm.health.biocomp.util.db.*;
 
 /**	CARLSBAD "one-click" subnet query app.
 	The general use case is to provide interesting subnets based on simple

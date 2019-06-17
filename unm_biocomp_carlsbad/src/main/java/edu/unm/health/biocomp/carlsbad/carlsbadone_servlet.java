@@ -20,10 +20,10 @@ import chemaxon.formats.*;
 
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.http.*;
-import edu.unm.health.biocomp.db.*;
+import edu.unm.health.biocomp.util.db.*;
+import edu.unm.health.biocomp.util.threads.*;
 import edu.unm.health.biocomp.smarts.smarts_utils;
 import edu.unm.health.biocomp.cytoscape.*;
-import edu.unm.health.biocomp.threads.*;
 
 /**	CarlsbadOne, a one-step, bioactivity data-mining, evidence-driven application for
 	biophamaceutical knowledge discovery via cheminformatics, chemogenomics and systems

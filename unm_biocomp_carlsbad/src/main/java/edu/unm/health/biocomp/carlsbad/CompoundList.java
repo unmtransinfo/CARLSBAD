@@ -10,8 +10,8 @@ import chemaxon.formats.*;
 import chemaxon.struc.*; //Molecule
 import chemaxon.marvin.io.*; //MolImportException
 
-import edu.unm.health.biocomp.db.*; //DBCon
 import edu.unm.health.biocomp.util.*; //GetURI2List
+import edu.unm.health.biocomp.util.db.*; //DBCon
 
 /**	Maps CIDs to Compounds, and compound names to CIDs.
 

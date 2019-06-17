@@ -12,9 +12,9 @@ import javax.servlet.http.*;
 
 import com.oreilly.servlet.MultipartRequest;
 
-import edu.unm.health.biocomp.db.*;
-import edu.unm.health.biocomp.threads.*;
 import edu.unm.health.biocomp.util.*;
+import edu.unm.health.biocomp.util.db.*;
+import edu.unm.health.biocomp.util.threads.*;
 import edu.unm.health.biocomp.util.http.*;
 
 /**	Static methods for Carlsbad applications: threads, results display.
