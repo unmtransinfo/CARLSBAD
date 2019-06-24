@@ -60,7 +60,7 @@ public class cytoscapeview_servlet extends HttpServlet
     boolean ok=initialize(request);
     response.setContentType("text/html");
     out=response.getWriter();
-    out.println(HeaderHtm(SERVLETNAME+":"+params.getVal("title"),JavaScript(xgmml),jsincludes,CSS(),request));
+    out.println(HeaderHtm(SERVLETNAME+":"+params.getVal("title"), JavaScript(xgmml), jsincludes, CSS(), request));
 
     if (ok)
     {

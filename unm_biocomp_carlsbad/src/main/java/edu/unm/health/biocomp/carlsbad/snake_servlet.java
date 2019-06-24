@@ -118,7 +118,7 @@ public class snake_servlet extends HttpServlet
     {
       response.setContentType("text/html");
       out=response.getWriter();
-      out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+      out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
       out.print(HtmUtils.FooterHtm(errors,true));
     }
     else if (mrequest!=null)		//method=POST, normal operation
@@ -127,7 +127,7 @@ public class snake_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,params.getVal("formmode")));
         out.println("<SCRIPT>go_init(window.document.mainform,'"+params.getVal("formmode")+"',true)</SCRIPT>");
         out.print(HtmUtils.FooterHtm(errors,true));
@@ -136,7 +136,7 @@ public class snake_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,params.getVal("formmode")));
         out.println("<SCRIPT>go_init(window.document.mainform,'"+params.getVal("formmode")+"',false)</SCRIPT>");
         out.print(HtmUtils.FooterHtm(errors,true));
@@ -145,7 +145,7 @@ public class snake_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,params.getVal("formmode")));
         out.flush();
         response.flushBuffer();
@@ -317,7 +317,7 @@ public class snake_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(HelpHtm());
         out.println(HtmUtils.FooterHtm(errors,true));
       }
@@ -341,7 +341,7 @@ public class snake_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,"normal"));
         out.println("<SCRIPT>go_init(window.document.mainform,'normal',false)</SCRIPT>");
         out.println(HtmUtils.FooterHtm(errors,true));

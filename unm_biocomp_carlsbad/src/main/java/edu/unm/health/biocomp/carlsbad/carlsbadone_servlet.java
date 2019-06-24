@@ -23,7 +23,6 @@ import edu.unm.health.biocomp.util.http.*;
 import edu.unm.health.biocomp.util.db.*;
 import edu.unm.health.biocomp.util.threads.*;
 import edu.unm.health.biocomp.smarts.smarts_utils;
-import edu.unm.health.biocomp.cytoscape.*;
 
 /**	CarlsbadOne, a one-step, bioactivity data-mining, evidence-driven application for
 	biophamaceutical knowledge discovery via cheminformatics, chemogenomics and systems
@@ -121,7 +120,7 @@ public class carlsbadone_servlet extends HttpServlet
     {
       response.setContentType("text/html");
       out=response.getWriter();
-      out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),"",color1,request));
+      out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
       out.print(HtmUtils.FooterHtm(errors,true));
     }
     else if (mrequest!=null)		//method=POST, normal operation
@@ -130,7 +129,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),"",color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,params,params.getVal("formmode")));
         out.println("<SCRIPT>go_init(window.document.mainform,true)</SCRIPT>");
         out.print(HtmUtils.FooterHtm(errors,true));
@@ -139,7 +138,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),"",color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(FormHtm(mrequest,response,params,params.getVal("formmode")));
         out.flush();
         response.flushBuffer();
@@ -443,7 +442,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":Help",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         out.println(HelpHtm(DBCON));
         out.println(HtmUtils.FooterHtm(errors,true));
       }
@@ -461,7 +460,7 @@ public class carlsbadone_servlet extends HttpServlet
         String etag=request.getParameter("etag");
         out.print(HtmUtils.HeaderHtm(
 		((etag!=null && etag.equals("drugs"))?title+":ViewDrugs":title+":ViewCompounds"),
-		jsincludes,cssincludes,"","",color1,request));
+		jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String mol2img_servleturl=("http://"+SERVERNAME+"/tomcat"+CONTEXTPATH+"/mol2img");
         Integer skip=null;
         try { skip=Integer.parseInt(request.getParameter("skip")); } catch (Exception e) {};
@@ -488,7 +487,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewCompound",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewCompound", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String mol2img_servleturl=("http://"+SERVERNAME+"/tomcat"+CONTEXTPATH+"/mol2img");
         Integer cid=Integer.parseInt(request.getParameter("cid"));
         try { out.print(app_utils.ViewCompoundHtm(cid,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
@@ -500,7 +499,7 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         String etag=request.getParameter("etag");
-        out.print(HtmUtils.HeaderHtm(title+":ViewCCPs",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewCCPs", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String mol2img_servleturl=("http://"+SERVERNAME+"/tomcat"+CONTEXTPATH+"/mol2img");
         Integer skip=null;
         try { skip=Integer.parseInt(request.getParameter("skip")); } catch (Exception e) {};
@@ -526,7 +525,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewCCP",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewCCP", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String mol2img_servleturl=("http://"+SERVERNAME+"/tomcat"+CONTEXTPATH+"/mol2img");
         Integer id=Integer.parseInt(request.getParameter("id"));
         String ccptype=request.getParameter("ccptype");
@@ -538,7 +537,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewTargets",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewTargets", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String etag=request.getParameter("etag");
         String species=request.getParameter("species");
         Integer skip=null;
@@ -575,7 +574,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewTarget",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewTarget", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         Integer tid=Integer.parseInt(request.getParameter("tid"));
         out.print(app_utils.ViewTargetHtm(tid,TARGETLIST,response,SERVLETNAME));
         out.println(HtmUtils.FooterHtm(errors,false));
@@ -584,7 +583,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewDiseases",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewDiseases", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         out.print(app_utils.ViewDiseasesHtm(DISEASELIST,TARGETLIST,
 		(request.getParameter("sortby")==null?"id":request.getParameter("sortby")),
 		response,SERVLETNAME));
@@ -594,7 +593,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewDisease",jsincludes,cssincludes,"","",color1,request));
+        out.print(HtmUtils.HeaderHtm(title+":ViewDisease", jsincludes, cssincludes, "", "", color1, request, "tomcat"));
         String kid=request.getParameter("kid");
         try { out.print(app_utils.ViewDiseaseHtm(kid,DISEASELIST,TARGETLIST,DBCON,response,CONTEXTPATH,SERVLETNAME)); }
         catch (SQLException e) { errors.add("ERROR: "+e.getMessage()); }
@@ -617,7 +616,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title,jsincludes,cssincludes,JavaScript(),"",color1,request));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, "tomcat"));
         if (REMOTEAGENT!=null && (REMOTEAGENT.contains("Explorer")||REMOTEAGENT.contains("MSIE")))
           out.println("<CENTER><H2>Sorry, "+APPNAME+" NOT compatible with Internet Explorer. Limited functionality may be available.</H2></CENTER><HR>");
         out.println(FormHtm(mrequest,response,params,request.getParameter("formmode")));

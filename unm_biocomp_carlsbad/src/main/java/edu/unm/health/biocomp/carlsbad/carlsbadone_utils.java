@@ -10,7 +10,6 @@ import chemaxon.formats.*;
 
 import edu.unm.health.biocomp.util.http.*;
 import edu.unm.health.biocomp.util.db.*;
-import edu.unm.health.biocomp.cytoscape.*;
 import edu.unm.health.biocomp.kegg.*;
 
 /**	Static methods for CARLSBAD "one-click" subnet queries.
