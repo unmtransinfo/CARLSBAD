@@ -44,7 +44,7 @@ public class carlsbadone_app
       +"   or\n"
       +"    -kid ID ................ query disease (KEGG) ID\n"
       +"   and\n"
-      +"    -o XMLFILE ............. subnet XGMML for Cytoscape import\n"
+      +"    -o CYJSFILE ............ subnet CYJS for Cytoscape import\n"
       +"  options:\n"
       +"    -dbhost DBHOST ......... ["+DBHOST+"]\n"
       +"    -dbname DBNAME ......... ["+DBNAME+"] \n"
@@ -112,7 +112,6 @@ public class carlsbadone_app
     File fout_rgtp = null;
     File fout = null;
     File fout_cpd = new File("/tmp/carlsbad.sdf");
-    //if (ofile==null) Help("-o required for output subnet XGMML.");
 
     if (ofile!=null)
     {

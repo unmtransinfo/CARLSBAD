@@ -8,6 +8,9 @@ import java.sql.*;
 import chemaxon.struc.*;
 import chemaxon.formats.*;
 
+import com.fasterxml.jackson.core.*; //JsonFactory, JsonGenerator
+import com.fasterxml.jackson.databind.*; //ObjectMapper, JsonNode
+
 import edu.unm.health.biocomp.util.http.*;
 import edu.unm.health.biocomp.util.db.*;
 import edu.unm.health.biocomp.kegg.*;
@@ -34,9 +37,9 @@ public class carlsbadone_utils
 
 	@param dbcon    database connection
 	@param tid_query	query target ID
-	@param fout     XGMML output file
-	@param fout_rgt     XGMML output file, reduced-graph tgts only
-	@param fout_rgtp     XGMML output file, reduced-graph tgts+CCPs
+	@param fout     output file
+	@param fout_rgt     output file, reduced-graph tgts only
+	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
@@ -76,13 +79,24 @@ public class carlsbadone_utils
     if (tid_query==null)
       throw new Exception("Target ID must be specified.");
     if (title==null || title.isEmpty()) title="CARLSBAD Subnet";
-    if (fout!=null) fout_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgt!=null) fout_rgt_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgtp!=null) fout_rgtp_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
 
     ArrayList<Integer> tids = new ArrayList<Integer>(Arrays.asList(tid_query)); //one TID only
     ArrayList<String> wheres = new ArrayList<String>();
   
+    HashMap<String,Object> root = new HashMap<String,Object>();
+    root.put("format_version", "1.0");
+    root.put("generated_by", "carlsbadone-0.0.1-SNAPSHOT");
+    root.put("target_cytoscapejs_version", "~2.1");
+    HashMap<String,Object> data = new HashMap<String,Object>();
+    data.put("name", title);
+    data.put("shared_name", title);
+    data.put("SUID", new Integer(52)); //integer
+    data.put("selected", new Boolean(true)); //boolean
+    root.put("data", data);
+
+    ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
+    ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
+
     /// Targets (NB: wheres kept):
     String sql=carlsbad_utils.TargetIDs2SQL(tids,wheres);
     sqls.add(sql);
@@ -94,7 +108,7 @@ public class carlsbadone_utils
     for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
     carlsbad_utils.Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
     if (fout!=null)
-      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      carlsbad_utils.WriteTargets2CYJS(tgtdata, t2c_global, tgt_tgt_ids, counts, nodes);
 
     /// Activities and Compounds (NB: wheres kept):
     sql=carlsbad_utils.ActivityCompoundsSQL(null,null,null,null,null,null,null,null,null,null,null,null,wheres);
@@ -189,22 +203,16 @@ public class carlsbadone_utils
 
     if (fout!=null)
     {
-      // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
-      // Write scafdata scafs to XGMML.
+      carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
-      // Write mcesdata mcess to XGMML.
+      carlsbad_utils.WriteScaffolds2CYJS(scafdata, scafids_written, s2c_global, s2t_global, counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
-
-      fout_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_writer.close();
+      carlsbad_utils.WriteMcess2CYJS(mcesdata, mcesids_written, m2c_global, m2t_global, counts, nodes, edges);
     }
 
-    if (fout_rgt!=null) // Write targets-only reduced-graph to XGMML.  
+    if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	null,	//disease n.a.
 	null,	//cid_query n.a.
@@ -222,16 +230,13 @@ public class carlsbadone_utils
 	mcesdata,
 	false,	//include_ccps?
 	counts,
-	fout_rgt_writer);
-
-      fout_rgt_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgt_writer.close();
+	nodes, edges);
     }
-    // Write targets+CCPs reduced-graph to XGMML.  
+    // Write targets+CCPs reduced-graph to CYJS.  
     // To do: add deg_cpd to CCPs.
     if (fout_rgtp!=null)
     {
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	null,	//disease n.a.
 	null,	//cid_query n.a.
@@ -249,11 +254,19 @@ public class carlsbadone_utils
 	mcesdata,
 	true,	//include_ccps?
 	counts,
-	fout_rgtp_writer);
-
-      fout_rgtp_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgtp_writer.close();
+	nodes, edges);
     }
+
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    elements.put("nodes", nodes);
+    elements.put("edges", edges);
+    root.put("elements", elements);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonFactory jsf = mapper.getFactory();
+    JsonGenerator jsg = jsf.createGenerator(fout_writer);
+    jsg.useDefaultPrettyPrinter();
+    jsg.writeObject(root);
 
     // Write cpddata compounds to SDF for display and/or download.
     if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist,fout_cpd);
@@ -274,9 +287,9 @@ public class carlsbadone_utils
 
 	@param dbcon    database connection
 	@param cid_query	query compound ID
-	@param fout     XGMML output file
-	@param fout_rgt     XGMML output file, reduced-graph tgts only
-	@param fout_rgtp     XGMML output file, reduced-graph tgts+CCPs
+	@param fout     output file
+	@param fout_rgt     output file, reduced-graph tgts only
+	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
@@ -314,9 +327,6 @@ public class carlsbadone_utils
     if (cid_query==null)
       throw new Exception("Compound ID must be specified.");
     if (title==null || title.isEmpty()) title="CARLSBAD Subnet";
-    if (fout!=null) fout_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgt!=null) fout_rgt_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgtp!=null) fout_rgtp_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
 
     ArrayList<Integer> cids_query = new ArrayList<Integer>(Arrays.asList(cid_query));
     ArrayList<String> wheres = new ArrayList<String>();
@@ -462,25 +472,17 @@ public class carlsbadone_utils
 
     if (fout!=null)
     {
-      // Write tgtdata targets to XGMML.
-      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
-
-      // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
-      // Write scafdata scafs to XGMML.
+      carlsbad_utils.WriteTargets2CYJS(tgtdata,t2c_global,tgt_tgt_ids,counts,nodes);
+      carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,nodes);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
-      // Write mcesdata mcess to XGMML.
+      carlsbad_utils.WriteScaffolds2CYJS(scafdata,scafids_written,s2c_global,s2t_global,counts,nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
-
-      fout_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_writer.close();
+      carlsbad_utils.WriteMcess2CYJS(mcesdata,mcesids_written,m2c_global,m2t_global,counts,nodes, edges);
     }
 
-    if (fout_rgt!=null) // Write targets-only reduced-graph to XGMML.  
+    if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -498,13 +500,11 @@ public class carlsbadone_utils
 	mcesdata,
 	false,	//include_ccps?
 	counts,
-	fout_rgt_writer);
-      fout_rgt_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgt_writer.close();
+	nodes, edges);
     }
-    if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to XGMML.  
+    if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -522,9 +522,7 @@ public class carlsbadone_utils
 	mcesdata,
 	true,	//include_ccps?
 	counts,
-	fout_rgtp_writer);
-      fout_rgtp_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgtp_writer.close();
+	nodes, edges);
     }
 
     // Write cpddata compounds to SDF for display and/or download.
@@ -545,9 +543,9 @@ public class carlsbadone_utils
 
 	@param dbcon    database connection
 	@param kid_query	query disease KEGG ID
-	@param fout     XGMML output file
-	@param fout_rgt     XGMML output file, reduced-graph tgts only
-	@param fout_rgtp     XGMML output file, reduced-graph tgts+CCPs
+	@param fout     output file
+	@param fout_rgt     output file, reduced-graph tgts only
+	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
@@ -589,9 +587,6 @@ public class carlsbadone_utils
     if (kid_query==null)
       throw new Exception("Disease KID must be specified.");
     if (title==null || title.isEmpty()) title="CARLSBAD Subnet";
-    if (fout!=null) fout_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgt!=null) fout_rgt_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-    if (fout_rgtp!=null) fout_rgtp_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
 
     HashMap<Integer,HashMap<String,String> > tgtdata = new HashMap<Integer,HashMap<String,String> >();
     HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
@@ -726,24 +721,15 @@ public class carlsbadone_utils
 
     if (fout!=null)
     {
-      // Write tgtdata targets to XGMML.
-      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
-
-      // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
-      // Write scafdata scafs to XGMML.
+      carlsbad_utils.WriteTargets2CYJS(tgtdata,t2c_global,tgt_tgt_ids,counts, nodes);
+      carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts, nodes);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
-
-      // Write mcesdata mcess to XGMML.
+      carlsbad_utils.WriteScaffolds2CYJS(scafdata,scafids_written,s2c_global,s2t_global,counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-
-      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
-      fout_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_writer.close();
+      carlsbad_utils.WriteMcess2CYJS(mcesdata,mcesids_written,m2c_global,m2t_global,counts, nodes, edges);
     }
 
-    // Write targets-only reduced-graph to XGMML.  
+    // Write targets-only reduced-graph to CYJS.  
     if (fout_rgt!=null)
     {
       String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
@@ -751,7 +737,7 @@ public class carlsbadone_utils
       disease.setName(disease_name);
       for (int tid: tids_disease) disease.addTID(tid);
 
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	disease,
 	null,	//cid_query n.a.
@@ -769,13 +755,10 @@ public class carlsbadone_utils
 	mcesdata,
 	false,	//include_ccps?
 	counts,
-	fout_rgt_writer);
-
-      fout_rgt_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgt_writer.close();
+	nodes, edges);
     }
 
-    // Write targets+CCPs reduced-graph to XGMML.  
+    // Write targets+CCPs reduced-graph to CYJS.  
     if (fout_rgtp!=null)
     {
       String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
@@ -783,7 +766,7 @@ public class carlsbadone_utils
       disease.setName(disease_name);
       for (int tid: tids_disease) disease.addTID(tid);
 
-      carlsbad_utils.WriteReducedGraph2XGMML(
+      carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
 	disease,
 	null,	//cid_query n.a.
@@ -801,14 +784,11 @@ public class carlsbadone_utils
 	mcesdata,
 	true,	//include_ccps?
 	counts,
-	fout_rgtp_writer);
-
-      fout_rgtp_writer.printf(cytoscape_utils.XGMML_Footer());
-      fout_rgtp_writer.close();
+	nodes, edges);
     }
 
     // Write cpddata compounds to SDF for display and/or download.
-    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist,fout_cpd);
+    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist, fout_cpd);
 
     return counts;
   }
