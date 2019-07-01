@@ -28,8 +28,8 @@
       <param-value>dbc</param-value> </init-param>
     <init-param> <param-name>DBPW</param-name>
       <param-value>chem!nfo</param-value> </init-param>
-    <init-param> <param-name>CYWEBAPP</param-name>
-      <param-value>/tomcat/carlsbad/cytoscapeview</param-value> </init-param>
+    <init-param> <param-name>CYVIEWURL</param-name>
+      <param-value>/tomcat/carlsbad/cyview</param-value> </init-param>
     <init-param> <param-name>HELP_FILE</param-name>
       <param-value>${catalina.home}/webapps/carlsbad/carlsbadone_help.html</param-value> </init-param>
     <init-param> <param-name>SCRATCHDIR</param-name>
@@ -45,41 +45,6 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>snake</servlet-name>
-    <servlet-class>edu.unm.health.biocomp.carlsbad.snake_servlet</servlet-class>
-    <init-param> <param-name>APPNAME</param-name>
-      <param-value>Snake</param-value> </init-param>
-    <init-param> <param-name>UPLOADDIR</param-name>
-      <param-value>/tmp</param-value> </init-param>
-    <init-param> <param-name>N_MAX</param-name>
-      <param-value>100</param-value> </init-param>
-    <init-param> <param-name>N_MAX_TARGETS</param-name>
-      <param-value>10</param-value> </init-param>
-    <init-param> <param-name>DBHOST</param-name>
-      <param-value>carlsbad.health.unm.edu</param-value> </init-param>
-    <init-param> <param-name>DBID</param-name>
-      <param-value>carlsbad</param-value> </init-param>
-    <init-param> <param-name>DBSCHEMA</param-name>
-      <param-value>public</param-value> </init-param>
-    <init-param> <param-name>DBPORT</param-name>
-      <param-value>5432</param-value> </init-param>
-    <init-param> <param-name>DBUSR</param-name>
-      <param-value>dbc</param-value> </init-param>
-    <init-param> <param-name>DBPW</param-name>
-      <param-value>chem!nfo</param-value> </init-param>
-    <init-param> <param-name>CYWEBAPP</param-name>
-      <param-value>/tomcat/carlsbad/cytoscapeview</param-value> </init-param>
-    <init-param> <param-name>JSMEWINURL</param-name>
-      <param-value>/jsme_win.html</param-value> </init-param>
-    <init-param> <param-name>LOGDIR</param-name>
-      <param-value>${catalina.home}/logs</param-value></init-param>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>snake</servlet-name>
-    <url-pattern>/snake</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
     <servlet-name>mol2img</servlet-name>
     <servlet-class>edu.unm.health.biocomp.depict.mol2img_servlet</servlet-class>
   </servlet>
@@ -89,12 +54,12 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>cytoscapeview</servlet-name>
-    <servlet-class>edu.unm.health.biocomp.cytoscape.cytoscapeview_servlet</servlet-class>
+    <servlet-name>cyview</servlet-name>
+    <servlet-class>edu.unm.health.biocomp.cytoscape.cyview_servlet</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>cytoscapeview</servlet-name>
-    <url-pattern>/cytoscapeview</url-pattern>
+    <servlet-name>cyview</servlet-name>
+    <url-pattern>/cyview</url-pattern>
   </servlet-mapping>
 
 </web-app>

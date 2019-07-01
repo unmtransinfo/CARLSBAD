@@ -87,6 +87,52 @@ public class app_utils
     return counts;
   }
   /////////////////////////////////////////////////////////////////////////////
+  /**   Extracts subnet w/ multiple queries via separate thread.
+  */
+  public static HashMap<String,Integer> Extract2CYJS_LaunchThread(
+	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String fout_subnet_path,
+	ArrayList<Integer> tids,
+	String cpd_id,String cpd_idtype,
+	String qcpd,String matchtype_qcpd,
+	Float minsim,
+	String cname,Boolean matchtype_cname_sub,
+	Integer mw_min,Integer mw_max,
+	ArrayList<Integer> cids,
+	ArrayList<Integer> scafids,
+	ArrayList<Integer> mcesids,
+	Boolean neighbortargets,
+	String subnet_title,
+	String servletname,
+	HttpServletResponse response,
+	PrintWriter out,
+	Integer n_max_a,Integer n_max_c,
+	ArrayList<String> sqls,
+	StringBuilder err_sb)
+      throws SQLException,IOException,ServletException
+  {
+    ExecutorService exec=Executors.newSingleThreadExecutor();
+    int tpoll=1000; //msec
+    Extract2CYJS_Task xsubnet_task =
+      new Extract2CYJS_Task(dbhost,dbport,dbid,dbusr,dbpw,fout_subnet_path,
+		tids,
+		cpd_id,cpd_idtype,
+		qcpd,matchtype_qcpd,minsim,
+		cname,matchtype_cname_sub,
+		mw_min,mw_max,
+		cids,scafids,mcesids,
+		neighbortargets,
+		subnet_title,
+		n_max_a,n_max_c,
+		sqls);
+    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (subnet-extraction)",tpoll,
+	out,response,(servletname+"_progress_win"));
+    /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
+    HashMap<String,Integer> counts=xsubnet_task.getCounts();
+    err_sb.append(xsubnet_task.getErrtxt());
+    return counts;
+  }
+  /////////////////////////////////////////////////////////////////////////////
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Target2Network_LaunchThread(
@@ -543,6 +589,22 @@ public class app_utils
       "<INPUT TYPE=HIDDEN NAME=\"fname\" VALUE=\""+fname+"\">\n"+
       "<BUTTON TYPE=BUTTON onClick=\"this.form.submit()\">"+
       "<B>Network XGMML ("+file_utils.NiceBytes(fout.length())+")</B></BUTTON>\n</FORM>");
+    return htm;
+  }
+  /////////////////////////////////////////////////////////////////////////////
+  public static String CYJSDownloadButtonHtm(
+	String fout_path,
+	String fname,
+	HttpServletResponse response,
+        String servletname)
+  {
+    File fout = new File(fout_path);
+    String htm=(
+      "<FORM METHOD=\"POST\" ACTION=\""+response.encodeURL(servletname)+"\">\n"+
+      "<INPUT TYPE=HIDDEN NAME=\"downloadfile\" VALUE=\""+fout_path+"\">\n"+
+      "<INPUT TYPE=HIDDEN NAME=\"fname\" VALUE=\""+fname+"\">\n"+
+      "<BUTTON TYPE=BUTTON onClick=\"this.form.submit()\">"+
+      "<B>Network CYJS ("+file_utils.NiceBytes(fout.length())+")</B></BUTTON>\n</FORM>");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////

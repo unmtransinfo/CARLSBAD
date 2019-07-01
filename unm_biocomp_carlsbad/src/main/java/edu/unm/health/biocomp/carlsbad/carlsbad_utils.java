@@ -754,7 +754,7 @@ public class carlsbad_utils
     HashMap<Integer,HashSet<Integer> > t2c_global = new HashMap<Integer,HashSet<Integer> >();
     for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
     Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
-    WriteTargets(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+    WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
 
     /// Activities and Compounds:
     /// From this search, create CID list for subsequent search filtering.
@@ -772,7 +772,7 @@ public class carlsbad_utils
     HashMap<Integer,HashSet<Integer> > c2t_global = new HashMap<Integer,HashSet<Integer> >();
     for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
     Compounds2Targets(c2t_global,dbcon,true); //Get global-degree data. (human only)
-    WriteCompounds(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
+    WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
     
     /// Scaffolds:
     sql=ScaffoldSQL(sbs_id_query,scafids_query,wheres);
@@ -788,7 +788,7 @@ public class carlsbad_utils
     scafids_visited.clear();
     Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
     Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
-    WriteScaffolds(scafdata,scafids_visited,s2c_global,s2t_global,counts,fout_writer);
+    WriteScaffolds2XGMML(scafdata,scafids_visited,s2c_global,s2t_global,counts,fout_writer);
 
     /// MCESs:
     sql=McesSQL(sbs_id_query,mcesids_query,wheres);
@@ -804,7 +804,7 @@ public class carlsbad_utils
     mcesids_visited.clear();
     Mcess2Compounds(m2c_global,dbcon);
     Mcess2Targets(m2t_global,dbcon);
-    WriteMcess(mcesdata,mcesids_visited,m2c_global,m2t_global,counts,fout_writer);
+    WriteMcess2XGMML(mcesdata,mcesids_visited,m2c_global,m2t_global,counts,fout_writer);
 
     /// Neighbor targets (ALL targets for which subnet cpds active):
     if (neighbortargets)
@@ -819,8 +819,8 @@ public class carlsbad_utils
       t2c_global.clear();
       for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
       Targets2Compounds(t2c_global,dbcon); //Get global-degree data.
-      int n_node_tgt_neigh=WriteTargets(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
-      int n_edge_act_neigh=WriteActivityEdges(actdata,null,null,n_max_a,counts,fout_writer);
+      int n_node_tgt_neigh=WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      int n_edge_act_neigh=WriteActivityEdges2XGMML(actdata,null,null,n_max_a,counts,fout_writer);
       counts.put("n_node_tgt_neigh",n_node_tgt_neigh);
       counts.put("n_edge_act_neigh",n_edge_act_neigh);
     }
@@ -830,6 +830,140 @@ public class carlsbad_utils
     return counts;
   }
 
+  /////////////////////////////////////////////////////////////////////////////
+  /**	Given a set of targets and compound query criteria, extract subnet comprised of targets,
+	compounds, scaffolds, mces, and activities.
+
+	@param dbcon	database connection
+	@param fout	CYJS output file
+	@param tids	target IDs specified
+	@param sbs_id_query	substance ID
+	@param sbs_idtype_query	substance ID type
+	@param qcpd	compound query SMILES/SMARTS
+	@param matchtype_qcpd	compound query type (sim|exa|sub)
+	@param minsim	similarity threshold
+	@param cname	compound name
+	@param matchtype_cname_sub	compound name query as substring
+	@param mw_min	min molecular weight
+	@param mw_max	max molecular weight
+	@param cids_query	compound IDs specified
+	@param scafids_query	scaffold IDs specified
+	@param mcesids_query	MCES IDs specified
+	@param neighbortargets	Should targets associated with subnet compounds also be included?
+	@param title	title of subnet
+	@param n_max_a	max number of activities
+	@param n_max_c	max number of compounds
+	@param sqls	return param: SQLs used
+  */
+  public static HashMap<String,Integer> Extract2CYJS(DBCon dbcon,File fout,
+	ArrayList<Integer> tids,
+	String sbs_id_query,String sbs_idtype_query,
+	String qcpd, String matchtype_qcpd,Float minsim,
+	String cname,boolean matchtype_cname_sub,
+	Integer mw_min,Integer mw_max,
+	ArrayList<Integer> cids_query,
+	ArrayList<Integer> scafids_query,
+	ArrayList<Integer> mcesids_query,
+	Boolean neighbortargets,
+	String title,
+	Integer n_max_a,Integer n_max_c,
+	ArrayList<String> sqls)
+	throws Exception
+  {
+    HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
+    PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
+    ArrayList<String> wheres = new ArrayList<String>();
+
+    if (tids.isEmpty())
+      throw new Exception("Target IDs must be specified.");
+    if (title==null || title.isEmpty()) title="CARLSBAD Target-Compound Sub-Network";
+    //fout_writer.printf(cytoscape_utils.CYJS_Header(title,"#CCDDFF"));
+  
+    /// Targets:
+    String sql=TargetIDs2SQL(tids,wheres);
+    sqls.add(sql);
+    ResultSet rset=dbcon.executeSql(sql);
+    HashMap<Integer,HashMap<String,String> > tgtdata = new HashMap<Integer,HashMap<String,String> >();
+    HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
+    ReadTargetData(rset,tgtdata,tgt_tgt_ids);
+    HashMap<Integer,HashSet<Integer> > t2c_global = new HashMap<Integer,HashSet<Integer> >();
+    for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
+    Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
+    WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+
+    /// Activities and Compounds:
+    /// From this search, create CID list for subsequent search filtering.
+    sql=ActivityCompoundsSQL(sbs_id_query,sbs_idtype_query,qcpd,matchtype_qcpd,minsim,cname,matchtype_cname_sub,
+	mw_min,mw_max,cids_query,scafids_query,mcesids_query,wheres);
+    sqls.add(sql);
+    rset=dbcon.executeSql(sql);
+
+    /// Populating HashMaps with activity and compound data.
+    HashMap<Integer,HashMap<String,String> > actdata = new HashMap<Integer,HashMap<String,String> >();
+    HashMap<Integer,HashMap<String,String> > cpddata = new HashMap<Integer,HashMap<String,String> >();
+    HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms = new HashMap<Integer,HashMap<String,Boolean> >();
+    HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids = new HashMap<Integer,HashMap<String,HashSet<String> > >();
+    ReadCompoundData(rset,actdata,cpddata,cpdsynonyms,cpd_sbs_ids);
+    HashMap<Integer,HashSet<Integer> > c2t_global = new HashMap<Integer,HashSet<Integer> >();
+    for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
+    Compounds2Targets(c2t_global,dbcon,true); //Get global-degree data. (human only)
+    WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
+
+    /// Scaffolds:
+    sql=ScaffoldSQL(sbs_id_query,scafids_query,wheres);
+    sqls.add(sql);
+    rset=dbcon.executeSql(sql);
+    HashMap<String,HashMap<String,String> > scafdata = new HashMap<String,HashMap<String,String> >();
+    HashSet<Integer> scafids_visited = new HashSet<Integer>();
+    ReadScaffoldData(rset,cpddata,scafdata,scafids_visited);
+    HashMap<Integer,HashSet<Integer> > s2c_global = new HashMap<Integer,HashSet<Integer> >();
+    HashMap<Integer,HashSet<Integer> > s2t_global = new HashMap<Integer,HashSet<Integer> >();
+    for (int scafid: scafids_visited) s2c_global.put(scafid,null);
+    for (int scafid: scafids_visited) s2t_global.put(scafid,null);
+    scafids_visited.clear();
+    Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
+    Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
+    WriteScaffolds2XGMML(scafdata,scafids_visited,s2c_global,s2t_global,counts,fout_writer);
+
+    /// MCESs:
+    sql=McesSQL(sbs_id_query,mcesids_query,wheres);
+    sqls.add(sql);
+    rset=dbcon.executeSql(sql);
+    HashSet<Integer> mcesids_visited = new HashSet<Integer>();
+    HashMap<String,HashMap<String,String> > mcesdata = new HashMap<String,HashMap<String,String> >();
+    ReadMcesData(rset,cpddata,mcesdata,mcesids_visited);
+    HashMap<Integer,HashSet<Integer> > m2c_global = new HashMap<Integer,HashSet<Integer> >();
+    HashMap<Integer,HashSet<Integer> > m2t_global = new HashMap<Integer,HashSet<Integer> >();
+    for (int mcesid: mcesids_visited) m2c_global.put(mcesid,null);
+    for (int mcesid: mcesids_visited) m2t_global.put(mcesid,null);
+    mcesids_visited.clear();
+    Mcess2Compounds(m2c_global,dbcon);
+    Mcess2Targets(m2t_global,dbcon);
+    WriteMcess2XGMML(mcesdata,mcesids_visited,m2c_global,m2t_global,counts,fout_writer);
+
+    /// Neighbor targets (ALL targets for which subnet cpds active):
+    if (neighbortargets)
+    {
+      sql=NeighborSQL(cpddata,scafids_query,mcesids_query);
+      sqls.add(sql);
+      rset=dbcon.executeSql(sql);
+      tgtdata.clear();
+      tgt_tgt_ids.clear();
+      actdata.clear();
+      ReadNeighborData(rset,tids,tgtdata,tgt_tgt_ids,actdata);
+      t2c_global.clear();
+      for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
+      Targets2Compounds(t2c_global,dbcon); //Get global-degree data.
+      int n_node_tgt_neigh=WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      int n_edge_act_neigh=WriteActivityEdges2XGMML(actdata,null,null,n_max_a,counts,fout_writer);
+      counts.put("n_node_tgt_neigh",n_node_tgt_neigh);
+      counts.put("n_edge_act_neigh",n_edge_act_neigh);
+    }
+
+    //fout_writer.printf(cytoscape_utils.CYJS_Footer());
+    fout_writer.close();
+    return counts;
+  }
   /////////////////////////////////////////////////////////////////////////////
   public static ArrayList<Integer> TargetExternalIDs2TIDs(Collection<String> ids,String id_type,DBCon dbcon)
 	throws SQLException
@@ -2074,7 +2208,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write target nodes to XGMML file.
   */
-  public static int WriteTargets(
+  public static int WriteTargets2XGMML(
 	HashMap<Integer,HashMap<String,String> > tgtdata,
 	HashMap<Integer,HashSet<Integer> > t2c_global,
 	HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids,
@@ -2126,7 +2260,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write compound nodes, and activity edges, to XGMML file.
   */
-  public static int WriteCompounds(
+  public static int WriteCompounds2XGMML(
 	HashMap<Integer,HashMap<String,String> > cpddata,
 	HashMap<Integer,HashSet<Integer> > c2t_global,
 	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
@@ -2146,18 +2280,18 @@ public class carlsbad_utils
 
     for (int cid: cpddata.keySet())
     {
-      WriteCompoundNode(cid,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
+      WriteCompoundNode2XGMML(cid,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
       counts.put("n_node_cpd",counts.get("n_node_cpd")+1);
       if (counts.get("n_node_cpd")==n_max_c) break;
     }
-    WriteActivityEdges(actdata,null,null,n_max_a,counts,fout_writer);
+    WriteActivityEdges2XGMML(actdata,null,null,n_max_a,counts,fout_writer);
     return counts.get("n_node_cpd");
   }
 
   /////////////////////////////////////////////////////////////////////////////
   /**	Write one compound node to XGMML file.
   */
-  public static void WriteCompoundNode(
+  public static void WriteCompoundNode2XGMML(
 	Integer cid,
 	HashMap<Integer,HashMap<String,String> > cpddata,
 	HashMap<Integer,HashSet<Integer> > c2t_global,
@@ -2252,7 +2386,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write one disease node to XGMML file.
   */
-  public static void WriteDiseaseNode(
+  public static void WriteDiseaseNode2XGMML(
 	Disease disease,
 	HashMap<String,Integer> counts,
 	PrintWriter fout_writer)
@@ -2270,7 +2404,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write one disease edges to XGMML file.
   */
-  public static void WriteDiseaseEdges(
+  public static void WriteDiseaseEdges2XGMML(
 	Disease disease,
 	HashMap<String,Integer> counts,
 	PrintWriter fout_writer)
@@ -2290,7 +2424,7 @@ public class carlsbad_utils
   /**	Write activity edges to XGMML file.
   	If specified, only for CIDs and TIDs specified.
   */
-  public static int WriteActivityEdges(
+  public static int WriteActivityEdges2XGMML(
 	HashMap<Integer,HashMap<String,String> > actdata,
 	HashSet<Integer> cids,
 	HashSet<Integer> tids,
@@ -2330,7 +2464,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write scaffold nodes, and scaffold-to-compound associative edges, to XGMML file.
   */
-  public static int WriteScaffolds(
+  public static int WriteScaffolds2XGMML(
     HashMap<String,HashMap<String,String> > scafdata,
     HashSet<Integer> scafids_visited,
     HashMap<Integer,HashSet<Integer> > s2c_global,
@@ -2386,7 +2520,7 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	Write MCES nodes, and MCES-to-compound associative edges, to XGMML file.
   */
-  public static int WriteMcess(
+  public static int WriteMcess2XGMML(
     HashMap<String,HashMap<String,String> > mcesdata,
     HashSet<Integer> mcesids_visited,
     HashMap<Integer,HashSet<Integer> > m2c_global,
@@ -2439,7 +2573,7 @@ public class carlsbad_utils
   /**	Write reduced-graph to XGMML.
 	Annotated targets plus query entity: drug|disease.
   */
-  public static int WriteReducedGraph(
+  public static int WriteReducedGraph2XGMML(
 	HashMap<Integer,HashMap<String,String> > tgtdata,
 	Disease disease,	//disease-query mode
 	Integer cid_query,	//drug-query mode
@@ -2607,11 +2741,11 @@ public class carlsbad_utils
           c2t_global.get(cid).add(tid);
         }
       }
-      WriteCompoundNode(cid_query,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
+      WriteCompoundNode2XGMML(cid_query,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
     }
     else if (disease!=null)	//disease-query mode
     {
-      WriteDiseaseNode(disease,counts,fout_writer);
+      WriteDiseaseNode2XGMML(disease,counts,fout_writer);
     }
 
     if (include_ccps)
@@ -2739,7 +2873,7 @@ public class carlsbad_utils
 
     if (cid_query!=null)	//drug-query mode
     {
-      WriteActivityEdges(actdata,
+      WriteActivityEdges2XGMML(actdata,
 	new HashSet<Integer>(Arrays.asList(cid_query)),
 	tids, 0, counts, fout_writer);
 
@@ -2766,7 +2900,7 @@ public class carlsbad_utils
     }
     else if (disease!=null)	//disease-query mode
     {
-      WriteDiseaseEdges(disease,counts,fout_writer);
+      WriteDiseaseEdges2XGMML(disease,counts,fout_writer);
     }
     return counts.get("n_node_tgt_rgt");
   }

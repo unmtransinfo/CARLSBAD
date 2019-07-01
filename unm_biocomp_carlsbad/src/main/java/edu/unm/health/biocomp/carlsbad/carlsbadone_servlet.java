@@ -48,7 +48,7 @@ public class carlsbadone_servlet extends HttpServlet
   private static Integer DBPORT=null;   // configured in web.xml
   private static String DBUSR=null;      // configured in web.xml
   private static String DBPW=null;      // configured in web.xml
-  private static String CYWEBAPP=null;      // configured in web.xml
+  private static String CYVIEWURL=null;      // configured in web.xml
   private static String TARGETCSVURL=null; // configured in web.xml
   private static String DRUGCSVURL=null; // configured in web.xml
   private static String HELP_FILE=null; // configured in web.xml
@@ -202,10 +202,17 @@ public class carlsbadone_servlet extends HttpServlet
         String query="";
         try {
           File dout=new File(SCRATCHDIR);
-          File fout_subnet=File.createTempFile(PREFIX,"_subnet.xgmml",dout);
+
+          //File fout_subnet=File.createTempFile(PREFIX,"_subnet.xgmml",dout);
+          //fout_subnet_path=fout_subnet.getAbsolutePath();
+          //File fout_rgt=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts only
+          //File fout_rgtp=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts+CCPs
+
+          File fout_subnet=File.createTempFile(PREFIX,"_subnet.cyjs",dout);
           fout_subnet_path=fout_subnet.getAbsolutePath();
-          File fout_rgt=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts only
-          File fout_rgtp=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts+CCPs
+          File fout_rgt=File.createTempFile(PREFIX,"_subnet.cyjs",dout); //reduced-graph, tgts only
+          File fout_rgtp=File.createTempFile(PREFIX,"_subnet.cyjs",dout); //reduced-graph, tgts+CCPs
+
           File fout_cpd=File.createTempFile(PREFIX,"_cpds.sdf",dout); //compounds
           fout_rgt_path=fout_rgt.getAbsolutePath();
           fout_rgtp_path=fout_rgtp.getAbsolutePath();
@@ -300,7 +307,7 @@ public class carlsbadone_servlet extends HttpServlet
 		response,
 		CONTEXTPATH,
 		SERVLETNAME,
-		CYWEBAPP);
+		CYVIEWURL);
           PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
           out_log.printf("%s\t%s\t%s\t%d\t%d\t%d\n",DATESTR,REMOTEHOST,params.getVal("formmode"),subnet_counts.get("n_node_tgt"),subnet_counts.get("n_node_cpd"),0);
           out_log.close();
@@ -397,31 +404,29 @@ public class carlsbadone_servlet extends HttpServlet
 		SERVLETNAME);
 
         //XGMML download buttons:
-        String bhtm_xgmml_full=app_utils.XGMMLDownloadButtonHtm(
-		fout_subnet_path,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+".xgmml").replaceAll(" ","_")),
-		response,
-		SERVLETNAME);
-        String bhtm_xgmml_rgt=app_utils.XGMMLDownloadButtonHtm(
-		fout_rgt_path,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.xgmml").replaceAll(" ","_")),
-		response,
-		SERVLETNAME);
+        //String bhtm_xgmml_full=app_utils.XGMMLDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".xgmml").replaceAll(" ","_")), response, SERVLETNAME);
+        //String bhtm_xgmml_rgt=app_utils.XGMMLDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
+        //String bhtm_xgmml_rgtp=app_utils.XGMMLDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
 
-        String bhtm_xgmml_rgtp=app_utils.XGMMLDownloadButtonHtm(
-		fout_rgtp_path,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.xgmml").replaceAll(" ","_")),
-		response,
-		SERVLETNAME);
+        String bhtm_cyjs_full=app_utils.CYJSDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_rgt=app_utils.CYJSDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_rgtp=app_utils.CYJSDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
 
         thtm="<TABLE CELLSPACING=2 CELLPADDING=2>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+tgt_csv_bhtm+"</TD><TD>&larr; IDs, names, etc.</TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_csv_bhtm+"</TD><TD>&larr; SMILES with IDs</TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_sdf_bhtm+"</TD><TD>&larr; SDF with IDs, data</TD></TR>\n";
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_full+"</TD><TD>&larr; <B>Full</B></TD></TR>\n";
-        thtm+="<TR><TD COLSPAN=2 ALIGN=CENTER>(XGMML can be imported by Cytoscape.)</TD></TR>\n";
+
+        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
+        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";
+        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_full+"</TD><TD>&larr; <B>Full</B></TD></TR>\n";
+        //thtm+="<TR><TD COLSPAN=2 ALIGN=CENTER>(XGMML can be imported by Cytoscape.)</TD></TR>\n";
+
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_full+"</TD><TD>&larr; <B>Full</B></TD></TR>\n";
+        thtm+="<TR><TD COLSPAN=2 ALIGN=CENTER>(CYJS can be imported by Cytoscape.)</TD></TR>\n";
+
         thtm+="</TABLE>\n";
 
         outputs.add("<H2>Downloads:</H2>\n<BLOCKQUOTE>"+thtm+"</BLOCKQUOTE>");
@@ -665,9 +670,9 @@ public class carlsbadone_servlet extends HttpServlet
     href=("http://www.cytoscape.org");
     logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
     logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 HEIGHT=40 SRC=\"/tomcat"+CONTEXTPATH+"/images/cytoscapeweb_logo.png\">");
-    tiphtm=("CytoscapeWeb");
-    href=("http://cytoscapeweb.cytoscape.org/");
+    imghtm=("<IMG BORDER=0 HEIGHT=40 SRC=\"/tomcat"+CONTEXTPATH+"/images/cy3logoOrange.svg\">");
+    tiphtm=("Cytoscape.JS");
+    href=("http://js.cytoscape.org/");
     logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
     logo_htm+="</TD></TR></TABLE>";
     errors.add("<CENTER>"+logo_htm+"</CENTER>");
@@ -1425,8 +1430,8 @@ public class carlsbadone_servlet extends HttpServlet
     catch (NumberFormatException e) { DBPORT=5432; }
     try { N_MAX=Integer.parseInt(conf.getInitParameter("N_MAX")); }
     catch (Exception e) { N_MAX=10000; }
-    try { CYWEBAPP=conf.getInitParameter("CYWEBAPP"); }
-    catch (Exception e) { CYWEBAPP="/tomcat/carlsbad/cytoscapeview"; }
+    try { CYVIEWURL=conf.getInitParameter("CYVIEWURL"); }
+    catch (Exception e) { CYVIEWURL="/tomcat/carlsbad/cyview"; }
     DEBUG=(conf.getInitParameter("DEBUG")!=null && conf.getInitParameter("DEBUG").equalsIgnoreCase("true"));
 
     // This connection only used for deployment and one-time initialization of lists.

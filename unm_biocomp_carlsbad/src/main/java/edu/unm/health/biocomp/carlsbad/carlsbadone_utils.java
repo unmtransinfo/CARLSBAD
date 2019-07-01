@@ -94,7 +94,7 @@ public class carlsbadone_utils
     for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
     carlsbad_utils.Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
     if (fout!=null)
-      carlsbad_utils.WriteTargets(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
 
     /// Activities and Compounds (NB: wheres kept):
     sql=carlsbad_utils.ActivityCompoundsSQL(null,null,null,null,null,null,null,null,null,null,null,null,wheres);
@@ -190,13 +190,13 @@ public class carlsbadone_utils
     if (fout!=null)
     {
       // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
+      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
       // Write scafdata scafs to XGMML.
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
+      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
       // Write mcesdata mcess to XGMML.
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteMcess(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
+      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
 
       fout_writer.printf(cytoscape_utils.XGMML_Footer());
       fout_writer.close();
@@ -204,7 +204,7 @@ public class carlsbadone_utils
 
     if (fout_rgt!=null) // Write targets-only reduced-graph to XGMML.  
     {
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	null,	//disease n.a.
 	null,	//cid_query n.a.
@@ -231,7 +231,7 @@ public class carlsbadone_utils
     // To do: add deg_cpd to CCPs.
     if (fout_rgtp!=null)
     {
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	null,	//disease n.a.
 	null,	//cid_query n.a.
@@ -463,16 +463,16 @@ public class carlsbadone_utils
     if (fout!=null)
     {
       // Write tgtdata targets to XGMML.
-      carlsbad_utils.WriteTargets(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
 
       // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
+      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
       // Write scafdata scafs to XGMML.
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
+      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
       // Write mcesdata mcess to XGMML.
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteMcess(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
+      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
 
       fout_writer.printf(cytoscape_utils.XGMML_Footer());
       fout_writer.close();
@@ -480,7 +480,7 @@ public class carlsbadone_utils
 
     if (fout_rgt!=null) // Write targets-only reduced-graph to XGMML.  
     {
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -504,7 +504,7 @@ public class carlsbadone_utils
     }
     if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to XGMML.  
     {
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -727,18 +727,18 @@ public class carlsbadone_utils
     if (fout!=null)
     {
       // Write tgtdata targets to XGMML.
-      carlsbad_utils.WriteTargets(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
+      carlsbad_utils.WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
 
       // Write cpddata compounds to XGMML.
-      carlsbad_utils.WriteCompounds(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
+      carlsbad_utils.WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
       // Write scafdata scafs to XGMML.
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
+      carlsbad_utils.WriteScaffolds2XGMML(scafdata,scafids_written,s2c_global,s2t_global,counts,fout_writer);
 
       // Write mcesdata mcess to XGMML.
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
 
-      carlsbad_utils.WriteMcess(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
+      carlsbad_utils.WriteMcess2XGMML(mcesdata,mcesids_written,m2c_global,m2t_global,counts,fout_writer);
       fout_writer.printf(cytoscape_utils.XGMML_Footer());
       fout_writer.close();
     }
@@ -751,7 +751,7 @@ public class carlsbadone_utils
       disease.setName(disease_name);
       for (int tid: tids_disease) disease.addTID(tid);
 
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	disease,
 	null,	//cid_query n.a.
@@ -783,7 +783,7 @@ public class carlsbadone_utils
       disease.setName(disease_name);
       for (int tid: tids_disease) disease.addTID(tid);
 
-      carlsbad_utils.WriteReducedGraph(
+      carlsbad_utils.WriteReducedGraph2XGMML(
 	tgtdata,
 	disease,
 	null,	//cid_query n.a.
