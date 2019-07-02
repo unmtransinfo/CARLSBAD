@@ -2328,6 +2328,7 @@ public class carlsbad_utils
           nodedata.put(tgt_id_type, tgt_ids);
         }
       }
+      node.put("data", nodedata);
       nodes.add(node);
       counts.put("n_node_tgt",counts.get("n_node_tgt")+1);
     }
