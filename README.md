@@ -24,6 +24,14 @@ T. I. Oprea, Database, 2013, bat044, DOI: 10.1093/database/bat044,
 mvn clean install
 ```
 
+## Testing with Jetty
+
+<http://localhost:8081/carlsbad/carlsbadone>
+
+```
+mvn --projects carlsbad_war jetty:run
+```
+
 ## Deploying `CARLSBAD`
 
 ```
@@ -42,4 +50,10 @@ mvn --projects carlsbad_war tomcat7:redeploy
 mvn --projects unm_biocomp_carlsbad \
 	exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" \
 	-Dexec.args="-dbhost carlsbad.health.unm.edu -dbname carlsbad -dbusr batman -dbpw 'guano' -tid 17 -vv -o tid_17.cyjs"
+```
+
+## Etc.
+
+```
+mvn javadoc:javadoc
 ```

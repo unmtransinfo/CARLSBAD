@@ -25,17 +25,15 @@
     <init-param> <param-name>DBPORT</param-name>
       <param-value>5432</param-value> </init-param>
     <init-param> <param-name>DBUSR</param-name>
-      <param-value>dbc</param-value> </init-param>
+      <param-value>jjyang</param-value> </init-param>
     <init-param> <param-name>DBPW</param-name>
-      <param-value>chem!nfo</param-value> </init-param>
-    <init-param> <param-name>CYVIEWURL</param-name>
-      <param-value>/tomcat/carlsbad/cyview</param-value> </init-param>
+      <param-value>assword</param-value> </init-param>
+    <init-param> <param-name>CYVIEW</param-name>
+      <param-value>cyview</param-value> </init-param>
     <init-param> <param-name>HELP_FILE</param-name>
-      <param-value>${catalina.home}/webapps/carlsbad/carlsbadone_help.html</param-value> </init-param>
+      <param-value>carlsbadone_help.html</param-value> </init-param>
     <init-param> <param-name>SCRATCHDIR</param-name>
-      <param-value>${catalina.home}/webapps/carlsbad/scratch</param-value></init-param>
-    <init-param> <param-name>LOGDIR</param-name>
-      <param-value>${catalina.home}/logs</param-value></init-param>
+      <param-value>scratch</param-value></init-param>
     <init-param> <param-name>DEBUG</param-name>
       <param-value>FALSE</param-value></init-param>
   </servlet>

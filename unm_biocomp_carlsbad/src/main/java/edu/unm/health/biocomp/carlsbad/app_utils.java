@@ -555,7 +555,8 @@ public class app_utils
 	HttpServletResponse response,
 	String contextpath,
 	String subnet_title,
-        String cyweb)
+        String cyweb,
+	String proxy_prefix)
   {
     String cyweb_opts="edgesmerge=TRUE&title="+HtmUtils.HtmlEscape(subnet_title);
     String cyweb_winname="CytoscapeWeb";
@@ -566,7 +567,7 @@ public class app_utils
     }
     String htm=(
 	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyweb+"?"+cyweb_opts+"&infile="+fout_subnet_path+"','"+cyweb_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
-	+("View with<IMG BORDER=0 HEIGHT=30 SRC=\"/tomcat"+contextpath+"/images/cytoscapeweb_logo.png\"></BUTTON>\n");
+	+("View with<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cytoscapeweb_logo.png\"></BUTTON>\n");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -613,21 +614,22 @@ public class app_utils
 	HttpServletResponse response,
 	String contextpath,
         String servletname,
-        String cyweb)
+        String cyweb,
+	String proxy_prefix)
   {
     String htm="";
-    Integer n_node_cpd=subnet_counts.get("n_node_cpd");
-    Integer n_node_tgt=subnet_counts.get("n_node_tgt");
-    Integer n_node_scaf=subnet_counts.get("n_node_scaf");
-    Integer n_node_mces=subnet_counts.get("n_node_mces");
+    Integer n_node_cpd=((subnet_counts.get("n_node_cpd")!=null)?subnet_counts.get("n_node_cpd"):0);
+    Integer n_node_tgt=((subnet_counts.get("n_node_tgt")!=null)?subnet_counts.get("n_node_tgt"):0);
+    Integer n_node_scaf=((subnet_counts.get("n_node_scaf")!=null)?subnet_counts.get("n_node_scaf"):0);
+    Integer n_node_mces=((subnet_counts.get("n_node_mces")!=null)?subnet_counts.get("n_node_mces"):0);
     Integer n_node_dis=((subnet_counts.get("n_node_dis")!=null)?subnet_counts.get("n_node_dis"):0);
     Integer n_node_total=n_node_cpd+n_node_tgt+n_node_scaf+n_node_mces+n_node_dis;
-    Integer n_edge_act=subnet_counts.get("n_edge_act");
-    Integer n_edge_scaf=subnet_counts.get("n_edge_scaf");
-    Integer n_edge_mces=subnet_counts.get("n_edge_mces");
+    Integer n_edge_act=((subnet_counts.get("n_edge_act")!=null)?subnet_counts.get("n_edge_act"):0);
+    Integer n_edge_scaf=((subnet_counts.get("n_edge_scaf")!=null)?subnet_counts.get("n_edge_scaf"):0);
+    Integer n_edge_mces=((subnet_counts.get("n_edge_mces")!=null)?subnet_counts.get("n_edge_mces"):0);
     Integer n_edge_total=n_edge_act+n_edge_scaf+n_edge_mces;
-    Integer n_edge_tt=subnet_counts.get("n_edge_tgttgt");
-    Integer n_edge_tp=subnet_counts.get("n_edge_tgtccp");
+    Integer n_edge_tt=((subnet_counts.get("n_edge_tt")!=null)?subnet_counts.get("n_edge_tt"):0);
+    Integer n_edge_tp=((subnet_counts.get("n_edge_tp")!=null)?subnet_counts.get("n_edge_tp"):0);
     if (n_node_total==0)
       return ("NOTE: subnet empty; no targets nor compounds found.");
 
@@ -638,7 +640,7 @@ public class app_utils
     String thtm_butts="<TABLE CELLSPACING=5 CELLPADDING=5>\n";
     if (fout_rgt_path!=null)
     {
-      String bhtm_rgt=CywebViewButtonHtm(fout_rgt_path,"rgt",response,contextpath,title,cyweb);
+      String bhtm_rgt=CywebViewButtonHtm(fout_rgt_path, "rgt", response, contextpath, title, cyweb, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
       thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
@@ -648,7 +650,7 @@ public class app_utils
     }
     if (fout_rgtp_path!=null)
     {
-      String bhtm_rgtp=CywebViewButtonHtm(fout_rgtp_path,"rgtp",response,contextpath,title,cyweb);
+      String bhtm_rgtp=CywebViewButtonHtm(fout_rgtp_path, "rgtp", response, contextpath, title, cyweb, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
       thtm_butts+=("<B>(targets+CCPs)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
@@ -656,7 +658,7 @@ public class app_utils
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
     }
-    String bhtm_full=CywebViewButtonHtm(fout_subnet_path,null,response,contextpath,title,cyweb);
+    String bhtm_full=CywebViewButtonHtm(fout_subnet_path, null, response, contextpath, title, cyweb, proxy_prefix);
     thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Full:</H3></TD>");
     thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_full+"</TD>\n");
     thtm_butts+=("<TD>nodes: "+n_node_total+"<BR/>edges: "+n_edge_total+"</TD>");
@@ -1012,7 +1014,8 @@ public class app_utils
 	DBCon dbcon,
 	HttpServletResponse response,
 	String contextpath,
-	String servletname)
+	String servletname,
+	String proxy_prefix)
 	throws SQLException
   {
     String htm="<H3>Disease Summary [ID = "+kid+"]:</H3>\n";
@@ -1021,7 +1024,7 @@ public class app_utils
     String name = disease.getName();
     String kegg_url="http://www.kegg.jp/dbget-bin/www_bget";
 
-    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\"/tomcat"+contextpath+"/images/kegg_logo.gif\">");
+    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\"/"+proxy_prefix+contextpath+"/images/kegg_logo.gif\">");
     String kegg_butt="<BUTTON TYPE=BUTTON onClick=\"void window.open('"+kegg_url+"?"+kid+"','keggwin','')\">View in KEGG"+imghtm+"</BUTTON>";
 
     String thtm=("<TABLE WIDTH=\"100%\" CELLSPACING=2 CELLPADDING=2>\n");
