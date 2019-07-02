@@ -2462,7 +2462,7 @@ public class carlsbad_utils
     HashMap<String, Object> node = new HashMap<String, Object>();
     HashMap<String, Object> nodedata = new HashMap<String, Object>();
     nodedata.put("id", "C"+cid);
-    nodedata.put("ID", "C"+cid);
+    nodedata.put("name", "C"+cid);
     nodedata.put("label", "C"+cid);
     nodedata.put("class", "compound");
     nodedata.put("canonicalName", "cpd_"+String.format("%06d",cid));
@@ -2568,7 +2568,6 @@ public class carlsbad_utils
     HashMap<String, Object> node = new HashMap<String, Object>();
     HashMap<String, Object> nodedata = new HashMap<String, Object>();
     nodedata.put("id", disease.getID());
-    nodedata.put("ID", disease.getID());
     nodedata.put("label", disease.getID());
     nodedata.put("class", "disease");
     nodedata.put("name", disease.getName());
@@ -2769,7 +2768,7 @@ public class carlsbad_utils
         HashMap<String, Object> node = new HashMap<String, Object>();
         HashMap<String, Object> nodedata = new HashMap<String, Object>();
         nodedata.put("id", "S"+scaf_id);
-        nodedata.put("ID", "S"+scaf_id);
+        nodedata.put("name", "S"+scaf_id);
         nodedata.put("class", "scaffold");
         nodedata.put("canonicalName", "scaf_"+String.format("%06d",scaf_id));
         nodedata.put("smiles", scafdata.get(edgeid).get("scafsmi"));
@@ -2883,7 +2882,7 @@ public class carlsbad_utils
         HashMap<String, Object> nodedata = new HashMap<String, Object>();
         nodedata.put("id", "M"+cluster_id);
         nodedata.put("label", "M"+cluster_id);
-        nodedata.put("ID", "M"+cluster_id);
+        nodedata.put("name", "M"+cluster_id);
         nodedata.put("class", "mces");
         nodedata.put("canonicalName", "mces_"+String.format("%06d",cluster_id));
         nodedata.put("smarts", HtmlEscape(mcesdata.get(edgeid).get("mces")));
@@ -3438,7 +3437,7 @@ public class carlsbad_utils
         HashMap<String, Object> node = new HashMap<String, Object>();
         HashMap<String, Object> nodedata = new HashMap<String, Object>();
         nodedata.put("id", "S"+scafid);
-        nodedata.put("ID", "S"+scafid);
+        nodedata.put("name", "S"+scafid);
         nodedata.put("label", "S"+scafid);
         nodedata.put("class", "scaffold");
         nodedata.put("canonicalName", "scaf_"+String.format("%06d",scafid));
@@ -3465,7 +3464,7 @@ public class carlsbad_utils
         HashMap<String, Object> node = new HashMap<String, Object>();
         HashMap<String, Object> nodedata = new HashMap<String, Object>();
         nodedata.put("id", "M"+mcesid);
-        nodedata.put("ID", "M"+mcesid);
+        nodedata.put("name", "M"+mcesid);
         nodedata.put("label", "M"+mcesid);
         nodedata.put("class", "mces");
         nodedata.put("canonicalName", "mces_"+String.format("%06d",mcesid));

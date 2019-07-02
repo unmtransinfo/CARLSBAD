@@ -222,9 +222,8 @@ public class carlsbadone_servlet extends HttpServlet
           {
             subnet_counts=app_utils.Disease2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
+		"full",
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		kid,
 		scaf_min,
@@ -246,9 +245,8 @@ public class carlsbadone_servlet extends HttpServlet
           {
             subnet_counts=app_utils.Compound2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
+		"full",
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		cid,
 		scaf_min,
@@ -270,9 +268,8 @@ public class carlsbadone_servlet extends HttpServlet
           {
             subnet_counts=app_utils.Target2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
+		"full",
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		tid,
 		scaf_min,

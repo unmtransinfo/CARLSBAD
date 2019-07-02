@@ -19,9 +19,8 @@ public class Compound2Network_Task
   private String dbid;
   private String dbusr;
   private String dbpw;
+  private String kgtype; //"rgt", "rgtp", or "full"
   private String fout_path;
-  private String fout_rgt_path; //reduced-graph, tgts only
-  private String fout_rgtp_path; //reduced-graph, tgts+CCPs
   private String fout_cpd_path;
   private HashMap<String,Integer> counts;
   private String errtxt;
@@ -45,9 +44,8 @@ public class Compound2Network_Task
 	String _dbid,
 	String _dbusr,
 	String _dbpw,
+	String _kgtype,
 	String _fout_path,
-	String _fout_rgt_path,
-	String _fout_rgtp_path,
 	String _fout_cpd_path,
 	Integer _cid,
 	Float _scaf_min,
@@ -65,9 +63,8 @@ public class Compound2Network_Task
     this.dbid=_dbid;
     this.dbusr=_dbusr;
     this.dbpw=_dbpw;
+    this.kgtype=_kgtype;
     this.fout_path=_fout_path;
-    this.fout_rgt_path=_fout_rgt_path;
-    this.fout_rgtp_path=_fout_rgtp_path;
     this.fout_cpd_path=_fout_cpd_path;
     this.cid=_cid;
     this.scaf_min=_scaf_min;
@@ -95,21 +92,14 @@ public class Compound2Network_Task
       DBCon dbcon = new DBCon("postgres",this.dbhost,this.dbport,this.dbid,this.dbusr,this.dbpw);
       File fout = new File(fout_path);
       fout.createNewFile();
-      fout.setWritable(true,true);
-      File fout_rgt = new File(fout_rgt_path);
-      fout_rgt.createNewFile();
-      fout_rgt.setWritable(true,true);
-      File fout_rgtp = new File(fout_rgtp_path);
-      fout_rgtp.createNewFile();
-      fout_rgtp.setWritable(true,true);
+      fout.setWritable(true, true);
       File fout_cpd = new File(fout_cpd_path);
       fout_cpd.createNewFile();
-      fout_cpd.setWritable(true,true);
+      fout_cpd.setWritable(true, true);
       this.counts=carlsbadone_utils.Compound2Network(
 	dbcon,
+	this.kgtype,
 	fout,
-	fout_rgt,
-	fout_rgtp,
 	fout_cpd,
 	this.cid,
 	this.scaf_min,

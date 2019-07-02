@@ -108,17 +108,8 @@ public class carlsbadone_app
     catch (SQLException e) { Help("Connection failed:"+e.getMessage()); }
     catch (Exception e) { Help("Connection failed:"+e.getMessage()); }
 
-    File fout_rgt = null;
-    File fout_rgtp = null;
-    File fout = null;
+    File fout = (ofile!=null) ? (new File(ofile)) : null;
     File fout_cpd = new File("/tmp/carlsbad.sdf");
-
-    if (ofile!=null)
-    {
-      if (rgt) fout_rgt = new File(ofile);
-      else if (rgtp) fout_rgtp = new File(ofile);
-      else fout = new File(ofile);
-    }
 
     //Initialize lists:
     TargetList TARGETLIST = new TargetList();
@@ -147,14 +138,14 @@ public class carlsbadone_app
 
     Integer n_max_a=10000;
     Integer n_max_c=10000;
-
+    String kgtype = rgt ? "rgt" : (rgtp ? "rgtp" : "full");
     try
     {
       if (tid!=null)
       {
         if (TARGETLIST.containsKey(tid))
           System.err.println("query target: ("+tid+") "+TARGETLIST.get(tid).getName());
-        counts=carlsbadone_utils.Target2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, tid, scaf_min, act_filter,
+        counts=carlsbadone_utils.Target2Network(dbcon, kgtype, fout, fout_cpd, tid, scaf_min, act_filter,
           "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         tids.add(tid);
       }
@@ -162,14 +153,14 @@ public class carlsbadone_app
       {
         if (DRUGLIST.containsKey(cid))
           System.err.println("query drug: ("+cid+") "+DRUGLIST.get(cid).getName());
-        counts=carlsbadone_utils.Compound2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, cid, scaf_min, act_filter,
+        counts=carlsbadone_utils.Compound2Network(dbcon, kgtype, fout, fout_cpd, cid, scaf_min, act_filter,
           "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else if (kid!=null)
       {
         if (DISEASELIST.containsKey(kid))
           System.err.println("query disease: ("+kid+") "+DISEASELIST.get(kid).getName());
-        counts=carlsbadone_utils.Disease2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, kid, scaf_min, act_filter,
+        counts=carlsbadone_utils.Disease2Network(dbcon, kgtype, fout, fout_cpd, kid, scaf_min, act_filter,
           "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else
@@ -198,7 +189,7 @@ public class carlsbadone_app
 
     TargetList tgtlist=TARGETLIST.selectByIDs(new HashSet<Integer>(tids));
     //tid!=null if target-query; cid!=null if drug-query; kid!=null if disease-query
-    app_utils.FlagTargetsEmpirical(tgtlist,DRUGLIST,tid,cid,DISEASELIST,kid);
+    app_utils.FlagTargetsEmpirical(tgtlist, DRUGLIST, tid, cid, DISEASELIST, kid);
 
     app_utils.FlagCompoundsEmpirical(cpdlist, TARGETLIST, DISEASELIST, kid); //kid!=null if disease-query
     app_utils.FlagCompoundsEmpirical(

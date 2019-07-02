@@ -36,11 +36,10 @@ public class carlsbadone_utils
 	  - CCP-associated compounds
 
 	@param dbcon    database connection
-	@param tid_query	query target ID
+	@param kgtype     (full|rgt|rgtp), reduced-graph-tgts or reduced-graph-tgts+CCPs
 	@param fout     output file
-	@param fout_rgt     output file, reduced-graph tgts only
-	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
+	@param tid_query	query target ID
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
 	@param title    title of subnet
@@ -50,9 +49,8 @@ public class carlsbadone_utils
   */
   public static HashMap<String,Integer> Target2Network(
 	DBCon dbcon,
+	String kgtype,
 	File fout,
-	File fout_rgt,
-	File fout_rgtp,
 	File fout_cpd,
 	Integer tid_query,
 	Float scaf_min,
@@ -66,13 +64,7 @@ public class carlsbadone_utils
   {
     Boolean human_filter=true;
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return written entity counts
-    PrintWriter fout_writer=null;
-    if (fout!=null)
-      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    else if (fout_rgt!=null)
-      fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    else if (fout_rgtp!=null)
-      fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    PrintWriter fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
 
     if (tid_query==null)
       throw new Exception("Target ID must be specified.");
@@ -199,57 +191,39 @@ public class carlsbadone_utils
     }
     //else { System.err.println("DEBUG: No CCP-associated compounds found."); }
 
-    if (fout!=null)
+    if (kgtype=="rgt") // Write targets-only reduced-graph to CYJS.  
+    {
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata,
+	null,	//disease n.a.
+	null,	//cid_query n.a.
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	null,	//cpdsynonyms not needed?
+	null,	//cpd_sbs_ids not needed?
+	scafdata, mcesdata,
+	false,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else if (kgtype=="rgtp") // Write targets+CCPs reduced-graph to CYJS.  
+    {
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata,
+	null,	//disease n.a.
+	null,	//cid_query n.a.
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	null,	//cpdsynonyms not needed?
+	null,	//cpd_sbs_ids not needed?
+	scafdata, mcesdata,
+	true,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else // Write full graph to CYJS.  
     {
       carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes, edges);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
       carlsbad_utils.WriteScaffolds2CYJS(scafdata, scafids_written, s2c_global, s2t_global, counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
       carlsbad_utils.WriteMcess2CYJS(mcesdata, mcesids_written, m2c_global, m2t_global, counts, nodes, edges);
-    }
-    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
-    {
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	null,	//disease n.a.
-	null,	//cid_query n.a.
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	null,	//cpdsynonyms not needed?
-	null,	//cpd_sbs_ids not needed?
-	scafdata,
-	mcesdata,
-	false,	//include_ccps?
-	counts,
-	nodes, edges);
-    }
-    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
-    {
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	null,	//disease n.a.
-	null,	//cid_query n.a.
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	null,	//cpdsynonyms not needed?
-	null,	//cpd_sbs_ids not needed?
-	scafdata,
-	mcesdata,
-	true,	//include_ccps?
-	counts,
-	nodes, edges);
     }
 
     HashMap<String, Object> elements = new HashMap<String, Object>();
@@ -283,9 +257,8 @@ public class carlsbadone_utils
 
 	@param dbcon    database connection
 	@param cid_query	query compound ID
+	@param kgtype     (full|rgt|rgtp), reduced-graph-tgts or reduced-graph-tgts+CCPs
 	@param fout     output file
-	@param fout_rgt     output file, reduced-graph tgts only
-	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
@@ -296,9 +269,8 @@ public class carlsbadone_utils
   */
   public static HashMap<String,Integer> Compound2Network(
 	DBCon dbcon,
+	String kgtype,
 	File fout,
-	File fout_rgt,
-	File fout_rgtp,
 	File fout_cpd,
 	Integer cid_query,
 	Float scaf_min,
@@ -313,10 +285,7 @@ public class carlsbadone_utils
   {
     Boolean human_filter=true;
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
-    PrintWriter fout_writer=null;
-    if (fout!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    else if (fout_rgt!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    else if (fout_rgtp!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    PrintWriter fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
 
     if (cid_query==null)
       throw new Exception("Compound ID must be specified.");
@@ -478,7 +447,33 @@ public class carlsbadone_utils
 
     tids.addAll(tgtdata.keySet());
 
-    if (fout!=null)
+    if (kgtype=="rgt") // Write targets-only reduced-graph to CYJS.  
+    {
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata,
+	null,	//disease n/a
+	cid_query,
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	cpdsynonyms,	//for cid_query only
+	cpd_sbs_ids,	//for cid_query only
+	scafdata, mcesdata,
+	false,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else if (kgtype=="rgtp") // Write targets+CCPs reduced-graph to CYJS.  
+    {
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata,
+	null,	//disease n/a
+	cid_query,
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	cpdsynonyms,	//for cid_query only
+	cpd_sbs_ids,	//for cid_query only
+	scafdata, mcesdata,
+	true,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else  // Write full graph to CYJS.  
     {
       carlsbad_utils.WriteTargets2CYJS(tgtdata, t2c_global, tgt_tgt_ids, counts, nodes);
       carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes, edges);
@@ -486,50 +481,6 @@ public class carlsbadone_utils
       carlsbad_utils.WriteScaffolds2CYJS(scafdata, scafids_written, s2c_global, s2t_global, counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
       carlsbad_utils.WriteMcess2CYJS(mcesdata, mcesids_written, m2c_global, m2t_global, counts, nodes, edges);
-    }
-    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
-    {
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	null,	//disease n/a
-	cid_query,
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	cpdsynonyms,	//for cid_query only
-	cpd_sbs_ids,	//for cid_query only
-	scafdata,
-	mcesdata,
-	false,	//include_ccps?
-	counts,
-	nodes, edges);
-    }
-    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
-    {
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	null,	//disease n/a
-	cid_query,
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	cpdsynonyms,	//for cid_query only
-	cpd_sbs_ids,	//for cid_query only
-	scafdata,
-	mcesdata,
-	true,	//include_ccps?
-	counts,
-	nodes, edges);
     }
 
     HashMap<String, Object> elements = new HashMap<String, Object>();
@@ -562,9 +513,8 @@ public class carlsbadone_utils
 
 	@param dbcon    database connection
 	@param kid_query	query disease KEGG ID
+	@param kgtype     (full|rgt|rgtp), reduced-graph-tgts or reduced-graph-tgts+CCPs
 	@param fout     output file
-	@param fout_rgt     output file, reduced-graph tgts only
-	@param fout_rgtp     output file, reduced-graph tgts+CCPs
 	@param fout_cpd     output file, compounds, normally SDF
 	@param scaf_min   scaf association threshold [0-1]
 	@param act_filter   activity filter (above avg)
@@ -575,9 +525,8 @@ public class carlsbadone_utils
   */
   public static HashMap<String,Integer> Disease2Network(
 	DBCon dbcon,
+	String kgtype,
 	File fout,
-	File fout_rgt,
-	File fout_rgtp,
 	File fout_cpd,
 	String kid_query,
 	Float scaf_min,
@@ -592,13 +541,7 @@ public class carlsbadone_utils
   {
     Boolean human_filter=true;
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
-    PrintWriter fout_writer=null;
-    if (fout!=null)
-      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    else if (fout_rgt!=null)
-      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    else if (fout_rgtp!=null)
-      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    PrintWriter fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
 
     ArrayList<String> wheres = new ArrayList<String>();
     if (kid_query==null)
@@ -750,7 +693,41 @@ public class carlsbadone_utils
     //Populate ccplist here (mcess).
     ccplist.loadMCESs(new HashSet<Integer>(mcesids));
 
-    if (fout!=null)
+    if (kgtype=="rgt") // Write targets-only reduced-graph to CYJS.  
+    {
+      String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
+      Disease disease = new Disease(kid_query);
+      disease.setName(disease_name);
+      for (int tid: tids_disease) disease.addTID(tid);
+
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata, disease,
+	null,	//cid_query n.a.
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	null,	//cpdsynonyms not needed?
+	null,	//cpd_sbs_ids not needed?
+	scafdata, mcesdata,
+	false,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else if (kgtype=="rgtp") // Write targets+CCPs reduced-graph to CYJS.  
+    {
+      String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
+      Disease disease = new Disease(kid_query);
+      disease.setName(disease_name);
+      for (int tid: tids_disease) disease.addTID(tid);
+
+      carlsbad_utils.WriteReducedGraph2CYJS(tgtdata, disease,
+	null,	//cid_query n.a.
+	t2c_global, s2t_global, s2c_global, m2t_global, m2c_global, tgt_tgt_ids,
+	actdata, cpddata,
+	null,	//cpdsynonyms not needed?
+	null,	//cpd_sbs_ids not needed?
+	scafdata, mcesdata,
+	true,	//include_ccps?
+	counts, nodes, edges);
+    }
+    else // Write full graph to CYJS.
     {
       carlsbad_utils.WriteTargets2CYJS(tgtdata,t2c_global,tgt_tgt_ids,counts, nodes);
       carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts, nodes, edges);
@@ -758,60 +735,6 @@ public class carlsbadone_utils
       carlsbad_utils.WriteScaffolds2CYJS(scafdata,scafids_written,s2c_global,s2t_global,counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
       carlsbad_utils.WriteMcess2CYJS(mcesdata,mcesids_written,m2c_global,m2t_global,counts, nodes, edges);
-    }
-    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
-    {
-      String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
-      Disease disease = new Disease(kid_query);
-      disease.setName(disease_name);
-      for (int tid: tids_disease) disease.addTID(tid);
-
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	disease,
-	null,	//cid_query n.a.
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	null,	//cpdsynonyms not needed?
-	null,	//cpd_sbs_ids not needed?
-	scafdata,
-	mcesdata,
-	false,	//include_ccps?
-	counts,
-	nodes, edges);
-    }
-    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
-    {
-      String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
-      Disease disease = new Disease(kid_query);
-      disease.setName(disease_name);
-      for (int tid: tids_disease) disease.addTID(tid);
-
-      carlsbad_utils.WriteReducedGraph2CYJS(
-	tgtdata,
-	disease,
-	null,	//cid_query n.a.
-	t2c_global,
-	s2t_global,
-	s2c_global,
-	m2t_global,
-	m2c_global,
-	tgt_tgt_ids,
-	actdata,
-	cpddata,
-	null,	//cpdsynonyms not needed?
-	null,	//cpd_sbs_ids not needed?
-	scafdata,
-	mcesdata,
-	true,	//include_ccps?
-	counts,
-	nodes, edges);
     }
 
     HashMap<String, Object> elements = new HashMap<String, Object>();

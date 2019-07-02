@@ -137,9 +137,8 @@ public class app_utils
   */
   public static HashMap<String,Integer> Target2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String kgtype,
 	String fout_subnet_path,
-	String fout_rgt_path,
-	String fout_rgtp_path,
 	String fout_cpd_path,
 	Integer tid,
 	Float scaf_min,
@@ -160,9 +159,8 @@ public class app_utils
     Target2Network_Task xsubnet_task =
       new Target2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
+		kgtype,
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		tid,
 		scaf_min,
@@ -185,9 +183,8 @@ public class app_utils
   */
   public static HashMap<String,Integer> Compound2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String kgtype,
 	String fout_subnet_path,
-	String fout_rgt_path,
-	String fout_rgtp_path,
 	String fout_cpd_path,
 	Integer cid,
 	Float scaf_min,
@@ -209,9 +206,8 @@ public class app_utils
     Compound2Network_Task xsubnet_task =
       new Compound2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
+		kgtype,
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		cid,
 		scaf_min,
@@ -235,9 +231,8 @@ public class app_utils
   */
   public static HashMap<String,Integer> Disease2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String kgtype,
 	String fout_subnet_path,
-	String fout_rgt_path,
-	String fout_rgtp_path,
 	String fout_cpd_path,
 	String kid,
 	Float scaf_min,
@@ -259,9 +254,8 @@ public class app_utils
     Disease2Network_Task xsubnet_task =
       new Disease2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
+		kgtype,
 		fout_subnet_path,
-		fout_rgt_path,
-		fout_rgtp_path,
 		fout_cpd_path,
 		kid,
 		scaf_min,
