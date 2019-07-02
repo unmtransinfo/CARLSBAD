@@ -189,10 +189,9 @@ public class carlsbadone_app
 
     TargetList tgtlist=TARGETLIST.selectByIDs(new HashSet<Integer>(tids));
     //tid!=null if target-query; cid!=null if drug-query; kid!=null if disease-query
-    app_utils.FlagTargetsEmpirical(tgtlist, DRUGLIST, tid, cid, DISEASELIST, kid);
-
-    app_utils.FlagCompoundsEmpirical(cpdlist, TARGETLIST, DISEASELIST, kid); //kid!=null if disease-query
-    app_utils.FlagCompoundsEmpirical(
+    webapp_utils.FlagTargetsEmpirical(tgtlist, DRUGLIST, tid, cid, DISEASELIST, kid);
+    webapp_utils.FlagCompoundsEmpirical(cpdlist, TARGETLIST, DISEASELIST, kid); //kid!=null if disease-query
+    webapp_utils.FlagCompoundsEmpirical(
 	cpdlist,
 	tgtlist, //hitlist
 	tid, //tid!=null if target-query

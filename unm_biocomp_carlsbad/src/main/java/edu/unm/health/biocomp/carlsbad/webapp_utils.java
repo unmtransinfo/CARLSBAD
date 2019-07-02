@@ -21,7 +21,7 @@ import edu.unm.health.biocomp.util.http.*;
 
 	@author Jeremy J Yang
 */
-public class app_utils
+public class webapp_utils
 {
   /////////////////////////////////////////////////////////////////////////////
   /**   Executes SQL statement via separate thread.
@@ -549,25 +549,25 @@ public class app_utils
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  public static String CywebViewButtonHtm(
+  public static String CyviewButtonHtm(
 	String fout_subnet_path,
-	String cyweb_mode,	//"rgt", "rgtp", "full" or null [full].
+	String cyview_mode,	//"rgt", "rgtp", "full" or null [full].
 	HttpServletResponse response,
 	String contextpath,
 	String subnet_title,
-        String cyweb,
+        String cyview,
 	String proxy_prefix)
   {
-    String cyweb_opts="edgesmerge=TRUE&title="+HtmUtils.HtmlEscape(subnet_title);
-    String cyweb_winname="CytoscapeWeb";
-    if (cyweb_mode!=null)
+    String cyview_opts="edgesmerge=TRUE&title="+HtmUtils.HtmlEscape(subnet_title);
+    String cyview_winname="CyView";
+    if (cyview_mode!=null)
     {
-      cyweb_opts+=("&mode="+cyweb_mode+"&layout=Circle");
-      cyweb_winname+=("_"+cyweb_mode);
+      cyview_opts+=("&mode="+cyview_mode+"&layout=Circle");
+      cyview_winname+=("_"+cyview_mode);
     }
     String htm=(
-	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyweb+"?"+cyweb_opts+"&infile="+fout_subnet_path+"','"+cyweb_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
-	+("View with<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cytoscapeweb_logo.png\"></BUTTON>\n");
+	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyview+"?"+cyview_opts+"&infile="+fout_subnet_path+"','"+cyview_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
+	+("View with<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cy3logoOrange.svg\"></BUTTON>\n");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -614,7 +614,7 @@ public class app_utils
 	HttpServletResponse response,
 	String contextpath,
         String servletname,
-        String cyweb,
+        String cyview,
 	String proxy_prefix)
   {
     String htm="";
@@ -640,7 +640,7 @@ public class app_utils
     String thtm_butts="<TABLE CELLSPACING=5 CELLPADDING=5>\n";
     if (fout_rgt_path!=null)
     {
-      String bhtm_rgt=CywebViewButtonHtm(fout_rgt_path, "rgt", response, contextpath, title, cyweb, proxy_prefix);
+      String bhtm_rgt=CyviewButtonHtm(fout_rgt_path, "rgt", response, contextpath, title, cyview, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
       thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
@@ -650,7 +650,7 @@ public class app_utils
     }
     if (fout_rgtp_path!=null)
     {
-      String bhtm_rgtp=CywebViewButtonHtm(fout_rgtp_path, "rgtp", response, contextpath, title, cyweb, proxy_prefix);
+      String bhtm_rgtp=CyviewButtonHtm(fout_rgtp_path, "rgtp", response, contextpath, title, cyview, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
       thtm_butts+=("<B>(targets+CCPs)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
@@ -658,7 +658,7 @@ public class app_utils
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
     }
-    String bhtm_full=CywebViewButtonHtm(fout_subnet_path, null, response, contextpath, title, cyweb, proxy_prefix);
+    String bhtm_full=CyviewButtonHtm(fout_subnet_path, null, response, contextpath, title, cyview, proxy_prefix);
     thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Full:</H3></TD>");
     thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_full+"</TD>\n");
     thtm_butts+=("<TD>nodes: "+n_node_total+"<BR/>edges: "+n_edge_total+"</TD>");

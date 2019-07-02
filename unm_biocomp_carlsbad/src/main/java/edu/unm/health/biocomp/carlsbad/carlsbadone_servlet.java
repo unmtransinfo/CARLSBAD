@@ -223,7 +223,7 @@ public class carlsbadone_servlet extends HttpServlet
 
           if (params.getVal("formmode").equals("disease"))
           {
-            subnet_counts=app_utils.Disease2Network_LaunchThread(
+            subnet_counts=webapp_utils.Disease2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
 		"full",
 		fout_subnet_path,
@@ -246,7 +246,7 @@ public class carlsbadone_servlet extends HttpServlet
           }
           else if (params.getVal("formmode").equals("drug"))
           {
-            subnet_counts=app_utils.Compound2Network_LaunchThread(
+            subnet_counts=webapp_utils.Compound2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
 		"full",
 		fout_subnet_path,
@@ -269,7 +269,7 @@ public class carlsbadone_servlet extends HttpServlet
           }
           else if (params.getVal("formmode").equals("target"))
           {
-            subnet_counts=app_utils.Target2Network_LaunchThread(
+            subnet_counts=webapp_utils.Target2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
 		"full",
 		fout_subnet_path,
@@ -298,7 +298,7 @@ public class carlsbadone_servlet extends HttpServlet
         if (subnet_counts!=null)
         {
           subnet_results_htm = 
-		app_utils.SubnetResultsHtm(
+		webapp_utils.SubnetResultsHtm(
 		subnet_counts,
 		fout_subnet_path,
 		fout_rgt_path,
@@ -327,11 +327,11 @@ public class carlsbadone_servlet extends HttpServlet
         // Save tgtlist in cache, using PREFIX as unique etag:
         TargetList tgtlist=TARGETLIST.selectByIDs(new HashSet<Integer>(tids));
         //tid!=null if target-query; cid!=null if drug-query; kid!=null if disease-query
-        app_utils.FlagTargetsEmpirical(tgtlist,DRUGLIST,tid,cid,DISEASELIST,kid);
+        webapp_utils.FlagTargetsEmpirical(tgtlist,DRUGLIST,tid,cid,DISEASELIST,kid);
         TGTLISTCACHE.put(PREFIX,tgtlist);
 
-        app_utils.FlagCompoundsEmpirical(cpdlist,TARGETLIST,DISEASELIST,kid); //kid!=null if disease-query
-        app_utils.FlagCompoundsEmpirical(
+        webapp_utils.FlagCompoundsEmpirical(cpdlist,TARGETLIST,DISEASELIST,kid); //kid!=null if disease-query
+        webapp_utils.FlagCompoundsEmpirical(
 		cpdlist,
 		tgtlist, //hitlist
 		tid, //tid!=null if target-query
@@ -375,7 +375,7 @@ public class carlsbadone_servlet extends HttpServlet
         outputs.add("<H2>Knowledge graph:</H2>\n"+subnet_results_htm);
 
         // Targets CSV download button:
-        String tgt_csv_bhtm=app_utils.TargetCSVButtonHtm(
+        String tgt_csv_bhtm=webapp_utils.TargetCSVButtonHtm(
 		TARGETLIST,
 		tids,
 		mrequest,
@@ -386,7 +386,7 @@ public class carlsbadone_servlet extends HttpServlet
 		SCRATCHDIR);
 
         // Compounds CSV download button:
-        String cpd_csv_bhtm=app_utils.CompoundCSVButtonHtm(
+        String cpd_csv_bhtm=webapp_utils.CompoundCSVButtonHtm(
 		cpdlist,
 		mrequest,
 		response,
@@ -396,7 +396,7 @@ public class carlsbadone_servlet extends HttpServlet
 		SCRATCHDIR);
 
         // Compounds SDF download button:
-        String cpd_sdf_bhtm=app_utils.CompoundSDFButtonHtm(
+        String cpd_sdf_bhtm=webapp_utils.CompoundSDFButtonHtm(
 		fout_cpd_path,
 		response,
 		CONTEXTPATH,
@@ -405,13 +405,13 @@ public class carlsbadone_servlet extends HttpServlet
 		SERVLETNAME);
 
         //XGMML download buttons:
-        //String bhtm_xgmml_full=app_utils.XGMMLDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".xgmml").replaceAll(" ","_")), response, SERVLETNAME);
-        //String bhtm_xgmml_rgt=app_utils.XGMMLDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
-        //String bhtm_xgmml_rgtp=app_utils.XGMMLDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
+        //String bhtm_xgmml_full=webapp_utils.XGMMLDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".xgmml").replaceAll(" ","_")), response, SERVLETNAME);
+        //String bhtm_xgmml_rgt=webapp_utils.XGMMLDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
+        //String bhtm_xgmml_rgtp=webapp_utils.XGMMLDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
 
-        String bhtm_cyjs_full=app_utils.CYJSDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".cyjs").replaceAll(" ","_")), response, SERVLETNAME);
-        String bhtm_cyjs_rgt=app_utils.CYJSDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
-        String bhtm_cyjs_rgtp=app_utils.CYJSDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_full=webapp_utils.CYJSDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_rgt=webapp_utils.CYJSDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_rgtp=webapp_utils.CYJSDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
 
         thtm="<TABLE CELLSPACING=2 CELLPADDING=2>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+tgt_csv_bhtm+"</TD><TD>&larr; IDs, names, etc.</TD></TR>\n";
@@ -473,7 +473,7 @@ public class carlsbadone_servlet extends HttpServlet
         Integer nmax=null;
         try { nmax=Integer.parseInt(request.getParameter("nmax")); } catch (Exception e) {};
         try {
-          out.print(app_utils.ViewCompoundsHtm(
+          out.print(webapp_utils.ViewCompoundsHtm(
 		((etag!=null && etag.equals("drugs"))?DRUGLIST:null),
 		((etag!=null && etag.equals("drugs"))?null:CPDLISTCACHE),
 		etag,
@@ -496,7 +496,7 @@ public class carlsbadone_servlet extends HttpServlet
         out.print(HtmUtils.HeaderHtm(title+":ViewCompound", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
         String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
         Integer cid=Integer.parseInt(request.getParameter("cid"));
-        try { out.print(app_utils.ViewCompoundHtm(cid,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
+        try { out.print(webapp_utils.ViewCompoundHtm(cid,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
         catch (Exception e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
@@ -512,7 +512,7 @@ public class carlsbadone_servlet extends HttpServlet
         Integer nmax=null;
         try { nmax=Integer.parseInt(request.getParameter("nmax")); } catch (Exception e) {};
         try {
-          out.print(app_utils.ViewCCPsHtm(
+          out.print(webapp_utils.ViewCCPsHtm(
 		null,
 		CCPLISTCACHE,
 		etag,
@@ -535,7 +535,7 @@ public class carlsbadone_servlet extends HttpServlet
         String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
         Integer id=Integer.parseInt(request.getParameter("id"));
         String ccptype=request.getParameter("ccptype");
-        try { out.print(app_utils.ViewCCPHtm(id,ccptype,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
+        try { out.print(webapp_utils.ViewCCPHtm(id,ccptype,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
         catch (SQLException e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
@@ -564,7 +564,7 @@ public class carlsbadone_servlet extends HttpServlet
             TGTLISTCACHE.put(species,tgtlist);
           }
         }
-        try { out.print(app_utils.ViewTargetsHtm(
+        try { out.print(webapp_utils.ViewTargetsHtm(
 		tgtlist,
 		TGTLISTCACHE,
 		etag,
@@ -582,7 +582,7 @@ public class carlsbadone_servlet extends HttpServlet
         out=response.getWriter();
         out.print(HtmUtils.HeaderHtm(title+":ViewTarget", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
         Integer tid=Integer.parseInt(request.getParameter("tid"));
-        out.print(app_utils.ViewTargetHtm(tid,TARGETLIST,response,SERVLETNAME));
+        out.print(webapp_utils.ViewTargetHtm(tid,TARGETLIST,response,SERVLETNAME));
         out.println(HtmUtils.FooterHtm(errors,false));
       }
       else if (request.getParameter("viewdiseases")!=null)	// GET method, viewdiseases=TRUE
@@ -590,7 +590,7 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         out.print(HtmUtils.HeaderHtm(title+":ViewDiseases", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
-        out.print(app_utils.ViewDiseasesHtm(DISEASELIST,TARGETLIST,
+        out.print(webapp_utils.ViewDiseasesHtm(DISEASELIST,TARGETLIST,
 		(request.getParameter("sortby")==null?"id":request.getParameter("sortby")),
 		response,SERVLETNAME));
         out.println(HtmUtils.FooterHtm(errors,false));
@@ -601,7 +601,7 @@ public class carlsbadone_servlet extends HttpServlet
         out=response.getWriter();
         out.print(HtmUtils.HeaderHtm(title+":ViewDisease", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
         String kid=request.getParameter("kid");
-        try { out.print(app_utils.ViewDiseaseHtm(kid, DISEASELIST, TARGETLIST, DBCON, response, CONTEXTPATH, SERVLETNAME, PROXY_PREFIX)); }
+        try { out.print(webapp_utils.ViewDiseaseHtm(kid, DISEASELIST, TARGETLIST, DBCON, response, CONTEXTPATH, SERVLETNAME, PROXY_PREFIX)); }
         catch (SQLException e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
