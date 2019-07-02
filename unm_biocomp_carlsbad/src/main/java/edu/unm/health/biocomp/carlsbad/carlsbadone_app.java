@@ -154,23 +154,23 @@ public class carlsbadone_app
       {
         if (TARGETLIST.containsKey(tid))
           System.err.println("query target: ("+tid+") "+TARGETLIST.get(tid).getName());
-        counts=carlsbadone_utils.Target2Network(dbcon,fout,fout_rgt,fout_rgtp,fout_cpd,tid,scaf_min,act_filter,
-          "CARLSBAD Target2Network one-click Subnet",n_max_a,n_max_c,cpdlist,ccplist,sqls);
+        counts=carlsbadone_utils.Target2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, tid, scaf_min, act_filter,
+          "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         tids.add(tid);
       }
       else if (cid!=null)
       {
         if (DRUGLIST.containsKey(cid))
           System.err.println("query drug: ("+cid+") "+DRUGLIST.get(cid).getName());
-        counts=carlsbadone_utils.Compound2Network(dbcon,fout,fout_rgt,fout_rgtp,fout_cpd,cid,scaf_min,act_filter,
-          "CARLSBAD Compound2Network one-click Subnet",n_max_a,n_max_c,tids,cpdlist,ccplist,sqls);
+        counts=carlsbadone_utils.Compound2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, cid, scaf_min, act_filter,
+          "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else if (kid!=null)
       {
         if (DISEASELIST.containsKey(kid))
           System.err.println("query disease: ("+kid+") "+DISEASELIST.get(kid).getName());
-        counts=carlsbadone_utils.Disease2Network(dbcon,fout,fout_rgt,fout_rgtp,fout_cpd,kid,scaf_min,act_filter,
-          "CARLSBAD Disease2Network one-click Subnet",n_max_a,n_max_c,tids,cpdlist,ccplist,sqls);
+        counts=carlsbadone_utils.Disease2Network(dbcon, fout, fout_rgt, fout_rgtp, fout_cpd, kid, scaf_min, act_filter,
+          "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else
       { Help("-tid, -cid or -kid required."); }
@@ -200,7 +200,7 @@ public class carlsbadone_app
     //tid!=null if target-query; cid!=null if drug-query; kid!=null if disease-query
     app_utils.FlagTargetsEmpirical(tgtlist,DRUGLIST,tid,cid,DISEASELIST,kid);
 
-    app_utils.FlagCompoundsEmpirical(cpdlist,TARGETLIST,DISEASELIST,kid); //kid!=null if disease-query
+    app_utils.FlagCompoundsEmpirical(cpdlist, TARGETLIST, DISEASELIST, kid); //kid!=null if disease-query
     app_utils.FlagCompoundsEmpirical(
 	cpdlist,
 	tgtlist, //hitlist
@@ -211,6 +211,6 @@ public class carlsbadone_app
     //Collections.sort(countkeys);
     //for (String countkey: countkeys) System.err.println(countkey+": "+counts.get(countkey));
 
-    System.err.println("elapsed time: "+time_utils.TimeDeltaStr(t_0,new java.util.Date()));
+    System.err.println("elapsed time: "+time_utils.TimeDeltaStr(t_0, new java.util.Date()));
   }
 }

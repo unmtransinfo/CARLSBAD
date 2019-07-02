@@ -988,8 +988,8 @@ public class carlsbad_utils
     JsonGenerator jsg = jsf.createGenerator(fout_writer);
     jsg.useDefaultPrettyPrinter();
     jsg.writeObject(root);
+    jsg.close();
 
-    fout_writer.close();
     return counts;
   }
 
@@ -2467,7 +2467,7 @@ public class carlsbad_utils
     nodedata.put("class", "compound");
     nodedata.put("canonicalName", "cpd_"+String.format("%06d",cid));
     String smiles=cpddata.get(cid).get("smiles");
-    nodedata.put("smiles", smiles.replace("\\","\\\\"));
+    nodedata.put("smiles", smiles);
     if (c2t_global.containsKey(cid)) //degree_target (global)
     {
       Integer deg_tgt=(c2t_global.get(cid)==null)?0:c2t_global.get(cid).size();
@@ -3422,7 +3422,7 @@ public class carlsbad_utils
           c2t_global.get(cid).add(tid);
         }
       }
-      WriteCompoundNode2XGMML(cid_query, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, nodes);
+      WriteCompoundNode2CYJS(cid_query, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, nodes);
     }
     else if (disease!=null)	//disease-query mode
     {

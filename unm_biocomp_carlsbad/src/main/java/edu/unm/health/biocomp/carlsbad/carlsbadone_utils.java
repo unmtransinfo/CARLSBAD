@@ -69,12 +69,10 @@ public class carlsbadone_utils
     PrintWriter fout_writer=null;
     if (fout!=null)
       fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    PrintWriter fout_rgt_writer=null;
-    if (fout_rgt!=null)
-      fout_rgt_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    PrintWriter fout_rgtp_writer=null;
-    if (fout_rgtp!=null)
-      fout_rgtp_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    else if (fout_rgt!=null)
+      fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
+    else if (fout_rgtp!=null)
+      fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
 
     if (tid_query==null)
       throw new Exception("Target ID must be specified.");
@@ -203,14 +201,13 @@ public class carlsbadone_utils
 
     if (fout!=null)
     {
-      carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes);
+      carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes, edges);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
       carlsbad_utils.WriteScaffolds2CYJS(scafdata, scafids_written, s2c_global, s2t_global, counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
       carlsbad_utils.WriteMcess2CYJS(mcesdata, mcesids_written, m2c_global, m2t_global, counts, nodes, edges);
     }
-
-    if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
+    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
       carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
@@ -232,9 +229,7 @@ public class carlsbadone_utils
 	counts,
 	nodes, edges);
     }
-    // Write targets+CCPs reduced-graph to CYJS.  
-    // To do: add deg_cpd to CCPs.
-    if (fout_rgtp!=null)
+    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
       carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
@@ -267,9 +262,10 @@ public class carlsbadone_utils
     JsonGenerator jsg = jsf.createGenerator(fout_writer);
     jsg.useDefaultPrettyPrinter();
     jsg.writeObject(root);
+    jsg.close();
 
     // Write cpddata compounds to SDF for display and/or download.
-    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist,fout_cpd);
+    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist, fout_cpd);
 
     return counts;
   }
@@ -319,14 +315,26 @@ public class carlsbadone_utils
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
     PrintWriter fout_writer=null;
     if (fout!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    PrintWriter fout_rgt_writer=null;
-    if (fout_rgt!=null) fout_rgt_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    PrintWriter fout_rgtp_writer=null;
-    if (fout_rgtp!=null) fout_rgtp_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    else if (fout_rgt!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
+    else if (fout_rgtp!=null) fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
 
     if (cid_query==null)
       throw new Exception("Compound ID must be specified.");
     if (title==null || title.isEmpty()) title="CARLSBAD Subnet";
+
+    HashMap<String,Object> root = new HashMap<String,Object>();
+    root.put("format_version", "1.0");
+    root.put("generated_by", "carlsbadone-0.0.1-SNAPSHOT");
+    root.put("target_cytoscapejs_version", "~2.1");
+    HashMap<String,Object> data = new HashMap<String,Object>();
+    data.put("name", title);
+    data.put("shared_name", title);
+    data.put("SUID", new Integer(52)); //integer
+    data.put("selected", new Boolean(true)); //boolean
+    root.put("data", data);
+
+    ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
+    ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
 
     ArrayList<Integer> cids_query = new ArrayList<Integer>(Arrays.asList(cid_query));
     ArrayList<String> wheres = new ArrayList<String>();
@@ -472,15 +480,14 @@ public class carlsbadone_utils
 
     if (fout!=null)
     {
-      carlsbad_utils.WriteTargets2CYJS(tgtdata,t2c_global,tgt_tgt_ids,counts,nodes);
-      carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,nodes);
+      carlsbad_utils.WriteTargets2CYJS(tgtdata, t2c_global, tgt_tgt_ids, counts, nodes);
+      carlsbad_utils.WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes, edges);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteScaffolds2CYJS(scafdata,scafids_written,s2c_global,s2t_global,counts,nodes, edges);
+      carlsbad_utils.WriteScaffolds2CYJS(scafdata, scafids_written, s2c_global, s2t_global, counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
-      carlsbad_utils.WriteMcess2CYJS(mcesdata,mcesids_written,m2c_global,m2t_global,counts,nodes, edges);
+      carlsbad_utils.WriteMcess2CYJS(mcesdata, mcesids_written, m2c_global, m2t_global, counts, nodes, edges);
     }
-
-    if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
+    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
       carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
@@ -502,7 +509,7 @@ public class carlsbadone_utils
 	counts,
 	nodes, edges);
     }
-    if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
+    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
       carlsbad_utils.WriteReducedGraph2CYJS(
 	tgtdata,
@@ -524,6 +531,18 @@ public class carlsbadone_utils
 	counts,
 	nodes, edges);
     }
+
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    elements.put("nodes", nodes);
+    elements.put("edges", edges);
+    root.put("elements", elements);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonFactory jsf = mapper.getFactory();
+    JsonGenerator jsg = jsf.createGenerator(fout_writer);
+    jsg.useDefaultPrettyPrinter();
+    jsg.writeObject(root);
+    jsg.close();
 
     // Write cpddata compounds to SDF for display and/or download.
     if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist,fout_cpd);
@@ -576,17 +595,29 @@ public class carlsbadone_utils
     PrintWriter fout_writer=null;
     if (fout!=null)
       fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    PrintWriter fout_rgt_writer=null;
-    if (fout_rgt!=null)
-      fout_rgt_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
-    PrintWriter fout_rgtp_writer=null;
-    if (fout_rgtp!=null)
-      fout_rgtp_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
+    else if (fout_rgt!=null)
+      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgt,false))); //overwrite
+    else if (fout_rgtp!=null)
+      fout_writer = new PrintWriter(new BufferedWriter(new FileWriter(fout_rgtp,false))); //overwrite
 
     ArrayList<String> wheres = new ArrayList<String>();
     if (kid_query==null)
       throw new Exception("Disease KID must be specified.");
     if (title==null || title.isEmpty()) title="CARLSBAD Subnet";
+
+    HashMap<String,Object> root = new HashMap<String,Object>();
+    root.put("format_version", "1.0");
+    root.put("generated_by", "carlsbadone-0.0.1-SNAPSHOT");
+    root.put("target_cytoscapejs_version", "~2.1");
+    HashMap<String,Object> data = new HashMap<String,Object>();
+    data.put("name", title);
+    data.put("shared_name", title);
+    data.put("SUID", new Integer(52)); //integer
+    data.put("selected", new Boolean(true)); //boolean
+    root.put("data", data);
+
+    ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
+    ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
 
     HashMap<Integer,HashMap<String,String> > tgtdata = new HashMap<Integer,HashMap<String,String> >();
     HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
@@ -722,15 +753,13 @@ public class carlsbadone_utils
     if (fout!=null)
     {
       carlsbad_utils.WriteTargets2CYJS(tgtdata,t2c_global,tgt_tgt_ids,counts, nodes);
-      carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts, nodes);
+      carlsbad_utils.WriteCompounds2CYJS(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts, nodes, edges);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
       carlsbad_utils.WriteScaffolds2CYJS(scafdata,scafids_written,s2c_global,s2t_global,counts, nodes, edges);
       HashSet<Integer> mcesids_written = new HashSet<Integer>();
       carlsbad_utils.WriteMcess2CYJS(mcesdata,mcesids_written,m2c_global,m2t_global,counts, nodes, edges);
     }
-
-    // Write targets-only reduced-graph to CYJS.  
-    if (fout_rgt!=null)
+    else if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
       String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
       Disease disease = new Disease(kid_query);
@@ -757,9 +786,7 @@ public class carlsbadone_utils
 	counts,
 	nodes, edges);
     }
-
-    // Write targets+CCPs reduced-graph to CYJS.  
-    if (fout_rgtp!=null)
+    else if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
       String disease_name = carlsbad_utils.GetKIDName(dbcon,kid_query);
       Disease disease = new Disease(kid_query);
@@ -786,6 +813,18 @@ public class carlsbadone_utils
 	counts,
 	nodes, edges);
     }
+
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    elements.put("nodes", nodes);
+    elements.put("edges", edges);
+    root.put("elements", elements);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonFactory jsf = mapper.getFactory();
+    JsonGenerator jsg = jsf.createGenerator(fout_writer);
+    jsg.useDefaultPrettyPrinter();
+    jsg.writeObject(root);
+    jsg.close();
 
     // Write cpddata compounds to SDF for display and/or download.
     if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist, fout_cpd);
