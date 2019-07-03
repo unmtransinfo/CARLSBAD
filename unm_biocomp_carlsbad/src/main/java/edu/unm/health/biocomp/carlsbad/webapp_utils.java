@@ -558,7 +558,7 @@ public class webapp_utils
         String cyview,
 	String proxy_prefix)
   {
-    String cyview_opts="edgesmerge=TRUE&title="+HtmUtils.HtmlEscape(subnet_title);
+    String cyview_opts="edgesmerge=TRUE&title="+URLEncoder.encode(subnet_title);
     String cyview_winname="CyView";
     if (cyview_mode!=null)
     {
@@ -567,7 +567,7 @@ public class webapp_utils
     }
     String htm=(
 	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyview+"?"+cyview_opts+"&infile="+fout_subnet_path+"','"+cyview_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
-	+("View with<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cy3logoOrange.svg\"></BUTTON>\n");
+	+("CyView<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cy3logoOrange.svg\"></BUTTON>\n");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -664,9 +664,7 @@ public class webapp_utils
     thtm_butts+=("<TD>nodes: "+n_node_total+"<BR/>edges: "+n_edge_total+"</TD>");
     thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_full+"</I></B></TD>\n");
     thtm_butts+=("</TR>\n");
-    thtm_butts+="<TR><TD></TD><TD COLSPAN=2><I><B>Note: CytoscapeWeb requires Flash plugin.</B></I></TD></TR>\n";
     thtm_butts+=("</TABLE>\n");
-
     htm+=(thtm_butts);
     return htm;
   }

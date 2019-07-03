@@ -117,7 +117,7 @@ function mod_compoundLabel(form) {
   for (i=0;i<form.cpd_label.length;++i)
     if (form.cpd_label.options[i].selected)
       cpd_label=form.cpd_label.options[i].value;
-    cy.style().selector('node[class = "compound"]').style('label', 'data('+cpd_label+')').update();
+  cy.style().selector('node[class = "compound"]').style('label', 'data('+cpd_label+')').update();
   return;
 }
 function mod_targetLabel(form) {
@@ -125,7 +125,7 @@ function mod_targetLabel(form) {
   for (i=0;i<form.tgt_label.length;++i)
     if (form.tgt_label.options[i].selected)
       tgt_label=form.tgt_label.options[i].value;
-    cy.style().selector('node[class = "target"]').style('label', 'data('+tgt_label+')').update();
+  cy.style().selector('node[class = "target"]').style('label', 'data('+tgt_label+')').update();
   return;
 }
 function mod_labelStyle(form) {

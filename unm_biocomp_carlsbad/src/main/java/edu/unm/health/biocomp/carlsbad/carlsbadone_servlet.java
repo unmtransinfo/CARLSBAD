@@ -645,36 +645,22 @@ public class carlsbadone_servlet extends HttpServlet
     Calendar calendar=Calendar.getInstance();
 
     String logo_htm="<TABLE CELLSPACING=5 CELLPADDING=5><TR><TD>";
-    String imghtm=("<IMG BORDER=0 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/biocomp_logo_only.gif\">");
+    String imghtm=("<IMG BORDER=\"0\" SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/biocomp_logo_only.gif\">");
 
     String tiphtm=(APPNAME+" web app from UNM Translational Informatics.");
     String href=("http://medicine.unm.edu/informatics/");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
-    logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 HEIGHT=50 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/gNovalogo.png\">");
-    tiphtm=("Chord from gNova Inc.");
-    href=("http://www.gnova.com");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
+    logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
     logo_htm+="</TD><TD>";
     imghtm=("<IMG BORDER=0 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/chemaxon_powered_100px.png\">");
-    tiphtm=("JChem and Marvin from ChemAxon Ltd.");
+    tiphtm=("JChem from ChemAxon Ltd.");
     href=("http://www.chemaxon.com");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
+    logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
     logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 HEIGHT=60 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/oe_logo.png\">");
-    tiphtm=("OEChem from OpenEye Scientific Software.");
-    href=("http://www.eyesopen.com");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
     logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 HEIGHT=60 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/cytoscape_logo.png\">");
-    tiphtm=("Cytoscape");
-    href=("http://www.cytoscape.org");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
-    logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 HEIGHT=40 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/cy3logoOrange.svg\">");
-    tiphtm=("Cytoscape.JS");
-    href=("http://js.cytoscape.org/");
-    logo_htm+=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
+    imghtm=("<IMG BORDER=\"0\" HEIGHT=\"60\" SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/cy3logoOrange.svg\">");
+    tiphtm=("Cytoscape and Cytoscape.JS");
+    href=("http://cytoscape.org/");
+    logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
     logo_htm+="</TD></TR></TABLE>";
     errors.add("<CENTER>"+logo_htm+"</CENTER>");
 
@@ -1349,12 +1335,11 @@ public class carlsbadone_servlet extends HttpServlet
 	HttpServletResponse response,String servletname)
   {
     String htm="<TABLE CELLSPACING=5 CELLPADDING=5 WIDTH=\"60%\">";
-    //htm+=("<TR><TH WIDTH=\"25%\">&nbsp;</TH><TH WIDTH=\"10%\">cid</TH><TH WIDTH=\"25%\">names</TH></TR>\n");
     String imghtm="";
     try {
       String smiles=carlsbad_utils.CID2Smiles(dbcon,cid);
       String depopts=("mode=cow&imgfmt=png&kekule=true");
-      imghtm=HtmUtils.Smi2ImgHtm(smiles,depopts,80,120,mol2img_servleturl,true,4,"go_zoom_smi2img");
+      imghtm=HtmUtils.Smi2ImgHtm(smiles, depopts, 100, 140, mol2img_servleturl, true, 4, "go_zoom_smi2img");
     }
     catch (SQLException e) { this.errors.add("CID2Smiles error: "+e.getMessage()); }
     catch (Exception e) { this.errors.add("CID2Smiles error: "+e.getMessage()); }
@@ -1407,7 +1392,8 @@ public class carlsbadone_servlet extends HttpServlet
       throw new ServletException("Please supply UPLOADDIR parameter");
     SCRATCHDIR=conf.getInitParameter("SCRATCHDIR");
     if (SCRATCHDIR==null) SCRATCHDIR="/tmp";
-    LOGDIR="/tmp"+CONTEXTPATH+"_logs";
+    LOGDIR=conf.getInitParameter("LOGDIR");
+    if (LOGDIR==null) LOGDIR="/tmp"+CONTEXTPATH+"_logs";
     HELP_FILE=CONTEXT.getRealPath("")+"/"+conf.getInitParameter("HELP_FILE");
     DBHOST=conf.getInitParameter("DBHOST");
     if (DBHOST==null)

@@ -2304,11 +2304,11 @@ public class carlsbad_utils
       nodedata.put("class", "target");
 
       if (tgtdata.get(tid).get("tname")!=null)
-        nodedata.put("name", HtmlEscape(tgtdata.get(tid).get("tname")));
+        nodedata.put("name", tgtdata.get(tid).get("tname"));
       if (tgtdata.get(tid).get("descr")!=null)
-        nodedata.put("descr", HtmlEscape(tgtdata.get(tid).get("descr")));
-      nodedata.put("species", HtmlEscape(tgtdata.get(tid).get("species")));
-      nodedata.put("type", HtmlEscape(tgtdata.get(tid).get("type")));
+        nodedata.put("descr", tgtdata.get(tid).get("descr"));
+      nodedata.put("species", tgtdata.get(tid).get("species"));
+      nodedata.put("type", tgtdata.get(tid).get("type"));
       if (t2c_global.containsKey(tid)) //degree_compound (global)
       {
         Integer deg_cpd=(t2c_global.get(tid)==null)?0:t2c_global.get(tid).size();
@@ -2325,12 +2325,12 @@ public class carlsbad_utils
             tgt_ids.add(tgt_id);
             counts.put("n_tgt_ext_ids",counts.get("n_tgt_ext_ids")+1);
           }
-          nodedata.put(tgt_id_type, tgt_ids);
+          nodedata.put(tgt_id_type.replaceAll(" ", "_"), tgt_ids);
         }
       }
       node.put("data", nodedata);
       nodes.add(node);
-      counts.put("n_node_tgt",counts.get("n_node_tgt")+1);
+      counts.put("n_node_tgt", counts.get("n_node_tgt")+1);
     }
     return counts.get("n_node_tgt");
   }
@@ -2485,10 +2485,8 @@ public class carlsbad_utils
       ArrayList<String> synonyms = new ArrayList<String>();
       for (String synonym: cpdsynonyms.get(cid).keySet())
       {
-        synonym=synonym.replaceAll("&(\\w+);","$1"); //Kludge for "&Delta;", "&alpha;", etc.
-        synonym=synonym.replaceAll("&",""); //Kludge for "SK&F-89748", etc.
         synonyms.add(synonym);
-        counts.put("n_csynonyms",counts.get("n_csynonyms")+1);
+        counts.put("n_csynonyms", counts.get("n_csynonyms")+1);
       }
       nodedata.put("synonym", synonyms);
     }
@@ -2503,7 +2501,7 @@ public class carlsbad_utils
           sbs_ids.add(sbs_id);
           counts.put("n_cpd_ext_ids", counts.get("n_cpd_ext_ids")+1);
         }
-        nodedata.put(sbs_id_type, sbs_ids);
+        nodedata.put(sbs_id_type.replaceAll(" ", "_"), sbs_ids);
       }
     }
     node.put("data", nodedata);
@@ -2886,7 +2884,7 @@ public class carlsbad_utils
         nodedata.put("name", "M"+cluster_id);
         nodedata.put("class", "mces");
         nodedata.put("canonicalName", "mces_"+String.format("%06d",cluster_id));
-        nodedata.put("smarts", HtmlEscape(mcesdata.get(edgeid).get("mces")));
+        nodedata.put("smarts", mcesdata.get(edgeid).get("mces"));
         if (m2c_global.containsKey(cluster_id)) //degree_compound (global)
         {
           Integer deg_cpd=(m2c_global.get(cluster_id)==null)?0:m2c_global.get(cluster_id).size();
@@ -3362,9 +3360,9 @@ public class carlsbad_utils
       nodedata.put("class", "target");
 
       if (tgtdata.get(tid).get("tname")!=null)
-        nodedata.put("name", HtmlEscape(tgtdata.get(tid).get("tname")));
+        nodedata.put("name", tgtdata.get(tid).get("tname"));
       if (tgtdata.get(tid).get("descr")!=null)
-        nodedata.put("descr", HtmlEscape(tgtdata.get(tid).get("descr")));
+        nodedata.put("descr", tgtdata.get(tid).get("descr"));
       nodedata.put("species", tgtdata.get(tid).get("species"));
       nodedata.put("type", tgtdata.get(tid).get("type"));
       if (t2c_global.containsKey(tid)) //degree_compound (global)
@@ -3401,7 +3399,7 @@ public class carlsbad_utils
             tgt_ids.add(tgt_id);
             counts.put("n_tgt_ext_ids_rgt",counts.get("n_tgt_ext_ids_rgt")+1);
           }
-          nodedata.put(tgt_id_type, tgt_ids);
+          nodedata.put(tgt_id_type.replaceAll(" ", "_"), tgt_ids);
         }
       }
       node.put("data", nodedata);
