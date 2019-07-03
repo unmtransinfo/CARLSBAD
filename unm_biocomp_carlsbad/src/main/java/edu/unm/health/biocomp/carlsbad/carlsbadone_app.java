@@ -145,23 +145,35 @@ public class carlsbadone_app
       {
         if (TARGETLIST.containsKey(tid))
           System.err.println("query target: ("+tid+") "+TARGETLIST.get(tid).getName());
-        counts=carlsbadone_utils.Target2Network(dbcon, kgtype, fout, fout_cpd, tid, scaf_min, act_filter,
-          "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+        if (kgtype=="rgt")
+          counts=carlsbadone_utils.Target2Network(dbcon, fout, null, null, fout_cpd, tid, scaf_min, act_filter, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+        else if (kgtype=="rgtp")
+          counts=carlsbadone_utils.Target2Network(dbcon, null, fout, null, fout_cpd, tid, scaf_min, act_filter, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+        else 
+          counts=carlsbadone_utils.Target2Network(dbcon, null, null, fout, fout_cpd, tid, scaf_min, act_filter, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         tids.add(tid);
       }
       else if (cid!=null)
       {
         if (DRUGLIST.containsKey(cid))
           System.err.println("query drug: ("+cid+") "+DRUGLIST.get(cid).getName());
-        counts=carlsbadone_utils.Compound2Network(dbcon, kgtype, fout, fout_cpd, cid, scaf_min, act_filter,
-          "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        if (kgtype=="rgt")
+          counts=carlsbadone_utils.Compound2Network(dbcon, fout, null, null, fout_cpd, cid, scaf_min, act_filter, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        else if (kgtype=="rgtp")
+          counts=carlsbadone_utils.Compound2Network(dbcon, null, fout, null, fout_cpd, cid, scaf_min, act_filter, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        else
+          counts=carlsbadone_utils.Compound2Network(dbcon, null, null, fout, fout_cpd, cid, scaf_min, act_filter, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else if (kid!=null)
       {
         if (DISEASELIST.containsKey(kid))
           System.err.println("query disease: ("+kid+") "+DISEASELIST.get(kid).getName());
-        counts=carlsbadone_utils.Disease2Network(dbcon, kgtype, fout, fout_cpd, kid, scaf_min, act_filter,
-          "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        if (kgtype=="rgt")
+          counts = carlsbadone_utils.Disease2Network(dbcon, fout, null, null, fout_cpd, kid, scaf_min, act_filter, "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        else if (kgtype=="rgtp")
+          counts = carlsbadone_utils.Disease2Network(dbcon, null, fout, null, fout_cpd, kid, scaf_min, act_filter, "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+        else
+          counts = carlsbadone_utils.Disease2Network(dbcon, null, null, fout, fout_cpd, kid, scaf_min, act_filter, "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else
       { Help("-tid, -cid or -kid required."); }

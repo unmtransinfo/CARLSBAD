@@ -191,9 +191,9 @@ public class carlsbadone_servlet extends HttpServlet
         StringBuilder err_sb = new StringBuilder();
 
         HashMap<String,Integer> subnet_counts=null;
-        String fout_subnet_path=null;
         String fout_rgt_path=null; //reduced-graph, tgts only
         String fout_rgtp_path=null; //reduced-graph, tgts+CCPs
+        String fout_full_path=null; //full-graph
         String fout_cpd_path=null; //compounds
         ArrayList<String> sqls = new ArrayList<String>();
         Integer n_max_a=100000;
@@ -205,28 +205,22 @@ public class carlsbadone_servlet extends HttpServlet
         String query="";
         try {
           File dout=new File(SCRATCHDIR);
-
-          //File fout_subnet=File.createTempFile(PREFIX,"_subnet.xgmml",dout);
-          //fout_subnet_path=fout_subnet.getAbsolutePath();
-          //File fout_rgt=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts only
-          //File fout_rgtp=File.createTempFile(PREFIX,"_subnet.xgmml",dout); //reduced-graph, tgts+CCPs
-
-          File fout_subnet=File.createTempFile(PREFIX,"_subnet.cyjs",dout);
-          fout_subnet_path=fout_subnet.getAbsolutePath();
-          File fout_rgt=File.createTempFile(PREFIX,"_subnet.cyjs",dout); //reduced-graph, tgts only
-          File fout_rgtp=File.createTempFile(PREFIX,"_subnet.cyjs",dout); //reduced-graph, tgts+CCPs
-
-          File fout_cpd=File.createTempFile(PREFIX,"_cpds.sdf",dout); //compounds
+          File fout_rgt=File.createTempFile(PREFIX, "_subnet_rgt.cyjs", dout); //reduced-graph, tgts only
           fout_rgt_path=fout_rgt.getAbsolutePath();
+          File fout_rgtp=File.createTempFile(PREFIX, "_subnet_rgtp.cyjs", dout); //reduced-graph, tgts+CCPs
           fout_rgtp_path=fout_rgtp.getAbsolutePath();
+          File fout_full=File.createTempFile(PREFIX, "_subnet_full.cyjs", dout);
+          fout_full_path=fout_full.getAbsolutePath();
+          File fout_cpd=File.createTempFile(PREFIX, "_cpds.sdf", dout); //compounds
           fout_cpd_path=fout_cpd.getAbsolutePath();
 
           if (params.getVal("formmode").equals("disease"))
           {
             subnet_counts=webapp_utils.Disease2Network_LaunchThread(
-		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
-		"full",
-		fout_subnet_path,
+		DBHOST, DBPORT, params.getVal("dbid"), DBUSR, DBPW,
+		fout_rgt_path,
+		fout_rgtp_path,
+		fout_full_path,
 		fout_cpd_path,
 		kid,
 		scaf_min,
@@ -248,8 +242,9 @@ public class carlsbadone_servlet extends HttpServlet
           {
             subnet_counts=webapp_utils.Compound2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
-		"full",
-		fout_subnet_path,
+		fout_rgt_path,
+		fout_rgtp_path,
+		fout_full_path,
 		fout_cpd_path,
 		cid,
 		scaf_min,
@@ -271,8 +266,9 @@ public class carlsbadone_servlet extends HttpServlet
           {
             subnet_counts=webapp_utils.Target2Network_LaunchThread(
 		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
-		"full",
-		fout_subnet_path,
+		fout_rgt_path,
+		fout_rgtp_path,
+		fout_full_path,
 		fout_cpd_path,
 		tid,
 		scaf_min,
@@ -300,9 +296,9 @@ public class carlsbadone_servlet extends HttpServlet
           subnet_results_htm = 
 		webapp_utils.SubnetResultsHtm(
 		subnet_counts,
-		fout_subnet_path,
 		fout_rgt_path,
 		fout_rgtp_path,
+		fout_full_path,
 		APPNAME+" ["+params.getVal("formmode")+"]:"+params.getVal("subnet_title"),
 		response,
 		CONTEXTPATH,
@@ -404,24 +400,15 @@ public class carlsbadone_servlet extends HttpServlet
 		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_cpds.sdf").replaceAll(" ","_")),
 		SERVLETNAME);
 
-        //XGMML download buttons:
-        //String bhtm_xgmml_full=webapp_utils.XGMMLDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".xgmml").replaceAll(" ","_")), response, SERVLETNAME);
-        //String bhtm_xgmml_rgt=webapp_utils.XGMMLDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
-        //String bhtm_xgmml_rgtp=webapp_utils.XGMMLDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.xgmml").replaceAll(" ","_")), response, SERVLETNAME);
-
-        String bhtm_cyjs_full=webapp_utils.CYJSDownloadButtonHtm(fout_subnet_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        //CYJS download buttons:
         String bhtm_cyjs_rgt=webapp_utils.CYJSDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
         String bhtm_cyjs_rgtp=webapp_utils.CYJSDownloadButtonHtm(fout_rgtp_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgtp.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
+        String bhtm_cyjs_full=webapp_utils.CYJSDownloadButtonHtm(fout_full_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+".cyjs").replaceAll(" ","_")), response, SERVLETNAME);
 
         thtm="<TABLE CELLSPACING=2 CELLPADDING=2>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+tgt_csv_bhtm+"</TD><TD>&larr; IDs, names, etc.</TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_csv_bhtm+"</TD><TD>&larr; SMILES with IDs</TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_sdf_bhtm+"</TD><TD>&larr; SDF with IDs, data</TD></TR>\n";
-
-        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
-        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";
-        //thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_xgmml_full+"</TD><TD>&larr; <B>Full</B></TD></TR>\n";
-        //thtm+="<TR><TD COLSPAN=2 ALIGN=CENTER>(XGMML can be imported by Cytoscape.)</TD></TR>\n";
 
         thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";

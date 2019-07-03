@@ -137,7 +137,8 @@ public class webapp_utils
   */
   public static HashMap<String,Integer> Target2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
-	String kgtype,
+	String fout_rgt_path,
+	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	Integer tid,
@@ -159,7 +160,8 @@ public class webapp_utils
     Target2Network_Task xsubnet_task =
       new Target2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
-		kgtype,
+		fout_rgt_path,
+		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		tid,
@@ -183,7 +185,8 @@ public class webapp_utils
   */
   public static HashMap<String,Integer> Compound2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
-	String kgtype,
+	String fout_rgt_path,
+	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	Integer cid,
@@ -206,7 +209,8 @@ public class webapp_utils
     Compound2Network_Task xsubnet_task =
       new Compound2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
-		kgtype,
+		fout_rgt_path,
+		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		cid,
@@ -231,7 +235,8 @@ public class webapp_utils
   */
   public static HashMap<String,Integer> Disease2Network_LaunchThread(
 	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
-	String kgtype,
+	String fout_rgt_path,
+	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	String kid,
@@ -254,7 +259,8 @@ public class webapp_utils
     Disease2Network_Task xsubnet_task =
       new Disease2Network_Task(
 		dbhost,dbport,dbid,dbusr,dbpw,
-		kgtype,
+		fout_rgt_path,
+		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		kid,
@@ -607,9 +613,9 @@ public class webapp_utils
   */
   public static String SubnetResultsHtm(
 	HashMap<String,Integer> subnet_counts,
-	String fout_subnet_path,
 	String fout_rgt_path, //reduced-graph, tgts only
 	String fout_rgtp_path, //reduced-graph, tgts+CCPs
+	String fout_subnet_path, //full-graph
 	String title,
 	HttpServletResponse response,
 	String contextpath,
