@@ -17,7 +17,7 @@
     <init-param> <param-name>N_MAX</param-name>
       <param-value>100</param-value> </init-param>
     <init-param> <param-name>DBHOST</param-name>
-      <param-value>carlsbad.health.unm.edu</param-value> </init-param>
+      <param-value>localhost</param-value> </init-param>
     <init-param> <param-name>DBID</param-name>
       <param-value>carlsbad</param-value> </init-param>
     <init-param> <param-name>DBSCHEMA</param-name>
@@ -25,9 +25,9 @@
     <init-param> <param-name>DBPORT</param-name>
       <param-value>5432</param-value> </init-param>
     <init-param> <param-name>DBUSR</param-name>
-      <param-value>jjyang</param-value> </init-param>
+      <param-value>batman</param-value> </init-param>
     <init-param> <param-name>DBPW</param-name>
-      <param-value>assword</param-value> </init-param>
+      <param-value>foobar</param-value> </init-param>
     <init-param> <param-name>CYVIEW</param-name>
       <param-value>cyview</param-value> </init-param>
     <init-param> <param-name>HELP_FILE</param-name>

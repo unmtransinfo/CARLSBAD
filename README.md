@@ -47,9 +47,7 @@ mvn --projects carlsbad_war tomcat7:redeploy
 ## Usage (command-line)
 
 ```
-mvn --projects unm_biocomp_carlsbad \
-	exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" \
-	-Dexec.args="-dbhost carlsbad.health.unm.edu -dbname carlsbad -dbusr batman -dbpw 'guano' -tid 17 -vv -o tid_17.cyjs"
+mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -tid 17 -vv -o tid_17.cyjs"
 ```
 
 ## Etc.
