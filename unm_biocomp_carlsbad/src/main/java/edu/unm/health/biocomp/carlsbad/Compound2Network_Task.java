@@ -16,7 +16,7 @@ public class Compound2Network_Task
 {
   private String dbhost;
   private Integer dbport;
-  private String dbid;
+  private String dbname;
   private String dbusr;
   private String dbpw;
   private String fout_path_rgt;
@@ -41,7 +41,7 @@ public class Compound2Network_Task
   public Compound2Network_Task(
 	String _dbhost,
 	Integer _dbport,
-	String _dbid,
+	String _dbname,
 	String _dbusr,
 	String _dbpw,
 	String _fout_path_rgt,
@@ -60,7 +60,7 @@ public class Compound2Network_Task
   {
     this.dbhost=_dbhost;
     this.dbport=_dbport;
-    this.dbid=_dbid;
+    this.dbname=_dbname;
     this.dbusr=_dbusr;
     this.dbpw=_dbpw;
     this.fout_path_rgt=_fout_path_rgt;
@@ -89,7 +89,7 @@ public class Compound2Network_Task
   public synchronized Boolean call()
   {
     try {
-      DBCon dbcon = new DBCon("postgres", this.dbhost, this.dbport, this.dbid, this.dbusr, this.dbpw);
+      DBCon dbcon = new DBCon("postgres", this.dbhost, this.dbport, this.dbname, this.dbusr, this.dbpw);
       File fout_rgt = new File(fout_path_rgt);
       fout_rgt.createNewFile();
       fout_rgt.setWritable(true, true);
@@ -102,21 +102,13 @@ public class Compound2Network_Task
       File fout_cpd = new File(fout_cpd_path);
       fout_cpd.createNewFile();
       fout_cpd.setWritable(true, true);
-      this.counts=carlsbadone_utils.Compound2Network(
-	dbcon,
-	fout_rgt,
-	fout_rgtp,
-	fout,
-	fout_cpd,
-	this.cid,
-	this.scaf_min,
+      System.err.println("DEBUG: (Compound2Network_Task)...");
+      this.counts=carlsbadone_utils.Compound2Network(dbcon,
+	fout_rgt, fout_rgtp, fout, fout_cpd,
+	this.cid, this.scaf_min,
 	this.title,
-	this.n_max_a,
-	this.n_max_c,
-	this.tids,
-	this.cpdlist,
-	this.ccplist,
-	this.sqls);
+	this.n_max_a, this.n_max_c,
+	this.tids, this.cpdlist, this.ccplist, this.sqls);
       dbcon.close();
     }
     catch (SQLException e)

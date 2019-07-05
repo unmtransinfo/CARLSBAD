@@ -14,7 +14,7 @@ import com.oreilly.servlet.MultipartRequest;
 
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.db.*;
-import edu.unm.health.biocomp.util.threads.*;
+import edu.unm.health.biocomp.util.threads.*; //TaskUtils
 import edu.unm.health.biocomp.util.http.*;
 
 /**	Static methods for Carlsbad applications: threads, results display.
@@ -25,13 +25,14 @@ public class webapp_utils
   /////////////////////////////////////////////////////////////////////////////
   /**   Executes SQL statement via separate thread.
   */
-  public static ResultSet ExecuteSql_LaunchThread(String dbhost, Integer dbport, String dbid, String dbusr, String dbpw, String sql, String servletname, HttpServletResponse response, PrintWriter out, int n_max, StringBuilder err_sb)
+  public static ResultSet ExecuteSql_LaunchThread(String dbhost, Integer dbport,
+String dbname, String dbusr, String dbpw, String sql, String servletname, HttpServletResponse response, PrintWriter out, int n_max, StringBuilder err_sb)
       throws SQLException, IOException, ServletException
   {     
     ExecutorService exec=Executors.newSingleThreadExecutor();
     int tpoll=1000; //msec
       DBQuery_PG_Task dbquery_task =
-        new DBQuery_PG_Task(dbhost, dbport, dbid, dbusr, dbpw, sql, n_max);
+        new DBQuery_PG_Task(dbhost, dbport, dbname, dbusr, dbpw, sql, n_max);
       TaskUtils.ExecTaskWeb(exec, dbquery_task, dbquery_task.taskstatus, servletname+" (sql-query)", tpoll, out, response, (servletname+"_progress_win"));
 
     ResultSet rset=dbquery_task.getRSet();
@@ -42,17 +43,11 @@ public class webapp_utils
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Target2Network_LaunchThread(
-	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
-	String fout_rgt_path,
-	String fout_rgtp_path,
-	String fout_subnet_path,
-	String fout_cpd_path,
-	Integer tid,
-	Float scaf_min,
+	String dbhost, Integer dbport, String dbname, String dbusr, String dbpw,
+	String fout_rgt_path, String fout_rgtp_path, String fout_subnet_path, String fout_cpd_path,
+	Integer tid, Float scaf_min,
 	String subnet_title,
-	String servletname,
-	HttpServletResponse response,
-	PrintWriter out,
+	String servletname, HttpServletResponse response, PrintWriter out,
 	Integer n_max_a,Integer n_max_c,
 	CompoundList cpdlist,
 	CCPList ccplist,
@@ -64,18 +59,12 @@ public class webapp_utils
     int tpoll=1000; //msec
     Target2Network_Task xsubnet_task =
       new Target2Network_Task(
-		dbhost, dbport, dbid, dbusr, dbpw,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_subnet_path,
-		fout_cpd_path,
-		tid,
-		scaf_min,
+		dbhost, dbport, dbname, dbusr, dbpw,
+		fout_rgt_path, fout_rgtp_path, fout_subnet_path, fout_cpd_path,
+		tid, scaf_min,
 		subnet_title,
 		n_max_a,n_max_c,
-		cpdlist,
-		ccplist,
-		sqls);
+		cpdlist, ccplist, sqls);
     TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (target2network)", tpoll, out, response, (servletname+"_progress_win"));
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
     HashMap<String,Integer> counts=xsubnet_task.getCounts();
@@ -87,17 +76,11 @@ public class webapp_utils
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Compound2Network_LaunchThread(
-	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
-	String fout_rgt_path,
-	String fout_rgtp_path,
-	String fout_subnet_path,
-	String fout_cpd_path,
-	Integer cid,
-	Float scaf_min,
+	String dbhost, Integer dbport, String dbname, String dbusr, String dbpw,
+	String fout_rgt_path, String fout_rgtp_path, String fout_subnet_path, String fout_cpd_path,
+	Integer cid, Float scaf_min,
 	String subnet_title,
-	String servletname,
-	HttpServletResponse response,
-	PrintWriter out,
+	String servletname, HttpServletResponse response, PrintWriter out,
 	Integer n_max_a,Integer n_max_c,
 	ArrayList<Integer> tids,
 	CompoundList cpdlist,
@@ -110,41 +93,35 @@ public class webapp_utils
     int tpoll=1000; //msec
     Compound2Network_Task xsubnet_task =
       new Compound2Network_Task(
-		dbhost, dbport, dbid, dbusr, dbpw,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_subnet_path,
-		fout_cpd_path,
-		cid,
-		scaf_min,
+		dbhost, dbport, dbname, dbusr, dbpw,
+		fout_rgt_path, fout_rgtp_path, fout_subnet_path, fout_cpd_path,
+		cid, scaf_min,
 		subnet_title,
 		n_max_a, n_max_c,
-		tids,
-		cpdlist,
-		ccplist,
-		sqls);
+		tids, cpdlist, ccplist, sqls);
+    System.err.println("DEBUG: (Compound2Network_LaunchThread) instantiated Compound2Network_Task...");
     TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (compound2network)", tpoll, out, response, (servletname+"_progress_win"));
+    System.err.println("DEBUG: (Compound2Network_LaunchThread) done with Compound2Network_Task...");
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
-    HashMap<String,Integer> counts=xsubnet_task.getCounts();
+    HashMap<String,Integer> counts=null;
+    try {
+      counts=xsubnet_task.getCounts();
+    } catch (Exception  e) {
+      System.err.println("DEBUG: (Compound2Network_LaunchThread) getCounts() Exception: "+e.toString());
+    }
+    System.err.println("DEBUG: (Compound2Network_LaunchThread) counts=="+counts.toString());
     err_sb.append(xsubnet_task.getErrtxt());
     return counts;
   }
-
   /////////////////////////////////////////////////////////////////////////////
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Disease2Network_LaunchThread(
-	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
-	String fout_rgt_path,
-	String fout_rgtp_path,
-	String fout_subnet_path,
-	String fout_cpd_path,
-	String kid,
-	Float scaf_min,
+	String dbhost, Integer dbport, String dbname, String dbusr, String dbpw,
+	String fout_rgt_path, String fout_rgtp_path, String fout_subnet_path, String fout_cpd_path,
+	String kid, Float scaf_min,
 	String subnet_title,
-	String servletname,
-	HttpServletResponse response,
-	PrintWriter out,
+	String servletname, HttpServletResponse response, PrintWriter out,
 	Integer n_max_a, Integer n_max_c,
 	ArrayList<Integer> tids,
 	CompoundList cpdlist,
@@ -157,19 +134,12 @@ public class webapp_utils
     int tpoll=1000; //msec
     Disease2Network_Task xsubnet_task =
       new Disease2Network_Task(
-		dbhost, dbport, dbid, dbusr, dbpw,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_subnet_path,
-		fout_cpd_path,
-		kid,
-		scaf_min,
+		dbhost, dbport, dbname, dbusr, dbpw,
+		fout_rgt_path, fout_rgtp_path, fout_subnet_path, fout_cpd_path,
+		kid, scaf_min,
 		subnet_title,
 		n_max_a, n_max_c,
-		tids,
-		cpdlist,
-		ccplist,
-		sqls);
+		tids, cpdlist, ccplist, sqls);
     TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (disease2network)", tpoll,
 	out,response,(servletname+"_progress_win"));
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
@@ -191,7 +161,7 @@ public class webapp_utils
         String prefix,
         String scratchdir,
 	ArrayList<String> errors)
-        throws SQLException,IOException
+        throws SQLException, IOException
   {
     int n_max_targets=100;
     try { n_max_targets=Integer.parseInt(params.getVal("n_max_targets")); }

@@ -42,7 +42,7 @@ public class carlsbadone_servlet extends HttpServlet
   private static Integer N_MAX=null;	// configured in web.xml
   private static Integer N_MAX_TARGETS=null;	// default configured in web.xml
   private static String DBHOST=null;    // configured in web.xml
-  private static String DBID=null;      // configured in web.xml
+  private static String DBNAME=null;      // configured in web.xml
   private static String DBSCHEMA=null;  // configured in web.xml
   private static Integer DBPORT=null;   // configured in web.xml
   private static String DBUSR=null;      // configured in web.xml
@@ -80,8 +80,8 @@ public class carlsbadone_servlet extends HttpServlet
   private ArrayList<String> errors=null;
 
   /////////////////////////////////////////////////////////////////////////////
-  public void doPost(HttpServletRequest request,HttpServletResponse response)
-      throws IOException,ServletException
+  public void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws IOException, ServletException
   {
     SERVERNAME=request.getServerName();
     if (SERVERNAME.equals("localhost")) SERVERNAME=InetAddress.getLocalHost().getHostAddress();
@@ -96,17 +96,17 @@ public class carlsbadone_servlet extends HttpServlet
       REMOTEHOST=request.getRemoteAddr(); // client (may be proxy)
     }
     REMOTEAGENT=request.getHeader("User-Agent");
-    ResourceBundle rb=ResourceBundle.getBundle("LocalStrings",request.getLocale());
+    ResourceBundle rb=ResourceBundle.getBundle("LocalStrings", request.getLocale());
 
     MultipartRequest mrequest=null;
     if (request.getMethod().equalsIgnoreCase("POST"))
     {
-      try { mrequest = new MultipartRequest(request,UPLOADDIR,10*1024*1024,"ISO-8859-1",new DefaultFileRenamePolicy()); }
-      catch (IOException e) { this.getServletContext().log("not a valid MultipartRequest",e); }
+      try { mrequest = new MultipartRequest(request, UPLOADDIR, 10*1024*1024, "ISO-8859-1", new DefaultFileRenamePolicy()); }
+      catch (IOException e) { this.getServletContext().log("not a valid MultipartRequest", e); }
     }
 
     // main logic:
-    try { DBCON = new DBCon("postgres", DBHOST, DBPORT, DBID, DBUSR, DBPW); }
+    try { DBCON = new DBCon("postgres", DBHOST, DBPORT, DBNAME, DBUSR, DBPW); }
     catch (Exception e) {
       CONTEXT.log("ERROR: PostgreSQL connection failed.",e);
       throw new ServletException("ERROR: PostgreSQL connection failed.",e);
@@ -142,7 +142,7 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
-        out.println(FormHtm(mrequest,response,params,params.getVal("formmode")));
+        out.println(FormHtm(mrequest, response, params, params.getVal("formmode")));
         out.flush();
         response.flushBuffer();
         java.util.Date t_0 = new java.util.Date();
@@ -212,92 +212,58 @@ public class carlsbadone_servlet extends HttpServlet
 
           if (params.getVal("formmode").equals("disease"))
           {
+            query=params.getVal("diseasename");
             subnet_counts=webapp_utils.Disease2Network_LaunchThread(
 		DBHOST, DBPORT, params.getVal("dbid"), DBUSR, DBPW,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_full_path,
-		fout_cpd_path,
-		kid,
-		scaf_min,
-		APPNAME+" [disease]: "+params.getVal("subnet_title"),
-		SERVLETNAME,
-		response,
-		out,
+		fout_rgt_path, fout_rgtp_path, fout_full_path, fout_cpd_path,
+		kid, scaf_min,
+		APPNAME+" ["+params.getVal("formmode")+"]: "+params.getVal("subnet_title"),
+		SERVLETNAME, response, out,
 		n_max_a,n_max_c,
-		tids,	//return val
-		cpdlist,	//return val
-		ccplist,	//return val
-		sqls,	//return val
-		err_sb	//return val
+		tids, cpdlist, ccplist, sqls, err_sb	//return vals
 		);
-            query=params.getVal("diseasename");
           }
           else if (params.getVal("formmode").equals("drug"))
           {
+            query=params.getVal("drugname");
             subnet_counts=webapp_utils.Compound2Network_LaunchThread(
 		DBHOST, DBPORT, params.getVal("dbid"), DBUSR, DBPW,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_full_path,
-		fout_cpd_path,
-		cid,
-		scaf_min,
-		APPNAME+" [drug]: "+params.getVal("subnet_title"),
-		SERVLETNAME,
-		response,
-		out,
+		fout_rgt_path, fout_rgtp_path, fout_full_path, fout_cpd_path,
+		cid, scaf_min,
+		APPNAME+" ["+params.getVal("formmode")+"]: "+params.getVal("subnet_title"),
+		SERVLETNAME, response, out,
 		n_max_a, n_max_c,
-		tids,	//return val
-		cpdlist,	//return val
-		ccplist,	//return val
-		sqls,	//return val
-		err_sb	//return val
+		tids, cpdlist, ccplist, sqls, err_sb	//return vals
 		);
-            query=params.getVal("drugname");
           }
           else if (params.getVal("formmode").equals("target"))
           {
-            subnet_counts=webapp_utils.Target2Network_LaunchThread(
-		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_full_path,
-		fout_cpd_path,
-		tid,
-		scaf_min,
-		APPNAME+" [target]: "+params.getVal("subnet_title"),
-		SERVLETNAME,
-		response,
-		out,
-		n_max_a,n_max_c,
-		cpdlist,	//return val
-		ccplist,	//return val
-		sqls,	//return val
-		err_sb	//return val
-		);
             if (tid!=null) tids.add(tid);
             query=params.getVal("tname");
+            subnet_counts=webapp_utils.Target2Network_LaunchThread(
+		DBHOST, DBPORT, params.getVal("dbid"), DBUSR, DBPW,
+		fout_rgt_path, fout_rgtp_path, fout_full_path, fout_cpd_path,
+		tid, scaf_min,
+		APPNAME+" ["+params.getVal("formmode")+"]: "+params.getVal("subnet_title"),
+		SERVLETNAME, response, out,
+		n_max_a,n_max_c,
+		cpdlist, ccplist, sqls, err_sb	//return vals
+		);
           }
         }
         catch (SQLException e) { outputs.add("PostgreSQL error: "+e.getMessage()); }
-        catch (Exception e) { outputs.add("Error: "+e.getMessage()); }
+        catch (Exception e) { outputs.add("ERROR: "+e.getMessage()); }
+
         if (err_sb.length()>0) { outputs.add("ERROR: (err_sb): "+err_sb.toString()); }
         String subnet_results_htm="";
         if (subnet_counts!=null)
         {
           subnet_results_htm = 
-		webapp_utils.SubnetResultsHtm(
-		subnet_counts,
-		fout_rgt_path,
-		fout_rgtp_path,
-		fout_full_path,
+		webapp_utils.SubnetResultsHtm(subnet_counts,
+		fout_rgt_path, fout_rgtp_path, fout_full_path,
 		APPNAME+" ["+params.getVal("formmode")+"]:"+params.getVal("subnet_title"),
-		response,
-		CONTEXTPATH,
-		SERVLETNAME,
-		"/"+PROXY_PREFIX+CONTEXT.getContextPath()+"/"+CYVIEW,
-		PROXY_PREFIX);
+		response, CONTEXTPATH, SERVLETNAME,
+		"/"+PROXY_PREFIX+CONTEXT.getContextPath()+"/"+CYVIEW, PROXY_PREFIX);
           PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
           out_log.printf("%s\t%s\t%s\t%d\t%d\t%d\n",DATESTR,REMOTEHOST,params.getVal("formmode"),subnet_counts.get("n_node_tgt"),subnet_counts.get("n_node_cpd"),0);
           out_log.close();
@@ -316,13 +282,11 @@ public class carlsbadone_servlet extends HttpServlet
         // Save tgtlist in cache, using PREFIX as unique etag:
         TargetList tgtlist=TARGETLIST.selectByIDs(new HashSet<Integer>(tids));
         //tid!=null if target-query; cid!=null if drug-query; kid!=null if disease-query
-        webapp_utils.FlagTargetsEmpirical(tgtlist,DRUGLIST,tid,cid,DISEASELIST,kid);
-        TGTLISTCACHE.put(PREFIX,tgtlist);
+        webapp_utils.FlagTargetsEmpirical(tgtlist, DRUGLIST, tid, cid, DISEASELIST, kid);
+        TGTLISTCACHE.put(PREFIX, tgtlist);
 
-        webapp_utils.FlagCompoundsEmpirical(cpdlist,TARGETLIST,DISEASELIST,kid); //kid!=null if disease-query
-        webapp_utils.FlagCompoundsEmpirical(
-		cpdlist,
-		tgtlist, //hitlist
+        webapp_utils.FlagCompoundsEmpirical(cpdlist, TARGETLIST, DISEASELIST, kid); //kid!=null if disease-query
+        webapp_utils.FlagCompoundsEmpirical(cpdlist, tgtlist, //hitlist
 		tid, //tid!=null if target-query
 		cid); //cid!=null if drug-query
 
@@ -364,34 +328,19 @@ public class carlsbadone_servlet extends HttpServlet
         outputs.add("<H2>Knowledge graph:</H2>\n"+subnet_results_htm);
 
         // Targets CSV download button:
-        String tgt_csv_bhtm=webapp_utils.TargetCSVButtonHtm(
-		TARGETLIST,
-		tids,
-		mrequest,
-		response,
-		SERVLETNAME,
-		PREFIX,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_targets.csv").replaceAll(" ","_")),
-		SCRATCHDIR);
+        String tgt_csv_bhtm=webapp_utils.TargetCSVButtonHtm(TARGETLIST, tids,
+		mrequest, response, SERVLETNAME, PREFIX,
+		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_targets.csv").replaceAll(" ", "_")), SCRATCHDIR);
 
         // Compounds CSV download button:
-        String cpd_csv_bhtm=webapp_utils.CompoundCSVButtonHtm(
-		cpdlist,
-		mrequest,
-		response,
-		SERVLETNAME,
-		PREFIX,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_cpds.csv").replaceAll(" ","_")),
-		SCRATCHDIR);
+        String cpd_csv_bhtm=webapp_utils.CompoundCSVButtonHtm(cpdlist,
+		mrequest, response, SERVLETNAME, PREFIX,
+		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_cpds.csv").replaceAll(" ", "_")), SCRATCHDIR);
 
         // Compounds SDF download button:
-        String cpd_sdf_bhtm=webapp_utils.CompoundSDFButtonHtm(
-		fout_cpd_path,
-		response,
-		CONTEXTPATH,
-		params,
-		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_cpds.sdf").replaceAll(" ","_")),
-		SERVLETNAME);
+        String cpd_sdf_bhtm=webapp_utils.CompoundSDFButtonHtm(fout_cpd_path,
+		response, CONTEXTPATH, params,
+		((SERVLETNAME+"_"+params.getVal("subnet_title")+"_cpds.sdf").replaceAll(" ", "_")), SERVLETNAME);
 
         //CYJS download buttons:
         String bhtm_cyjs_rgt=webapp_utils.CYJSDownloadButtonHtm(fout_rgt_path, ((SERVLETNAME+"_"+params.getVal("subnet_title")+"_rgt.cyjs").replaceAll(" ","_")), response, SERVLETNAME);
@@ -603,8 +552,8 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
-        if (REMOTEAGENT!=null && (REMOTEAGENT.contains("Explorer")||REMOTEAGENT.contains("MSIE")))
-          out.println("<CENTER><H2>Sorry, "+APPNAME+" NOT compatible with Internet Explorer. Limited functionality may be available.</H2></CENTER><HR>");
+//        if (REMOTEAGENT!=null && (REMOTEAGENT.contains("Explorer")||REMOTEAGENT.contains("MSIE")))
+//          out.println("<CENTER><H2>Sorry, "+APPNAME+" NOT compatible with Internet Explorer. Limited functionality may be available.</H2></CENTER><HR>");
         out.println(FormHtm(mrequest,response,params,request.getParameter("formmode")));
         out.println("<SCRIPT>go_init(window.document.mainform,false)</SCRIPT>");
         out.println(HtmUtils.FooterHtm(errors,true));
@@ -737,9 +686,9 @@ public class carlsbadone_servlet extends HttpServlet
       return false;
     }
     try {
-      errors.add("PostgreSQL connection ok ("+DBHOST+":"+DBPORT+"/"+DBID+").");
+      errors.add("PostgreSQL connection ok ("+DBHOST+":"+DBPORT+"/"+DBNAME+").");
       errors.add(DBCON.serverStatusTxt());
-      errors.add("<PRE>database: "+DBID+"\n"+carlsbad_utils.DBDescribeTxt(DBCON)+"</PRE>");
+      errors.add("<PRE>database: "+DBNAME+"\n"+carlsbad_utils.DBDescribeTxt(DBCON)+"</PRE>");
     }
     catch (Exception e)
     {
@@ -770,8 +719,6 @@ public class carlsbadone_servlet extends HttpServlet
     if (DEBUG)
     {
       errors.add(CONTEXT.getServerInfo()+" [API:"+CONTEXT.getMajorVersion()+"."+CONTEXT.getMinorVersion()+"]");
-      //try { errors.add("Built with Cytoscape "+(new CytoscapeVersion().getFullVersion())); }
-      //catch (Exception e) {errors.add(e.getMessage());}
 
       //errors.add("DEBUG: user-agent: "+REMOTEAGENT);
       //errors.add("DEBUG: cpdlists remaining in cache: "+CPDLISTCACHE.size());
@@ -842,11 +789,6 @@ public class carlsbadone_servlet extends HttpServlet
     else if (formmode.equals("disease")) formmode_disease="CHECKED";
     else if (formmode.equals("target")) formmode_target="CHECKED";
     else formmode_disease="CHECKED";
-
-    //String dbidmenu="";
-    //for (String dbid : dbids)
-    //  dbidmenu+=("<INPUT TYPE=RADIO NAME=\"dbid\" VALUE=\""+dbid+"\">"+dbid+"");
-    //dbidmenu=dbidmenu.replaceFirst("\""+params.getVal("dbid")+"\">","\""+params.getVal("dbid")+"\" CHECKED>");
 
     String imghtm=("<IMG BORDER=0 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/BatAlone_48x36.png\" HEIGHT=28>");
     String tiphtm=("CARLSBAD Project, UNM Translational Informatics Division");
@@ -1035,7 +977,7 @@ public class carlsbadone_servlet extends HttpServlet
 "{\n"+
 "  var i;\n"+
 "  if (changemode) return;\n"+
-"  form.dbid.value='"+DBID+"';\n"+
+"  form.dbid.value='"+DBNAME+"';\n"+
 "  form.scaf_min.value='0.2';\n"+
 "}\n"+
 "function checkform(form,formmode)\n"+
@@ -1360,9 +1302,9 @@ public class carlsbadone_servlet extends HttpServlet
     DBHOST=conf.getInitParameter("DBHOST");
     if (DBHOST==null)
       throw new ServletException("Please supply DBHOST parameter");
-    DBID=conf.getInitParameter("DBID");
-    if (DBID==null)
-      throw new ServletException("Please supply DBID parameter");
+    DBNAME=conf.getInitParameter("DBNAME");
+    if (DBNAME==null)
+      throw new ServletException("Please supply DBNAME parameter");
     DBSCHEMA=conf.getInitParameter("DBSCHEMA");
     if (DBSCHEMA==null)
       throw new ServletException("Please supply DBSCHEMA parameter");
@@ -1384,7 +1326,7 @@ public class carlsbadone_servlet extends HttpServlet
 
     // This connection only used for deployment and one-time initialization of lists.
     DBCon dbcon=null;
-    try { dbcon = new DBCon("postgres",DBHOST,DBPORT,DBID,DBUSR,DBPW); }
+    try { dbcon = new DBCon("postgres", DBHOST, DBPORT, DBNAME, DBUSR, DBPW); }
     catch (Exception e) {
       CONTEXT.log("ERROR: PostgreSQL connection failed.",e);
       throw new ServletException("ERROR: PostgreSQL connection failed.",e);
@@ -1458,10 +1400,10 @@ public class carlsbadone_servlet extends HttpServlet
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  public void doGet(HttpServletRequest request,HttpServletResponse response)
-      throws IOException,ServletException
+  public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws IOException, ServletException
   {
-    doPost(request,response);
+    doPost(request, response);
   }
   /////////////////////////////////////////////////////////////////////////////
   public String getServletInfo()

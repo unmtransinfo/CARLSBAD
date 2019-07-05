@@ -22,11 +22,6 @@ import edu.unm.health.biocomp.util.db.*; //DBCon
 */
 public class TargetList extends HashMap<Integer,Target>
 {
-  private static final String DBHOST="habanero.health.unm.edu";
-  private static final String DBNAME="carlsbad";
-  private static final String DBUSR="dbc";
-  private static final String DBPW="chem!nfo";
-
   /**	For fast lookup, using Target nst (name:species:type).
 	(Reminder: This property must not be static!)
   */
@@ -102,17 +97,11 @@ public class TargetList extends HashMap<Integer,Target>
     return names.size();
   }
   /////////////////////////////////////////////////////////////////////////////
-  public boolean loadAll()
-    throws IOException,SQLException
-  {
-    return loadAll(DBHOST,DBNAME,DBUSR,DBPW);
-  }
-  /////////////////////////////////////////////////////////////////////////////
   public boolean loadAll(String dbhost,String dbname,String dbusr,String dbpw)
-    throws IOException,SQLException
+    throws IOException, SQLException
   {
     DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",dbhost,5432,dbname,dbusr,dbpw); }
+    try { dbcon = new DBCon("postgres", dbhost, 5432, dbname, dbusr, dbpw); }
     catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
     catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
     if (dbcon==null) return false;
@@ -120,7 +109,7 @@ public class TargetList extends HashMap<Integer,Target>
   }
   /////////////////////////////////////////////////////////////////////////////
   public boolean loadAll(DBCon dbcon)
-    throws IOException,SQLException
+    throws IOException, SQLException
   {
     if (dbcon==null) return false;
 
@@ -156,7 +145,9 @@ public class TargetList extends HashMap<Integer,Target>
       {
         String key = name+":"+species+":"+type;
         if (this.nst2id.containsKey(key) && !this.nst2id.get(key).equals(tid))
-          System.err.println("DEBUG: TID="+tid+"; nst: \""+key+"\" collision with TID: "+this.nst2id.get(key));
+        {
+          //System.err.println("DEBUG: TID="+tid+"; nst: \""+key+"\" collision with TID: "+this.nst2id.get(key));
+        }
         else
           this.nst2id.put(key,tid);
       }
@@ -263,7 +254,7 @@ public class TargetList extends HashMap<Integer,Target>
   {
     java.util.Date t_0 = new java.util.Date();
     TargetList tlist = new TargetList();
-    tlist.loadAll();
+    tlist.loadAll("localhost", "carlsbad", "batman", "foobar");
     for (int tid: tlist.keySet())
     {
       Target tgt = tlist.get(tid);

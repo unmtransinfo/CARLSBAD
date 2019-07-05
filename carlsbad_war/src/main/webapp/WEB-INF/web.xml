@@ -18,7 +18,7 @@
       <param-value>100</param-value> </init-param>
     <init-param> <param-name>DBHOST</param-name>
       <param-value>localhost</param-value> </init-param>
-    <init-param> <param-name>DBID</param-name>
+    <init-param> <param-name>DBNAME</param-name>
       <param-value>carlsbad</param-value> </init-param>
     <init-param> <param-name>DBSCHEMA</param-name>
       <param-value>public</param-value> </init-param>

@@ -277,22 +277,15 @@ public class carlsbadone_utils
 	@param n_max_c  max number of compounds
 	@param sqls     return param: SQLs used
   */
-  public static HashMap<String,Integer> Compound2Network(
-	DBCon dbcon,
-	File fout_rgt,
-	File fout_rgtp,
-	File fout,
-	File fout_cpd,
-	Integer cid_query,
-	Float scaf_min,
+  public static HashMap<String,Integer> Compound2Network(DBCon dbcon,
+	File fout_rgt, File fout_rgtp, File fout, File fout_cpd,
+	Integer cid_query, Float scaf_min,
 	String title,
 	Integer n_max_a,Integer n_max_c,
-	ArrayList<Integer> tids,	//return value
-	CompoundList cpdlist,	//return value
-	CCPList ccplist,	//return value
-	ArrayList<String> sqls)	//return value
+	ArrayList<Integer> tids, CompoundList cpdlist, CCPList ccplist, ArrayList<String> sqls)	//return value
 	throws Exception
   {
+    System.err.println("DEBUG: (Compound2Network)...");
     Boolean human_filter=true;
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
     PrintWriter fout_writer = (fout!=null) ? (new PrintWriter(new BufferedWriter(new FileWriter(fout, false)))) : null;
@@ -456,12 +449,20 @@ public class carlsbadone_utils
 
     tids.addAll(tgtdata.keySet());
 
+    System.err.println("DEBUG: (Compound2Network) done with SQL/db...");
+
     HashMap<String, Object> elements = new HashMap<String, Object>();
+    ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
+    ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
+    elements.put("nodes", nodes);
+    elements.put("edges", edges);
+
     ObjectMapper mapper = new ObjectMapper();
     JsonFactory jsf = mapper.getFactory();
 
     if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
+      System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements...");
       carlsbad_utils.WriteReducedGraph2Elements(tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -481,7 +482,7 @@ public class carlsbadone_utils
     }
     if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
-      elements.clear();
+      System.err.println("DEBUG: (Compound2Network) rgtp-WriteReducedGraph2Elements...");
       carlsbad_utils.WriteReducedGraph2Elements(tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -501,11 +502,7 @@ public class carlsbadone_utils
     }
     if (fout!=null) // Write full graph to CYJS.  
     {
-      ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
-      ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
-      elements.put("nodes", nodes);
-      elements.put("edges", edges);
-
+      System.err.println("DEBUG: (Compound2Network) full-*2Elements...");
       carlsbad_utils.WriteTargets2Elements(tgtdata, t2c_global, tgt_tgt_ids, counts, elements);
       carlsbad_utils.WriteCompounds2Elements(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, elements);
       HashSet<Integer> scafids_written = new HashSet<Integer>();
@@ -521,7 +518,7 @@ public class carlsbadone_utils
     }
 
     // Write cpddata compounds to SDF for display and/or download.
-    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist,fout_cpd);
+    if (fout_cpd!=null) carlsbad_utils.WriteCompounds2SDF(cpdlist, fout_cpd);
 
     return counts;
   }
@@ -588,7 +585,7 @@ public class carlsbadone_utils
     HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
     ArrayList<Integer> tids_disease  = carlsbad_utils.ListDiseaseTargets(dbcon,kid_query);
     tids.addAll(tids_disease);
-    System.err.println("DEBUG: (Disease2Network) tids_disease: "+tids_disease.toString());
+    //System.err.println("DEBUG: (Disease2Network) tids_disease: "+tids_disease.toString());
     if (human_filter) wheres.add("target.species='human'");
     String sql=carlsbad_utils.TargetIDs2SQL(tids,wheres); //wheres needed later...
     ResultSet rset=dbcon.executeSql(sql);
@@ -668,7 +665,7 @@ public class carlsbadone_utils
     if (cid_global.size()>0)
     {
       ArrayList<Integer> cid_other = new ArrayList<Integer>(cid_global);
-      System.err.println("DEBUG: (Disease2Network) CompoundIDs2SQL, cid_other.size()="+cid_other.size());
+      //System.err.println("DEBUG: (Disease2Network) CompoundIDs2SQL, cid_other.size()="+cid_other.size());
       sql=carlsbad_utils.CompoundIDs2SQL(cid_other,wheres);
       sqls.add(sql);
       rset=dbcon.executeSql(sql);
