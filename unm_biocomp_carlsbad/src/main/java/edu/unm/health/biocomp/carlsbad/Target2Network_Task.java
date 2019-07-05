@@ -29,7 +29,6 @@ public class Target2Network_Task
   private Integer n_max_a;
   private Integer tid;
   private Float scaf_min;
-  private Boolean act_filter;
   private Integer n_max_c;
   private CompoundList cpdlist;
   private CCPList ccplist;
@@ -50,7 +49,6 @@ public class Target2Network_Task
 	String _fout_cpd_path,
 	Integer _tid,
 	Float _scaf_min,
-	Boolean _act_filter,
 	String _title,
 	Integer _n_max_a,
 	Integer _n_max_c,
@@ -69,7 +67,6 @@ public class Target2Network_Task
     this.fout_cpd_path=_fout_cpd_path;
     this.tid=_tid;
     this.scaf_min=_scaf_min;
-    this.act_filter=_act_filter;
     this.taskstatus=new Status(this);
     this.n_total=0;
     this.n_done=0;
@@ -110,7 +107,6 @@ public class Target2Network_Task
 	fout_cpd,
 	this.tid,
 	this.scaf_min,
-	this.act_filter,
 	this.title,
 	this.n_max_a,
 	this.n_max_c,

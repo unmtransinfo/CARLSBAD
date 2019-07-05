@@ -66,7 +66,7 @@ function mod_nodeSize(form) {
     cy.style().selector('node[class = "compound"]').style('width', 25).style('height', 25).update();
     cy.style().selector('node[class = "scaffold"]').style('width', 35).style('height', 35).update();
     cy.style().selector('node[class = "mces"]').style('width', 35).style('height', 35).update();
-    cy.style().selector('node[class = "disease"]').style('width', 85).style('height', 35).update();
+    cy.style().selector('node[class = "disease"]').style('width', 95).style('height', 35).update();
   }
   else {
     cy.style().selector('node').style('width', 25).style('height', 25).update();
@@ -80,7 +80,7 @@ function mod_nodeColor(form) {
     cy.style().selector('node[class = "compound"]').style('background-color', '#88CC88').update();
     cy.style().selector('node[class = "scaffold"]').style('background-color', '#FFAF00').update();
     cy.style().selector('node[class = "mces"]').style('background-color', '#FFDD00').update();
-    cy.style().selector('node[class = "disease"]').style('background-color', 'cyan').update();
+    cy.style().selector('node[class = "disease"]').style('background-color', '#DD8888').update();
   }
   else {
     cy.style().selector('node').style('background-color', '#444444').update();

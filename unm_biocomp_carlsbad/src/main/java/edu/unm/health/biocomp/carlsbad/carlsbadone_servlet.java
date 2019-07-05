@@ -156,23 +156,19 @@ public class carlsbadone_servlet extends HttpServlet
 
         if (params.getVal("formmode").equals("disease"))
         {
-          //errors.add("DEBUG: kid=\""+kid+"\"; qbuff=\""+params.getVal("qbuff")+"\"");
-          //errors.add("DEBUG: DISEASELIST.name2ID(\""+params.getVal("qbuff")+"\")=\""+DISEASELIST.name2ID(params.getVal("qbuff"))+"\"");
           if (kid==null || kid.isEmpty() || kid.equals("0")) kid=DISEASELIST.name2ID(params.getVal("qbuff"));
           if (kid==null)
             outputs.add("ERROR: Aaack!  kid==null.  This should not happen!");
           else
-            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+DiseaseQueryHtm(kid,response,SERVLETNAME)+"</BLOCKQUOTE>");
+            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+DiseaseQueryHtm(kid, response, SERVLETNAME)+"</BLOCKQUOTE>");
         }
         else if (params.getVal("formmode").equals("target"))
         {
           if (tid==null || tid==0) tid=TARGETLIST.nst2ID(params.getVal("qbuff"));
-          //errors.add("DEBUG: tid=\""+tid+"\"; qbuff=\""+params.getVal("qbuff")+"\"");
-          //errors.add("DEBUG: TARGETLIST.nst2ID(\""+params.getVal("qbuff")+"\")=\""+TARGETLIST.nst2ID(params.getVal("qbuff"))+"\"");
           if (tid==null)
             outputs.add("ERROR: Aaack!  tid==null.  This should not happen!");
           else
-            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+TargetQueryHtm(tid,response,SERVLETNAME)+"</BLOCKQUOTE>");
+            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+TargetQueryHtm(tid, response, SERVLETNAME)+"</BLOCKQUOTE>");
         }
         else if (params.getVal("formmode").equals("drug"))
         {
@@ -181,7 +177,7 @@ public class carlsbadone_servlet extends HttpServlet
           if (cid==null)
             outputs.add("ERROR: Aaack!  cid==null.  This should not happen!");
           else
-            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+CompoundQueryHtm(cid,DRUGLIST,DBCON,mol2img_servleturl,response,SERVLETNAME)+"</BLOCKQUOTE>");
+            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+CompoundQueryHtm(cid, DRUGLIST, DBCON, mol2img_servleturl, response, SERVLETNAME)+"</BLOCKQUOTE>");
         }
         else
         {
@@ -224,7 +220,6 @@ public class carlsbadone_servlet extends HttpServlet
 		fout_cpd_path,
 		kid,
 		scaf_min,
-		params.isChecked("act_filter"),
 		APPNAME+" [disease]: "+params.getVal("subnet_title"),
 		SERVLETNAME,
 		response,
@@ -241,19 +236,18 @@ public class carlsbadone_servlet extends HttpServlet
           else if (params.getVal("formmode").equals("drug"))
           {
             subnet_counts=webapp_utils.Compound2Network_LaunchThread(
-		DBHOST,DBPORT,params.getVal("dbid"),DBUSR,DBPW,
+		DBHOST, DBPORT, params.getVal("dbid"), DBUSR, DBPW,
 		fout_rgt_path,
 		fout_rgtp_path,
 		fout_full_path,
 		fout_cpd_path,
 		cid,
 		scaf_min,
-		params.isChecked("act_filter"),
 		APPNAME+" [drug]: "+params.getVal("subnet_title"),
 		SERVLETNAME,
 		response,
 		out,
-		n_max_a,n_max_c,
+		n_max_a, n_max_c,
 		tids,	//return val
 		cpdlist,	//return val
 		ccplist,	//return val
@@ -272,7 +266,6 @@ public class carlsbadone_servlet extends HttpServlet
 		fout_cpd_path,
 		tid,
 		scaf_min,
-		params.isChecked("act_filter"),
 		APPNAME+" [target]: "+params.getVal("subnet_title"),
 		SERVLETNAME,
 		response,
@@ -289,7 +282,7 @@ public class carlsbadone_servlet extends HttpServlet
         }
         catch (SQLException e) { outputs.add("PostgreSQL error: "+e.getMessage()); }
         catch (Exception e) { outputs.add("Error: "+e.getMessage()); }
-        if (err_sb.length()>0) { outputs.add(err_sb.toString()); }
+        if (err_sb.length()>0) { outputs.add("ERROR: (err_sb): "+err_sb.toString()); }
         String subnet_results_htm="";
         if (subnet_counts!=null)
         {
@@ -953,23 +946,10 @@ public class carlsbadone_servlet extends HttpServlet
       +"<TABLE WIDTH=\"100%\">\n"
       +"<TR><TD ALIGN=RIGHT>scaffold weight [0-1]:</TD>\n"
       +"<TD><INPUT TYPE=\"TEXT\" NAME=\"scaf_min\" SIZE=3 VALUE=\""+params.getVal("scaf_min")+"\"></TD></TR>\n"
-//      +"activity woebegone filter:\n"
-//      +"<INPUT TYPE=CHECKBOX NAME=\"activ_filter\" VALUE=\"CHECKED\" "+params.getVal("activ_filter")+"><I>[NOT YET IMPL]</I><BR>\n"
-//      +"compound promiscuity filter:\n"
-//      +"<INPUT TYPE=CHECKBOX NAME=\"cprom_filter\" VALUE=\"CHECKED\" "+params.getVal("cprom_filter")+"><I>[NOT YET IMPL]</I><BR>\n"
-//      +"target promiscuity filter:\n"
-//      +"<INPUT TYPE=CHECKBOX NAME=\"tprom_filter\" VALUE=\"CHECKED\" "+params.getVal("tprom_filter")+"><I>[NOT YET IMPL]</I><BR>\n"
-//      +"<INPUT TYPE=CHECKBOX NAME=\"human_filter\" VALUE=\"CHECKED\" "+params.getVal("human_filter")+">human targets only<I>[NOT YET IMPL]</I><BR>\n"
       +"</TR></TABLE>\n"
       +"<P></P><P></P><P></P>\n" //kludge to expand fieldset box
       +"</FIELDSET></TD>\n"
       );
-
-    //htm+=(
-    //"<TD VALIGN=TOP>\n"
-    //+"<FIELDSET STYLE=\"HEIGHT:100%\"><LEGEND><B>misc:</B></LEGEND>\n"
-    //+"<INPUT TYPE=CHECKBOX NAME=\"verbose\" VALUE=\"CHECKED\" "+params.getVal("verbose")+">verbose<BR>\n"
-    //+"</FIELDSET></TD></TR>\n"
 
     htm+=(
     "</TR>\n"
@@ -983,7 +963,7 @@ public class carlsbadone_servlet extends HttpServlet
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
-  /*	TARGETNSTS associates TIDs with name:species:type keys.
+  /*	TARGETNSTS associates TIDs with <NAME>:<SPECIES>:<TYPE> keys.
   */
   private static String JavaScript() throws IOException
   {
@@ -1057,11 +1037,6 @@ public class carlsbadone_servlet extends HttpServlet
 "  if (changemode) return;\n"+
 "  form.dbid.value='"+DBID+"';\n"+
 "  form.scaf_min.value='0.2';\n"+
-//"  form.act_filter.checked=false;\n"+
-//"  form.tprom_filter.checked=false;\n"+
-//"  form.cprom_filter.checked=false;\n"+
-//"  form.human_filter.checked=true;\n"+
-//"  form.verbose.checked=false;\n"+
 "}\n"+
 "function checkform(form,formmode)\n"+
 "{\n"+

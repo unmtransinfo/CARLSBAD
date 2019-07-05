@@ -44,10 +44,25 @@ or
 mvn --projects carlsbad_war tomcat7:redeploy
 ```
 
+## Db configuration
+
+```
+sudo -u postgres createdb carlsbad
+sudo -u postgres psql -d carlsbad -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'"
+CREATE ROLE
+sudo -u postgres psql -d carlsbad -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO batman"
+ALTER DEFAULT PRIVILEGES
+sudo -u postgres psql -d carlsbad -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO batman"
+ALTER DEFAULT PRIVILEGES
+sudo -u postgres psql -d carlsbad -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO batman"
+gunzip -c carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
+```
+
 ## Usage (command-line)
 
 ```
-mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -tid 17 -vv -o tid_17.cyjs"
+mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -cid 5442 -v -o cid_5442.cyjs"
+mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -tid 17 -v -o tid_17.cyjs"
 ```
 
 ## Etc.

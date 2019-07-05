@@ -30,7 +30,6 @@ public class Disease2Network_Task
   private Integer n_max_a;
   private String kid;
   private Float scaf_min;
-  private Boolean act_filter;
   private Integer n_max_c;
   private ArrayList<Integer> tids;
   private CompoundList cpdlist;
@@ -52,7 +51,6 @@ public class Disease2Network_Task
 	String _fout_cpd_path,
 	String _kid,
 	Float _scaf_min,
-	Boolean _act_filter,
 	String _title,
 	Integer _n_max_a,
 	Integer _n_max_c,
@@ -72,7 +70,6 @@ public class Disease2Network_Task
     this.fout_cpd_path=_fout_cpd_path;
     this.kid=_kid;
     this.scaf_min=_scaf_min;
-    this.act_filter=_act_filter;
     this.title=_title;
     this.n_max_a=_n_max_a;
     this.n_max_c=_n_max_c;
@@ -114,7 +111,6 @@ public class Disease2Network_Task
 	fout_cpd,
 	this.kid,
 	this.scaf_min,
-	this.act_filter,
 	this.title,
 	this.n_max_a,
 	this.n_max_c,

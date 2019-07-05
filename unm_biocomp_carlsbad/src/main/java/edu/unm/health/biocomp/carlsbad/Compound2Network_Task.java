@@ -29,7 +29,6 @@ public class Compound2Network_Task
   private Integer n_max_a;
   private Integer cid;
   private Float scaf_min;
-  private Boolean act_filter;
   private Integer n_max_c;
   private ArrayList<Integer> tids;
   private CompoundList cpdlist;
@@ -51,7 +50,6 @@ public class Compound2Network_Task
 	String _fout_cpd_path,
 	Integer _cid,
 	Float _scaf_min,
-	Boolean _act_filter,
 	String _title,
 	Integer _n_max_a,
 	Integer _n_max_c,
@@ -71,7 +69,6 @@ public class Compound2Network_Task
     this.fout_cpd_path=_fout_cpd_path;
     this.cid=_cid;
     this.scaf_min=_scaf_min;
-    this.act_filter=_act_filter;
     this.taskstatus=new Status(this);
     this.n_total=0;
     this.n_done=0;
@@ -92,7 +89,7 @@ public class Compound2Network_Task
   public synchronized Boolean call()
   {
     try {
-      DBCon dbcon = new DBCon("postgres",this.dbhost,this.dbport,this.dbid,this.dbusr,this.dbpw);
+      DBCon dbcon = new DBCon("postgres", this.dbhost, this.dbport, this.dbid, this.dbusr, this.dbpw);
       File fout_rgt = new File(fout_path_rgt);
       fout_rgt.createNewFile();
       fout_rgt.setWritable(true, true);
@@ -113,7 +110,6 @@ public class Compound2Network_Task
 	fout_cpd,
 	this.cid,
 	this.scaf_min,
-	this.act_filter,
 	this.title,
 	this.n_max_a,
 	this.n_max_c,

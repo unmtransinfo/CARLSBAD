@@ -36,13 +36,6 @@ import edu.unm.health.biocomp.cytoscape.*;
 */
 public class carlsbad_utils
 {
-  private static String outlinecolor="#666666";
-  private static String fillcolor="#FFFFFF";
-  private static String cpd_color="#DD8888";
-  private static String drug_color="#FF0000";
-  private static String tgt_color="#00FFFF";
-  private static String scaf_color="#8888FF";
-  private static String mces_color="#8888FF";
   //private static String target_classifier_type="Uniprot Family";
   private static String target_classifier_type="ChEMBL Class";
 
@@ -691,308 +684,6 @@ public class carlsbad_utils
 	null, null, null, null, null, null, null, null, null, null,
 	null, null, null);
   }
-  /////////////////////////////////////////////////////////////////////////////
-  /**	Given a set of targets and compound query criteria, extract subnet comprised of targets,
-	compounds, scaffolds, mces, and activities.
-	NOTE: XGMML attribute types: string,real,integer,boolean,list,map,complex
-	TO DO:
-	  [x] target synonyms must be in lists, since multiple PDBs, Uniprots, etc may exist.
-	  [ ] adjustable limits on tids, cids or act_ids.
-	<br/>
-	Note that no HTML escape codes of the form &amp;foo; are permitted in the
-	XGMML file (e.g. by Cytoscape 2.8.2) and will result in a fatal  error on import.
-
-	@param dbcon	database connection
-	@param fout	XGMML output file
-	@param tids	target IDs specified
-	@param sbs_id_query	substance ID
-	@param sbs_idtype_query	substance ID type
-	@param qcpd	compound query SMILES/SMARTS
-	@param matchtype_qcpd	compound query type (sim|exa|sub)
-	@param minsim	similarity threshold
-	@param cname	compound name
-	@param matchtype_cname_sub	compound name query as substring
-	@param mw_min	min molecular weight
-	@param mw_max	max molecular weight
-	@param cids_query	compound IDs specified
-	@param scafids_query	scaffold IDs specified
-	@param mcesids_query	MCES IDs specified
-	@param neighbortargets	Should targets associated with subnet compounds also be included?
-	@param title	title of subnet
-	@param n_max_a	max number of activities
-	@param n_max_c	max number of compounds
-	@param sqls	return param: SQLs used
-  */
-  public static HashMap<String,Integer> Extract2XGMML(DBCon dbcon,File fout,
-	ArrayList<Integer> tids,
-	String sbs_id_query,String sbs_idtype_query,
-	String qcpd, String matchtype_qcpd,Float minsim,
-	String cname,boolean matchtype_cname_sub,
-	Integer mw_min,Integer mw_max,
-	ArrayList<Integer> cids_query,
-	ArrayList<Integer> scafids_query,
-	ArrayList<Integer> mcesids_query,
-	Boolean neighbortargets,
-	String title,
-	Integer n_max_a,Integer n_max_c,
-	ArrayList<String> sqls)
-	throws Exception
-  {
-    HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
-    PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    ArrayList<String> wheres = new ArrayList<String>();
-
-    if (tids.isEmpty())
-      throw new Exception("Target IDs must be specified.");
-    if (title==null || title.isEmpty()) title="CARLSBAD Target-Compound Sub-Network";
-    fout_writer.printf(cytoscape_utils.XGMML_Header(title,"#CCDDFF"));
-  
-    /// Targets:
-    String sql=TargetIDs2SQL(tids,wheres);
-    sqls.add(sql);
-    ResultSet rset=dbcon.executeSql(sql);
-    HashMap<Integer,HashMap<String,String> > tgtdata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
-    ReadTargetData(rset,tgtdata,tgt_tgt_ids);
-    HashMap<Integer,HashSet<Integer> > t2c_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
-    Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
-    WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
-
-    /// Activities and Compounds:
-    /// From this search, create CID list for subsequent search filtering.
-    sql=ActivityCompoundsSQL(sbs_id_query,sbs_idtype_query,qcpd,matchtype_qcpd,minsim,cname,matchtype_cname_sub,
-	mw_min,mw_max,cids_query,scafids_query,mcesids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-
-    /// Populating HashMaps with activity and compound data.
-    HashMap<Integer,HashMap<String,String> > actdata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,String> > cpddata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms = new HashMap<Integer,HashMap<String,Boolean> >();
-    HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids = new HashMap<Integer,HashMap<String,HashSet<String> > >();
-    ReadCompoundData(rset,actdata,cpddata,cpdsynonyms,cpd_sbs_ids);
-    HashMap<Integer,HashSet<Integer> > c2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
-    Compounds2Targets(c2t_global,dbcon,true); //Get global-degree data. (human only)
-    WriteCompounds2XGMML(cpddata,c2t_global,cpd_sbs_ids,actdata,cpdsynonyms,n_max_c,n_max_a,counts,fout_writer);
-    
-    /// Scaffolds:
-    sql=ScaffoldSQL(sbs_id_query,scafids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-    HashMap<String,HashMap<String,String> > scafdata = new HashMap<String,HashMap<String,String> >();
-    HashSet<Integer> scafids_visited = new HashSet<Integer>();
-    ReadScaffoldData(rset,cpddata,scafdata,scafids_visited);
-    HashMap<Integer,HashSet<Integer> > s2c_global = new HashMap<Integer,HashSet<Integer> >();
-    HashMap<Integer,HashSet<Integer> > s2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int scafid: scafids_visited) s2c_global.put(scafid,null);
-    for (int scafid: scafids_visited) s2t_global.put(scafid,null);
-    scafids_visited.clear();
-    Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
-    Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
-    WriteScaffolds2XGMML(scafdata,scafids_visited,s2c_global,s2t_global,counts,fout_writer);
-
-    /// MCESs:
-    sql=McesSQL(sbs_id_query,mcesids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-    HashSet<Integer> mcesids_visited = new HashSet<Integer>();
-    HashMap<String,HashMap<String,String> > mcesdata = new HashMap<String,HashMap<String,String> >();
-    ReadMcesData(rset,cpddata,mcesdata,mcesids_visited);
-    HashMap<Integer,HashSet<Integer> > m2c_global = new HashMap<Integer,HashSet<Integer> >();
-    HashMap<Integer,HashSet<Integer> > m2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int mcesid: mcesids_visited) m2c_global.put(mcesid,null);
-    for (int mcesid: mcesids_visited) m2t_global.put(mcesid,null);
-    mcesids_visited.clear();
-    Mcess2Compounds(m2c_global,dbcon);
-    Mcess2Targets(m2t_global,dbcon);
-    WriteMcess2XGMML(mcesdata,mcesids_visited,m2c_global,m2t_global,counts,fout_writer);
-
-    /// Neighbor targets (ALL targets for which subnet cpds active):
-    if (neighbortargets)
-    {
-      sql=NeighborSQL(cpddata,scafids_query,mcesids_query);
-      sqls.add(sql);
-      rset=dbcon.executeSql(sql);
-      tgtdata.clear();
-      tgt_tgt_ids.clear();
-      actdata.clear();
-      ReadNeighborData(rset,tids,tgtdata,tgt_tgt_ids,actdata);
-      t2c_global.clear();
-      for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
-      Targets2Compounds(t2c_global,dbcon); //Get global-degree data.
-      int n_node_tgt_neigh=WriteTargets2XGMML(tgtdata,t2c_global,tgt_tgt_ids,counts,fout_writer);
-      int n_edge_act_neigh=WriteActivityEdges2XGMML(actdata,null,null,n_max_a,counts,fout_writer);
-      counts.put("n_node_tgt_neigh",n_node_tgt_neigh);
-      counts.put("n_edge_act_neigh",n_edge_act_neigh);
-    }
-
-    fout_writer.printf(cytoscape_utils.XGMML_Footer());
-    fout_writer.close();
-    return counts;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  /**	Given a set of targets and compound query criteria, extract subnet comprised of targets,
-	compounds, scaffolds, mces, and activities.
-
-	@param dbcon	database connection
-	@param fout	CYJS output file
-	@param tids	target IDs specified
-	@param sbs_id_query	substance ID
-	@param sbs_idtype_query	substance ID type
-	@param qcpd	compound query SMILES/SMARTS
-	@param matchtype_qcpd	compound query type (sim|exa|sub)
-	@param minsim	similarity threshold
-	@param cname	compound name
-	@param matchtype_cname_sub	compound name query as substring
-	@param mw_min	min molecular weight
-	@param mw_max	max molecular weight
-	@param cids_query	compound IDs specified
-	@param scafids_query	scaffold IDs specified
-	@param mcesids_query	MCES IDs specified
-	@param neighbortargets	Should targets associated with subnet compounds also be included?
-	@param title	title of subnet
-	@param n_max_a	max number of activities
-	@param n_max_c	max number of compounds
-	@param sqls	return param: SQLs used
-  */
-  public static HashMap<String,Integer> Extract2CYJS(DBCon dbcon,File fout,
-	ArrayList<Integer> tids,
-	String sbs_id_query,String sbs_idtype_query,
-	String qcpd, String matchtype_qcpd,Float minsim,
-	String cname,boolean matchtype_cname_sub,
-	Integer mw_min,Integer mw_max,
-	ArrayList<Integer> cids_query,
-	ArrayList<Integer> scafids_query,
-	ArrayList<Integer> mcesids_query,
-	Boolean neighbortargets,
-	String title,
-	Integer n_max_a,Integer n_max_c,
-	ArrayList<String> sqls)
-	throws Exception
-  {
-    HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
-    PrintWriter fout_writer=new PrintWriter(new BufferedWriter(new FileWriter(fout,false))); //overwrite
-    ArrayList<String> wheres = new ArrayList<String>();
-
-    if (tids.isEmpty())
-      throw new Exception("Target IDs must be specified.");
-    if (title==null || title.isEmpty()) title="CARLSBAD Target-Compound Sub-Network";
-
-    HashMap<String,Object> root = new HashMap<String,Object>();
-    root.put("format_version", "1.0");
-    root.put("generated_by", "carlsbadone-0.0.1-SNAPSHOT");
-    root.put("target_cytoscapejs_version", "~2.1");
-    HashMap<String,Object> data = new HashMap<String,Object>();
-    data.put("name", title);
-    data.put("shared_name", title);
-    data.put("SUID", new Integer(52)); //integer
-    data.put("selected", new Boolean(true)); //boolean
-    root.put("data", data);
-
-    ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
-    ArrayList<HashMap<String, Object> > edges = new ArrayList<HashMap<String, Object> >();
-
-  
-    /// Targets:
-    String sql=TargetIDs2SQL(tids,wheres);
-    sqls.add(sql);
-    ResultSet rset=dbcon.executeSql(sql);
-    HashMap<Integer,HashMap<String,String> > tgtdata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids = new HashMap<Integer,HashMap<String,HashMap<String,Boolean> > >();
-    ReadTargetData(rset,tgtdata,tgt_tgt_ids);
-    HashMap<Integer,HashSet<Integer> > t2c_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
-    Targets2Compounds(t2c_global,dbcon); //Get global-degree data (to all compounds, not just subnet).
-    WriteTargets2CYJS(tgtdata, t2c_global, tgt_tgt_ids, counts, nodes);
-
-    /// Activities and Compounds:
-    /// From this search, create CID list for subsequent search filtering.
-    sql=ActivityCompoundsSQL(sbs_id_query,sbs_idtype_query,qcpd,matchtype_qcpd,minsim,cname,matchtype_cname_sub,
-	mw_min,mw_max,cids_query,scafids_query,mcesids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-
-    /// Populating HashMaps with activity and compound data.
-    HashMap<Integer,HashMap<String,String> > actdata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,String> > cpddata = new HashMap<Integer,HashMap<String,String> >();
-    HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms = new HashMap<Integer,HashMap<String,Boolean> >();
-    HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids = new HashMap<Integer,HashMap<String,HashSet<String> > >();
-    ReadCompoundData(rset,actdata,cpddata,cpdsynonyms,cpd_sbs_ids);
-    HashMap<Integer,HashSet<Integer> > c2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
-    Compounds2Targets(c2t_global,dbcon,true); //Get global-degree data. (human only)
-    WriteCompounds2CYJS(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, nodes, edges);
-
-    /// Scaffolds:
-    sql=ScaffoldSQL(sbs_id_query,scafids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-    HashMap<String,HashMap<String,String> > scafdata = new HashMap<String,HashMap<String,String> >();
-    HashSet<Integer> scafids_visited = new HashSet<Integer>();
-    ReadScaffoldData(rset,cpddata,scafdata,scafids_visited);
-    HashMap<Integer,HashSet<Integer> > s2c_global = new HashMap<Integer,HashSet<Integer> >();
-    HashMap<Integer,HashSet<Integer> > s2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int scafid: scafids_visited) s2c_global.put(scafid,null);
-    for (int scafid: scafids_visited) s2t_global.put(scafid,null);
-    scafids_visited.clear();
-    Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
-    Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
-    WriteScaffolds2CYJS(scafdata, scafids_visited, s2c_global, s2t_global, counts, nodes, edges);
-
-    /// MCESs:
-    sql=McesSQL(sbs_id_query,mcesids_query,wheres);
-    sqls.add(sql);
-    rset=dbcon.executeSql(sql);
-    HashSet<Integer> mcesids_visited = new HashSet<Integer>();
-    HashMap<String,HashMap<String,String> > mcesdata = new HashMap<String,HashMap<String,String> >();
-    ReadMcesData(rset,cpddata,mcesdata,mcesids_visited);
-    HashMap<Integer,HashSet<Integer> > m2c_global = new HashMap<Integer,HashSet<Integer> >();
-    HashMap<Integer,HashSet<Integer> > m2t_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int mcesid: mcesids_visited) m2c_global.put(mcesid,null);
-    for (int mcesid: mcesids_visited) m2t_global.put(mcesid,null);
-    mcesids_visited.clear();
-    Mcess2Compounds(m2c_global,dbcon);
-    Mcess2Targets(m2t_global,dbcon);
-    WriteMcess2CYJS(mcesdata, mcesids_visited, m2c_global, m2t_global, counts, nodes, edges);
-
-    /// Neighbor targets (ALL targets for which subnet cpds active):
-    if (neighbortargets)
-    {
-      sql=NeighborSQL(cpddata,scafids_query,mcesids_query);
-      sqls.add(sql);
-      rset=dbcon.executeSql(sql);
-      tgtdata.clear();
-      tgt_tgt_ids.clear();
-      actdata.clear();
-      ReadNeighborData(rset,tids,tgtdata,tgt_tgt_ids,actdata);
-      t2c_global.clear();
-      for (int tid: tgtdata.keySet()) t2c_global.put(tid,null);
-      Targets2Compounds(t2c_global,dbcon); //Get global-degree data.
-      int n_node_tgt_neigh=WriteTargets2CYJS(tgtdata, t2c_global, tgt_tgt_ids, counts, nodes);
-      int n_edge_act_neigh=WriteActivityEdges2CYJS(actdata, null, null, n_max_a, counts, edges);
-      counts.put("n_node_tgt_neigh",n_node_tgt_neigh);
-      counts.put("n_edge_act_neigh",n_edge_act_neigh);
-    }
-
-
-    HashMap<String, Object> elements = new HashMap<String, Object>();
-    elements.put("nodes", nodes);
-    elements.put("edges", edges);
-    root.put("elements", elements);
-
-    ObjectMapper mapper = new ObjectMapper();
-    JsonFactory jsf = mapper.getFactory();
-    JsonGenerator jsg = jsf.createGenerator(fout_writer);
-    jsg.useDefaultPrettyPrinter();
-    jsg.writeObject(root);
-    jsg.close();
-
-    return counts;
-  }
-
   /////////////////////////////////////////////////////////////////////////////
   public static ArrayList<Integer> TargetExternalIDs2TIDs(Collection<String> ids,String id_type,DBCon dbcon)
 	throws SQLException
@@ -2235,64 +1926,15 @@ public class carlsbad_utils
     return n;
   }
   /////////////////////////////////////////////////////////////////////////////
-  /**	Write target nodes to XGMML file.
-  */
-  public static int WriteTargets2XGMML(
+  public static int WriteTargets2Elements(
 	HashMap<Integer,HashMap<String,String> > tgtdata,
 	HashMap<Integer,HashSet<Integer> > t2c_global,
 	HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt",0);
-    if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids",0);
-    ArrayList<String> lines = new ArrayList<String>();
-    for (int tid: tgtdata.keySet())
-    {
-      lines.clear();
-      lines.add("<node id=\"T"+tid+"\" label=\"T"+tid+"\">");
-      lines.add("  <att type=\"string\" name=\"ID\" value=\"T"+tid+"\" />");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"target\" />");
-      if (tgtdata.get(tid).get("tname")!=null)
-        lines.add("  <att type=\"string\" name=\"name\" value=\""+HtmlEscape(tgtdata.get(tid).get("tname"))+"\" />");
-      if (tgtdata.get(tid).get("descr")!=null)
-        lines.add("  <att type=\"string\" name=\"descr\" value=\""+HtmlEscape(tgtdata.get(tid).get("descr"))+"\" />");
-      lines.add("  <att type=\"string\" name=\"species\" value=\""+tgtdata.get(tid).get("species")+"\" />");
-      lines.add("  <att type=\"string\" name=\"type\" value=\""+tgtdata.get(tid).get("type")+"\" />");
-      if (t2c_global.containsKey(tid)) //degree_compound (global)
-      {
-        int deg_cpd=(t2c_global.get(tid)==null)?0:t2c_global.get(tid).size();
-        lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-      }
-      lines.add("  <graphics type=\"octagon\" h=\"80.0\" w=\"80.0\" fill=\""+tgt_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-      if (tgt_tgt_ids.containsKey(tid)) 
-      {
-        for (String tgt_id_type: tgt_tgt_ids.get(tid).keySet())
-        {
-          if (tgt_tgt_ids.get(tid).get(tgt_id_type).keySet().size()==0) continue;
-          lines.add("  <att type=\"list\" name=\""+tgt_id_type+"\">");
-          for (String tgt_id: tgt_tgt_ids.get(tid).get(tgt_id_type).keySet())
-          {
-            lines.add("    <att type=\"string\" value=\""+tgt_id+"\" />");
-            counts.put("n_tgt_ext_ids",counts.get("n_tgt_ext_ids")+1);
-          }
-          lines.add("  </att>");
-        }
-      }
-      lines.add("</node>");
-      counts.put("n_node_tgt",counts.get("n_node_tgt")+1);
-      WriteLines(fout_writer,lines,"  ","\n",true);
-    }
-    return counts.get("n_node_tgt");
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static int WriteTargets2CYJS(
-	HashMap<Integer,HashMap<String,String> > tgtdata,
-	HashMap<Integer,HashSet<Integer> > t2c_global,
-	HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes)
-  {
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
+
     if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt",0);
     if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids",0);
     for (int tid: tgtdata.keySet())
@@ -2336,7 +1978,7 @@ public class carlsbad_utils
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  public static int WriteCompounds2XGMML(
+  public static int WriteCompounds2Elements(
 	HashMap<Integer,HashMap<String,String> > cpddata,
 	HashMap<Integer,HashSet<Integer> > c2t_global,
 	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
@@ -2345,121 +1987,33 @@ public class carlsbad_utils
 	int n_max_c,
 	int n_max_a,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
     if (counts.get("n_node_cpd")==null) counts.put("n_node_cpd",0);
     if (counts.get("n_edge_act")==null) counts.put("n_edge_act",0);
     if (counts.get("n_csynonyms")==null) counts.put("n_csynonyms",0);
     if (counts.get("n_cpd_ext_ids")==null) counts.put("n_cpd_ext_ids",0);
-
-    ArrayList<String> lines = new ArrayList<String>();
-
     for (int cid: cpddata.keySet())
     {
-      WriteCompoundNode2XGMML(cid,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
+      WriteCompoundNode2Elements(cid, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, elements);
       counts.put("n_node_cpd",counts.get("n_node_cpd")+1);
       if (counts.get("n_node_cpd")==n_max_c) break;
     }
-    WriteActivityEdges2XGMML(actdata,null,null,n_max_a,counts,fout_writer);
+    WriteActivityEdges2Elements(actdata, null, null, n_max_a, counts, elements);
     return counts.get("n_node_cpd");
   }
   /////////////////////////////////////////////////////////////////////////////
-  public static int WriteCompounds2CYJS(
-	HashMap<Integer,HashMap<String,String> > cpddata,
-	HashMap<Integer,HashSet<Integer> > c2t_global,
-	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
-	HashMap<Integer,HashMap<String,String> > actdata,
-	HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms,
-	int n_max_c,
-	int n_max_a,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes,
-	ArrayList<HashMap<String, Object> > edges)
-  {
-    if (counts.get("n_node_cpd")==null) counts.put("n_node_cpd",0);
-    if (counts.get("n_edge_act")==null) counts.put("n_edge_act",0);
-    if (counts.get("n_csynonyms")==null) counts.put("n_csynonyms",0);
-    if (counts.get("n_cpd_ext_ids")==null) counts.put("n_cpd_ext_ids",0);
-
-    ArrayList<String> lines = new ArrayList<String>();
-
-    for (int cid: cpddata.keySet())
-    {
-      WriteCompoundNode2CYJS(cid, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, nodes);
-      counts.put("n_node_cpd",counts.get("n_node_cpd")+1);
-      if (counts.get("n_node_cpd")==n_max_c) break;
-    }
-    WriteActivityEdges2CYJS(actdata, null, null, n_max_a, counts, edges);
-    return counts.get("n_node_cpd");
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static void WriteCompoundNode2XGMML(
+  public static void WriteCompoundNode2Elements(
 	Integer cid,
 	HashMap<Integer,HashMap<String,String> > cpddata,
 	HashMap<Integer,HashSet<Integer> > c2t_global,
 	HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms,
 	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    ArrayList<String> lines = new ArrayList<String>();
-    lines.add("<node id=\"C"+cid+"\" label=\"C"+cid+"\">");
-    lines.add("  <att type=\"string\" name=\"ID\" value=\"C"+cid+"\" />");
-    lines.add("  <att type=\"string\" name=\"class\" value=\"compound\" />");
-    lines.add("  <att type=\"string\" name=\"canonicalName\" value=\"cpd_"+String.format("%06d",cid)+"\" />");
-    String smiles=cpddata.get(cid).get("smiles");
-    lines.add("  <att type=\"string\" name=\"smiles\" value=\""+smiles.replace("\\","\\\\")+"\" />");
-    if (c2t_global.containsKey(cid)) //degree_target (global)
-    {
-      int deg_tgt=(c2t_global.get(cid)==null)?0:c2t_global.get(cid).size();
-      lines.add("  <att type=\"integer\" name=\"deg_tgt\" value=\""+deg_tgt+"\" />");
-    }
-    String color=cpd_color;
-    if (cpddata.get(cid).get("is_drug")!=null && cpddata.get(cid).get("is_drug").equalsIgnoreCase("T"))
-    {
-      lines.add("  <att type=\"boolean\" name=\"is_drug\" value=\"true\" />");
-      color=drug_color;
-    }
-    lines.add("  <graphics type=\"rectangle\" h=\"40.0\" w=\"40.0\" fill=\""+color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-    if (cpdsynonyms!=null && cpdsynonyms.containsKey(cid))
-    {
-      lines.add("  <att type=\"list\" name=\"synonym\">");
-      for (String synonym: cpdsynonyms.get(cid).keySet())
-      {
-        synonym=synonym.replaceAll("&(\\w+);","$1"); //Kludge for "&Delta;", "&alpha;", etc.
-        synonym=synonym.replaceAll("&",""); //Kludge for "SK&F-89748", etc.
-        lines.add("    <att type=\"string\" value=\""+synonym+"\" />");
-        counts.put("n_csynonyms",counts.get("n_csynonyms")+1);
-      }
-      lines.add("  </att>");
-    }
-    if (cpd_sbs_ids!=null && cpd_sbs_ids.containsKey(cid)) 
-    {
-      for (String sbs_id_type: cpd_sbs_ids.get(cid).keySet())
-      {
-        if (cpd_sbs_ids.get(cid).get(sbs_id_type).size()==0) continue;
-        lines.add("  <att type=\"list\" name=\""+sbs_id_type+"\">");
-        for (String sbs_id: cpd_sbs_ids.get(cid).get(sbs_id_type))
-        {
-          lines.add("    <att type=\"string\" value=\""+sbs_id+"\" />");
-          counts.put("n_cpd_ext_ids",counts.get("n_cpd_ext_ids")+1);
-        }
-        lines.add("  </att>");
-      }
-    }
-    lines.add("</node>");
-    WriteLines(fout_writer,lines,"  ","\n",true);
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static void WriteCompoundNode2CYJS(
-	Integer cid,
-	HashMap<Integer,HashMap<String,String> > cpddata,
-	HashMap<Integer,HashSet<Integer> > c2t_global,
-	HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms,
-	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes)
-  {
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     HashMap<String, Object> node = new HashMap<String, Object>();
     HashMap<String, Object> nodedata = new HashMap<String, Object>();
     nodedata.put("id", "C"+cid);
@@ -2474,11 +2028,9 @@ public class carlsbad_utils
       Integer deg_tgt=(c2t_global.get(cid)==null)?0:c2t_global.get(cid).size();
       nodedata.put("deg_tgt", deg_tgt);
     }
-    String color=cpd_color;
     if (cpddata.get(cid).get("is_drug")!=null && cpddata.get(cid).get("is_drug").equalsIgnoreCase("T"))
     {
       nodedata.put("is_drug", new Boolean(true));
-      color=drug_color;
     }
     if (cpdsynonyms!=null && cpdsynonyms.containsKey(cid))
     {
@@ -2542,27 +2094,12 @@ public class carlsbad_utils
     molWriter.close();
   }
   /////////////////////////////////////////////////////////////////////////////
-  public static void WriteDiseaseNode2XGMML(
+  public static void WriteDiseaseNode2Elements(
 	Disease disease,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    if (counts.get("n_node_dis")==null) counts.put("n_node_dis",0);
-    ArrayList<String> lines = new ArrayList<String>();
-    lines.add("<node id=\""+disease.getID()+"\" label=\""+disease.getID()+"\">");
-    lines.add("  <att type=\"string\" name=\"ID\" value=\""+disease.getID()+"\" />");
-    lines.add("  <att type=\"string\" name=\"class\" value=\"disease\" />");
-    lines.add("  <att type=\"string\" name=\"name\" value=\""+disease.getName()+"\" />");
-    lines.add("</node>");
-    counts.put("n_node_dis",counts.get("n_node_dis")+1);
-    WriteLines(fout_writer,lines,"  ","\n",true);
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static void WriteDiseaseNode2CYJS(
-	Disease disease,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes)
-  {
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
     if (counts.get("n_node_dis")==null) counts.put("n_node_dis",0);
     HashMap<String, Object> node = new HashMap<String, Object>();
     HashMap<String, Object> nodedata = new HashMap<String, Object>();
@@ -2572,31 +2109,15 @@ public class carlsbad_utils
     nodedata.put("name", disease.getName());
     node.put("data", nodedata);
     nodes.add(node);
-    counts.put("n_node_dis",counts.get("n_node_dis")+1);
+    counts.put("n_node_dis", counts.get("n_node_dis")+1);
   }
   /////////////////////////////////////////////////////////////////////////////
-  public static void WriteDiseaseEdges2XGMML(
+  public static void WriteDiseaseEdges2Elements(
 	Disease disease,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    if (counts.get("n_edge_dis")==null) counts.put("n_edge_dis",0);
-    ArrayList<String> lines = new ArrayList<String>();
-    for (Integer tid: disease.getTIDs())
-    {
-      lines.add("<edge source=\""+disease.getID()+"\" target=\"T"+tid+"\">");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"disease2target\" />");
-      lines.add("</edge>");
-      WriteLines(fout_writer,lines,"  ","\n",true);
-      counts.put("n_edge_dis",counts.get("n_edge_dis")+1);
-    }
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static void WriteDiseaseEdges2CYJS(
-	Disease disease,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > edges)
-  {
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_edge_dis")==null) counts.put("n_edge_dis",0);
     for (Integer tid: disease.getTIDs())
     {
@@ -2613,53 +2134,15 @@ public class carlsbad_utils
   /////////////////////////////////////////////////////////////////////////////
   /**	If specified, only for CIDs and TIDs specified.
   */
-  public static int WriteActivityEdges2XGMML(
+  public static int WriteActivityEdges2Elements(
 	HashMap<Integer,HashMap<String,String> > actdata,
 	HashSet<Integer> cids,
 	HashSet<Integer> tids,
 	int n_max_a,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    if (counts.get("n_edge_act")==null) counts.put("n_edge_act",0);
-
-    ArrayList<String> lines = new ArrayList<String>();
-    for (int act_id: actdata.keySet())
-    {
-      Integer cid=Integer.parseInt(actdata.get(act_id).get("cid"));
-      if (cids!=null && !cids.contains(cid)) continue;
-      Integer tid=Integer.parseInt(actdata.get(act_id).get("tid"));
-      if (tids!=null && !tids.contains(tid)) continue;
-      lines.clear();
-      lines.add("<edge label=\"A"+act_id+"\" source=\"C"+cid+"\" target=\"T"+tid+"\">");
-      lines.add("  <att type=\"string\" name=\"ID\" value=\"A"+act_id+"\" />");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"activity\" />");
-      if (actdata.get(act_id).get("act_type")!=null)
-        lines.add("  <att type=\"string\" name=\"act_type\" value=\""+HtmlEscape(actdata.get(act_id).get("act_type"))+"\" />");
-      if (actdata.get(act_id).get("act_value_std")!=null)
-      {
-        lines.add("  <att type=\"real\" name=\"val_std\" value=\""+actdata.get(act_id).get("act_value_std")+"\" />");
-      }
-      if (actdata.get(act_id).get("confidence")!=null)
-        lines.add("  <att type=\"string\" name=\"confidence\" value=\""+actdata.get(act_id).get("confidence")+"\" />");
-      lines.add("</edge>");
-      WriteLines(fout_writer,lines,"  ","\n",true);
-      counts.put("n_edge_act",counts.get("n_edge_act")+1);
-      if (counts.get("n_edge_act")==n_max_a) break;
-    }
-    return counts.get("n_edge_act");
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  /**	If specified, only for CIDs and TIDs specified.
-  */
-  public static int WriteActivityEdges2CYJS(
-	HashMap<Integer,HashMap<String,String> > actdata,
-	HashSet<Integer> cids,
-	HashSet<Integer> tids,
-	int n_max_a,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > edges)
-  {
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_edge_act")==null) counts.put("n_edge_act",0);
     for (int act_id: actdata.keySet())
     {
@@ -2674,7 +2157,7 @@ public class carlsbad_utils
       edgedata.put("target", "T"+tid);
       edgedata.put("class", "activity");
       if (actdata.get(act_id).get("act_type")!=null)
-        edgedata.put("act_type", HtmlEscape(actdata.get(act_id).get("act_type")));
+        edgedata.put("act_type", actdata.get(act_id).get("act_type"));
       if (actdata.get(act_id).get("act_value_std")!=null)
         edgedata.put("val_std", actdata.get(act_id).get("act_value_std"));
       if (actdata.get(act_id).get("confidence")!=null)
@@ -2686,74 +2169,19 @@ public class carlsbad_utils
     }
     return counts.get("n_edge_act");
   }
-
-  /////////////////////////////////////////////////////////////////////////////
-  /**	Write scaffold nodes, and scaffold-to-compound associative edges, to XGMML file.
-  */
-  public static int WriteScaffolds2XGMML(
-    HashMap<String,HashMap<String,String> > scafdata,
-    HashSet<Integer> scafids_visited,
-    HashMap<Integer,HashSet<Integer> > s2c_global,
-    HashMap<Integer,HashSet<Integer> > s2t_global,
-    HashMap<String,Integer> counts,
-    PrintWriter fout_writer)
-  {
-    if (counts.get("n_node_scaf")==null) counts.put("n_node_scaf",0);
-    if (counts.get("n_edge_scaf")==null) counts.put("n_edge_scaf",0);
-
-    ArrayList<String> lines = new ArrayList<String>();
-    for (String edgeid: scafdata.keySet())
-    {
-      Integer scaf_id = Integer.parseInt(scafdata.get(edgeid).get("scaf_id"));
-      Integer cid = Integer.parseInt(scafdata.get(edgeid).get("cid"));
-      Float s2c_weight = Float.parseFloat(scafdata.get(edgeid).get("weight"));
-      lines.clear();
-      if (!scafids_visited.contains(scaf_id))
-      {
-        scafids_visited.add(scaf_id);
-        lines.add("<node id=\"S"+scaf_id+"\" label=\"S"+scaf_id+"\">");
-        lines.add("  <att type=\"string\" name=\"ID\" value=\"S"+scaf_id+"\" />");
-        lines.add("  <att type=\"string\" name=\"class\" value=\"scaffold\" />");
-        lines.add("  <att type=\"boolean\" name=\"__has2DGraphics\" value=\"true\" cy:hidden=\"true\"/>");
-        lines.add("  <att type=\"string\" name=\"canonicalName\" value=\"scaf_"+String.format("%06d",scaf_id)+" \" />");
-        lines.add("  <att type=\"string\" name=\"smiles\" value=\""+scafdata.get(edgeid).get("scafsmi")+"\" />");
-        lines.add("  <graphics type=\"hexagon\" h=\"40.0\" w=\"40.0\" fill=\""+scaf_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-        if (s2c_global.containsKey(scaf_id)) //degree_compound (global)
-        {
-          int deg_cpd=(s2c_global.get(scaf_id)==null)?0:s2c_global.get(scaf_id).size();
-          lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-        }
-        if (s2t_global.containsKey(scaf_id)) //degree_target (global)
-        {
-          int deg_tgt=(s2t_global.get(scaf_id)==null)?0:s2t_global.get(scaf_id).size();
-          lines.add("  <att type=\"integer\" name=\"deg_tgt\" value=\""+deg_tgt+"\" />");
-        }
-        lines.add("</node>");
-        counts.put("n_node_scaf",counts.get("n_node_scaf")+1);
-      }
-      lines.add("<edge label=\"S"+scaf_id+"_C"+cid+"\" source=\"C"+cid+"\" target=\"S"+scaf_id+"\">");
-      lines.add("  <att type=\"string\" name=\"ID\" value=\"S"+scaf_id+"_C"+cid+"\" />");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"cpd2scaf\" />");
-      if (s2c_weight!=null)
-        lines.add("  <att type=\"real\" name=\"weight\" value=\""+String.format("%.2f",s2c_weight)+"\" />");
-      lines.add("</edge>");
-      WriteLines(fout_writer,lines,"  ","\n",true);
-      counts.put("n_edge_scaf",counts.get("n_edge_scaf")+1);
-    }
-    return counts.get("n_edge_scaf");
-  }
   /////////////////////////////////////////////////////////////////////////////
   /**	Write scaffold nodes, and scaffold-to-compound associative edges, to CYJS.
   */
-  public static int WriteScaffolds2CYJS(
+  public static int WriteScaffolds2Elements(
 	HashMap<String,HashMap<String,String> > scafdata,
 	HashSet<Integer> scafids_visited,
 	HashMap<Integer,HashSet<Integer> > s2c_global,
 	HashMap<Integer,HashSet<Integer> > s2t_global,
 	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes,
-	ArrayList<HashMap<String, Object> > edges)
+	HashMap<String, Object> elements)
   {
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_node_scaf")==null) counts.put("n_node_scaf",0);
     if (counts.get("n_edge_scaf")==null) counts.put("n_edge_scaf",0);
     for (String edgeid: scafdata.keySet())
@@ -2802,69 +2230,18 @@ public class carlsbad_utils
   }
 
   /////////////////////////////////////////////////////////////////////////////
-  /**	Write MCES nodes, and MCES-to-compound associative edges, to XGMML file.
-  */
-  public static int WriteMcess2XGMML(
-    HashMap<String,HashMap<String,String> > mcesdata,
-    HashSet<Integer> mcesids_visited,
-    HashMap<Integer,HashSet<Integer> > m2c_global,
-    HashMap<Integer,HashSet<Integer> > m2t_global,
-    HashMap<String,Integer> counts,
-    PrintWriter fout_writer)
-  {
-    if (counts.get("n_node_mces")==null) counts.put("n_node_mces",0);
-    if (counts.get("n_edge_mces")==null) counts.put("n_edge_mces",0);
-
-    ArrayList<String> lines = new ArrayList<String>();
-    for (String edgeid: mcesdata.keySet())
-    {
-      Integer cluster_id = Integer.parseInt(mcesdata.get(edgeid).get("cluster_id"));
-      Integer cid = Integer.parseInt(mcesdata.get(edgeid).get("cid"));
-      lines.clear();
-      if (!mcesids_visited.contains(cluster_id))
-      {
-        mcesids_visited.add(cluster_id);
-        lines.add("<node id=\"M"+cluster_id+"\" label=\"M"+cluster_id+"\">");
-        lines.add("  <att type=\"string\" name=\"ID\" value=\"M"+cluster_id+"\" />");
-        lines.add("  <att type=\"string\" name=\"class\" value=\"mces\" />");
-        lines.add("  <att type=\"boolean\" name=\"__has2DGraphics\" value=\"true\" cy:hidden=\"true\"/>");
-        lines.add("  <att type=\"string\" name=\"canonicalName\" value=\"mces_"+String.format("%06d",cluster_id)+" \" />");
-        lines.add("  <att type=\"string\" name=\"smarts\" value=\""+HtmlEscape(mcesdata.get(edgeid).get("mces"))+"\" />");
-        lines.add("  <graphics type=\"ellipse\" h=\"40.0\" w=\"40.0\" fill=\""+mces_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-        if (m2c_global.containsKey(cluster_id)) //degree_compound (global)
-        {
-          int deg_cpd=(m2c_global.get(cluster_id)==null)?0:m2c_global.get(cluster_id).size();
-          lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-        }
-        if (m2t_global.containsKey(cluster_id)) //degree_target (global)
-        {
-          int deg_tgt=(m2t_global.get(cluster_id)==null)?0:m2t_global.get(cluster_id).size();
-          lines.add("  <att type=\"integer\" name=\"deg_tgt\" value=\""+deg_tgt+"\" />");
-        }
-        lines.add("</node>");
-        counts.put("n_node_mces",counts.get("n_node_mces")+1);
-      }
-      lines.add("<edge label=\"M"+cluster_id+"_C"+cid+"\" source=\"C"+cid+"\" target=\"M"+cluster_id+"\">");
-      lines.add("  <att type=\"string\" name=\"ID\" value=\"M"+cluster_id+"_C"+cid+"\" />");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"cpd2mces\" />");
-      lines.add("</edge>");
-      WriteLines(fout_writer,lines,"  ","\n",true);
-      counts.put("n_edge_mces",counts.get("n_edge_mces")+1);
-    }
-    return counts.get("n_edge_mces");
-  }
-  /////////////////////////////////////////////////////////////////////////////
   /**	Write MCES nodes, and MCES-to-compound associative edges, to CYJS.
   */
-  public static int WriteMcess2CYJS(
+  public static int WriteMcess2Elements(
 	HashMap<String,HashMap<String,String> > mcesdata,
 	HashSet<Integer> mcesids_visited,
 	HashMap<Integer,HashSet<Integer> > m2c_global,
 	HashMap<Integer,HashSet<Integer> > m2t_global,
 	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes,
-	ArrayList<HashMap<String, Object> > edges)
+	HashMap<String, Object> elements)
   {
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_node_mces")==null) counts.put("n_node_mces",0);
     if (counts.get("n_edge_mces")==null) counts.put("n_edge_mces",0);
 
@@ -2913,10 +2290,10 @@ public class carlsbad_utils
     return counts.get("n_edge_mces");
   }
   /////////////////////////////////////////////////////////////////////////////
-  /**	Write reduced-graph to XGMML.
+  /**	Write reduced-graph to elements (for CYJS).
 	Annotated targets plus query entity: drug|disease.
   */
-  public static int WriteReducedGraph2XGMML(
+  public static int WriteReducedGraph2Elements(
 	HashMap<Integer,HashMap<String,String> > tgtdata,
 	Disease disease,	//disease-query mode
 	Integer cid_query,	//drug-query mode
@@ -2934,348 +2311,15 @@ public class carlsbad_utils
 	HashMap<String,HashMap<String,String> > mcesdata,
 	boolean include_ccps,
 	HashMap<String,Integer> counts,
-	PrintWriter fout_writer)
+	HashMap<String, Object> elements)
   {
-    if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt",0);
-    if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids",0);
-    if (counts.get("n_node_tgt_rgt")==null) counts.put("n_node_tgt_rgt",0);
-    if (counts.get("n_tgt_ext_ids_rgt")==null) counts.put("n_tgt_ext_ids_rgt",0);
+    ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
+    ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
 
-    ArrayList<String> lines = new ArrayList<String>();
-    HashSet<Integer> tids = new HashSet<Integer>(tgtdata.keySet());
-
-    // Determine shared cpds, scafs, mcess, for edge annotations.
-    // 1st initialize matrices.
-    HashMap<Integer,HashMap<Integer,HashSet<Integer> > > cpd_shared = new HashMap<Integer,HashMap<Integer,HashSet<Integer> > >();
-    for (int tidA: tids)
-    {
-      cpd_shared.put(tidA, new HashMap<Integer,HashSet<Integer> >());
-      for (int tidB: tids) cpd_shared.get(tidA).put(tidB, new HashSet<Integer>());
-    }
-    HashMap<Integer,HashMap<Integer,HashSet<Integer> > > scaf_shared = new HashMap<Integer,HashMap<Integer,HashSet<Integer> > >();
-    for (int tidA: tids)
-    {
-      scaf_shared.put(tidA, new HashMap<Integer,HashSet<Integer> >());
-      for (int tidB: tids) scaf_shared.get(tidA).put(tidB, new HashSet<Integer>());
-    }
-    HashMap<Integer,HashMap<Integer,HashSet<Integer> > > mces_shared = new HashMap<Integer,HashMap<Integer,HashSet<Integer> > >();
-    for (int tidA: tids)
-    {
-      mces_shared.put(tidA, new HashMap<Integer,HashSet<Integer> >());
-      for (int tidB: tids) mces_shared.get(tidA).put(tidB, new HashSet<Integer>());
-    }
-
-    // Transform s2t_global to t2s_global
-    HashMap<Integer,HashSet<Integer> > t2s_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int scafid: s2t_global.keySet())
-    {
-      for (int tid: s2t_global.get(scafid))
-      {
-        if (!t2s_global.containsKey(tid)) t2s_global.put(tid,new HashSet<Integer>());
-        t2s_global.get(tid).add(scafid);
-      }
-    }
-
-    // Transform m2t_global to t2m_global
-    HashMap<Integer,HashSet<Integer> > t2m_global = new HashMap<Integer,HashSet<Integer> >();
-    for (int mcesid: m2t_global.keySet())
-    {
-      for (int tid: m2t_global.get(mcesid))
-      {
-        if (!t2m_global.containsKey(tid)) t2m_global.put(tid,new HashSet<Integer>());
-        t2m_global.get(tid).add(mcesid);
-      }
-    }
-
-    // Populate *_shared matrices.
-    // NOTE: There are some orphaned targets (e.g. 851).  
-    for (int tidA: tids)
-    {
-      for (int tidB: tids)
-      {
-        if (tidA>=tidB) continue;
-        if (t2c_global.containsKey(tidA) && t2c_global.containsKey(tidB)
-            && t2c_global.get(tidA)!=null && t2c_global.get(tidB)!=null)
-        {
-          HashSet<Integer> cidsA = new HashSet<Integer>(t2c_global.get(tidA));
-          HashSet<Integer> cidsB = new HashSet<Integer>(t2c_global.get(tidB));
-          for (int cid: cidsA) { if (cidsB.contains(cid)) cpd_shared.get(tidA).get(tidB).add(cid); }
-        }
-        if (t2s_global.containsKey(tidA) &&  t2s_global.containsKey(tidB))
-        {
-          HashSet<Integer> scafidsA = new HashSet<Integer>(t2s_global.get(tidA));
-          HashSet<Integer> scafidsB = new HashSet<Integer>(t2s_global.get(tidB));
-          for (int scafid: scafidsA) { if (scafidsB.contains(scafid)) scaf_shared.get(tidA).get(tidB).add(scafid); }
-        }
-        if (t2m_global.containsKey(tidA) && t2m_global.containsKey(tidB))
-        {
-          HashSet<Integer> mcesidsA = new HashSet<Integer>(t2m_global.get(tidA));
-          HashSet<Integer> mcesidsB = new HashSet<Integer>(t2m_global.get(tidB));
-          for (int mcesid: mcesidsA) { if (mcesidsB.contains(mcesid)) mces_shared.get(tidA).get(tidB).add(mcesid); }
-        }
-      }
-    }
-
-    for (int tid: tids)
-    {
-      lines.clear();
-      lines.add("<node id=\"T"+tid+"\" label=\"T"+tid+"\">");
-      lines.add("  <att type=\"string\" name=\"ID\" value=\"T"+tid+"\" />");
-      lines.add("  <att type=\"string\" name=\"class\" value=\"target\" />");
-      if (tgtdata.get(tid).get("tname")!=null)
-        lines.add("  <att type=\"string\" name=\"name\" value=\""+HtmlEscape(tgtdata.get(tid).get("tname"))+"\" />");
-      if (tgtdata.get(tid).get("descr")!=null)
-        lines.add("  <att type=\"string\" name=\"descr\" value=\""+HtmlEscape(tgtdata.get(tid).get("descr"))+"\" />");
-      lines.add("  <att type=\"string\" name=\"species\" value=\""+tgtdata.get(tid).get("species")+"\" />");
-      lines.add("  <att type=\"string\" name=\"type\" value=\""+tgtdata.get(tid).get("type")+"\" />");
-      if (t2c_global.containsKey(tid)) //degree_compound (global)
-      {
-        int deg_cpd=(t2c_global.get(tid)==null)?0:t2c_global.get(tid).size();
-        lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-        if (cid_query!=null && t2c_global.get(tid).contains(cid_query))
-        {
-          lines.add("  <att type=\"boolean\" name=\"query_active\" value=\"true\" />");
-        }
-        else if (disease!=null && disease.getTIDs().contains(tid))
-        {
-          lines.add("  <att type=\"boolean\" name=\"query_active\" value=\"true\" />");
-        }
-      }
-      if (t2s_global.containsKey(tid)) //degree_scaffold (global)
-      {
-        int deg_scaf=(t2s_global.get(tid)==null)?0:t2s_global.get(tid).size();
-        lines.add("  <att type=\"integer\" name=\"deg_scaf\" value=\""+deg_scaf+"\" />");
-      }
-      if (t2m_global.containsKey(tid)) //degree_mces (global)
-      {
-        int deg_mces=(t2m_global.get(tid)==null)?0:t2m_global.get(tid).size();
-        lines.add("  <att type=\"integer\" name=\"deg_mces\" value=\""+deg_mces+"\" />");
-      }
-      lines.add("  <graphics type=\"octagon\" h=\"80.0\" w=\"80.0\" fill=\""+tgt_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-      if (tgt_tgt_ids.containsKey(tid)) 
-      {
-        for (String tgt_id_type: tgt_tgt_ids.get(tid).keySet())
-        {
-          if (tgt_tgt_ids.get(tid).get(tgt_id_type).keySet().size()==0) continue;
-          lines.add("  <att type=\"list\" name=\""+tgt_id_type+"\">");
-          for (String tgt_id: tgt_tgt_ids.get(tid).get(tgt_id_type).keySet())
-          {
-            lines.add("    <att type=\"string\" value=\""+tgt_id+"\" />");
-            counts.put("n_tgt_ext_ids_rgt",counts.get("n_tgt_ext_ids_rgt")+1);
-          }
-          lines.add("  </att>");
-        }
-      }
-      lines.add("</node>");
-      counts.put("n_node_tgt_rgt",counts.get("n_node_tgt_rgt")+1);
-      WriteLines(fout_writer,lines,"  ","\n",true);
-    }
-
-    HashMap<Integer,HashSet<Integer> > c2t_global = null;
-    if (cid_query!=null)	//drug-query mode
-    {
-      // Transform t2c_global to c2t_global
-      c2t_global = new HashMap<Integer,HashSet<Integer> >();
-      for (int tid: t2c_global.keySet())
-      {
-        for (int cid: t2c_global.get(tid))
-        {
-          if (!c2t_global.containsKey(cid)) c2t_global.put(cid,new HashSet<Integer>());
-          c2t_global.get(cid).add(tid);
-        }
-      }
-      WriteCompoundNode2XGMML(cid_query,cpddata,c2t_global,cpdsynonyms,cpd_sbs_ids,counts,fout_writer);
-    }
-    else if (disease!=null)	//disease-query mode
-    {
-      WriteDiseaseNode2XGMML(disease,counts,fout_writer);
-    }
-
-    if (include_ccps)
-    {
-      //Write ccp nodes (scafs)
-      counts.put("n_node_scaf",0);
-      for (int scafid: s2t_global.keySet())
-      {
-        lines.add("<node id=\"S"+scafid+"\" label=\"S"+scafid+"\">");
-        lines.add("  <att type=\"string\" name=\"ID\" value=\"S"+scafid+"\" />");
-        lines.add("  <att type=\"string\" name=\"class\" value=\"scaffold\" />");
-        lines.add("  <att type=\"boolean\" name=\"__has2DGraphics\" value=\"true\" cy:hidden=\"true\"/>");
-        lines.add("  <att type=\"string\" name=\"canonicalName\" value=\"scaf_"+String.format("%06d",scafid)+" \" />");
-        lines.add("  <att type=\"string\" name=\"smiles\" value=\""+ScafID2Smiles(scafid,scafdata)+"\" />");
-        lines.add("  <graphics type=\"hexagon\" h=\"40.0\" w=\"40.0\" fill=\""+scaf_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-        if (s2c_global.containsKey(scafid)) //degree_compound (global)
-        {
-          int deg_cpd=(s2c_global.get(scafid)==null)?0:s2c_global.get(scafid).size();
-          lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-        }
-
-        if (s2t_global.containsKey(scafid)) //degree_target (global)
-        {
-          int deg_tgt=(s2t_global.get(scafid)==null)?0:s2t_global.get(scafid).size();
-          lines.add("  <att type=\"integer\" name=\"deg_tgt\" value=\""+deg_tgt+"\" />");
-        }
-        lines.add("</node>");
-        WriteLines(fout_writer,lines,"  ","\n",true);
-        counts.put("n_node_scaf",counts.get("n_node_scaf")+1);
-      }
-
-      //Write ccp nodes (mcess)
-      counts.put("n_node_mces",0);
-      for (int mcesid: m2t_global.keySet())
-      {
-        lines.add("<node id=\"M"+mcesid+"\" label=\"M"+mcesid+"\">");
-        lines.add("  <att type=\"string\" name=\"ID\" value=\"M"+mcesid+"\" />");
-        lines.add("  <att type=\"string\" name=\"class\" value=\"mces\" />");
-        lines.add("  <att type=\"boolean\" name=\"__has2DGraphics\" value=\"true\" cy:hidden=\"true\"/>");
-        lines.add("  <att type=\"string\" name=\"canonicalName\" value=\"mces_"+String.format("%06d",mcesid)+" \" />");
-        lines.add("  <att type=\"string\" name=\"smarts\" value=\""+MCESID2Smarts(mcesid,mcesdata)+"\" />");
-        lines.add("  <graphics type=\"ellipse\" h=\"40.0\" w=\"40.0\" fill=\""+mces_color+"\" outline=\""+outlinecolor+"\" cy:nodeTransparency=\"0.4\" cy:nodeLabelFont=\"SansSerif.bold-0-5\" cy:borderLineType=\"solid\" />");
-        if (m2c_global.containsKey(mcesid)) //degree_compound (global)
-        {
-          int deg_cpd=(m2c_global.get(mcesid)==null)?0:m2c_global.get(mcesid).size();
-          lines.add("  <att type=\"integer\" name=\"deg_cpd\" value=\""+deg_cpd+"\" />");
-        }
-        if (m2t_global.containsKey(mcesid)) //degree_target (global)
-        {
-          int deg_tgt=(m2t_global.get(mcesid)==null)?0:m2t_global.get(mcesid).size();
-          lines.add("  <att type=\"integer\" name=\"deg_tgt\" value=\""+deg_tgt+"\" />");
-        }
-        lines.add("</node>");
-        counts.put("n_node_mces",counts.get("n_node_mces")+1);
-      }
-
-      //Create tgt-ccp edges if any shared cpds.
-      //To do: add weight, n_cpds represented by edge?
-      counts.put("n_edge_tgtccp",0);
-      for (int scafid: s2t_global.keySet())
-      {
-        for (int tid: s2t_global.get(scafid))
-        {
-          if (!tids.contains(tid)) continue;
-          lines.add("<edge source=\"T"+tid+"\" target=\"S"+scafid+"\">");
-          lines.add("  <att type=\"string\" name=\"ID\" value=\"TS"+counts.get("n_edge_tgtccp")+"\" />");
-          lines.add("  <att type=\"string\" name=\"class\" value=\"ts\"/>");
-          lines.add("</edge>");
-          WriteLines(fout_writer,lines,"  ","\n",true);
-          counts.put("n_edge_tgtccp",counts.get("n_edge_tgtccp")+1);
-        }
-      }
-      for (int mcesid: m2t_global.keySet())
-      {
-        for (int tid: m2t_global.get(mcesid))
-        {
-          if (!tids.contains(tid)) continue;
-          lines.add("<edge source=\"T"+tid+"\" target=\"M"+mcesid+"\">");
-          lines.add("  <att type=\"string\" name=\"ID\" value=\"TS"+counts.get("n_edge_tgtccp")+"\" />");
-          lines.add("  <att type=\"string\" name=\"class\" value=\"ts\"/>");
-          lines.add("</edge>");
-          WriteLines(fout_writer,lines,"  ","\n",true);
-          counts.put("n_edge_tgtccp",counts.get("n_edge_tgtccp")+1);
-
-        }
-      }
-    }
-
-    //Create tgt-tgt edges if any shared cpds, scafs or mcess.
-    counts.put("n_edge_tgttgt",0);
-    int n_edge_tt=0;
-    for (int tidA: tids)
-    {
-      for (int tidB: tids)
-      {
-        int n_shared_cpd = 0;
-        int n_shared_scaf = 0;
-        int n_shared_mces = 0;
-        if (tidA>=tidB) continue;
-        lines.clear();
-        if (cpd_shared.containsKey(tidA) && cpd_shared.get(tidA).containsKey(tidB))
-          n_shared_cpd = cpd_shared.get(tidA).get(tidB).size();
-        if (scaf_shared.containsKey(tidA) && scaf_shared.get(tidA).containsKey(tidB))
-          n_shared_scaf = scaf_shared.get(tidA).get(tidB).size();
-        if (mces_shared.containsKey(tidA) && mces_shared.get(tidA).containsKey(tidB))
-          n_shared_mces = mces_shared.get(tidA).get(tidB).size();
-        boolean got_edge=(n_shared_cpd>0 || n_shared_scaf>0 || n_shared_mces>0);
-        if (got_edge)
-        {
-          counts.put("n_edge_tgttgt",counts.get("n_edge_tgttgt")+1);
-          lines.add("<edge source=\"T"+tidA+"\" target=\"T"+tidB+"\">");
-          lines.add("  <att type=\"string\" name=\"ID\" value=\"TT"+counts.get("n_edge_tgttgt")+"\" />");
-          lines.add("  <att type=\"string\" name=\"class\" value=\"tt\"/>");
-          if (n_shared_cpd>0)
-            lines.add("  <att type=\"integer\" name=\"shared_cpd\" value=\""+n_shared_cpd+"\" />");
-          if (n_shared_scaf>0)
-            lines.add("  <att type=\"integer\" name=\"shared_scaf\" value=\""+n_shared_scaf+"\" />");
-          if (n_shared_mces>0)
-            lines.add("  <att type=\"integer\" name=\"shared_mces\" value=\""+n_shared_mces+"\" />");
-          lines.add("</edge>");
-        }
-        WriteLines(fout_writer,lines,"  ","\n",true);
-      }
-    }
-
-    if (cid_query!=null)	//drug-query mode
-    {
-      WriteActivityEdges2XGMML(actdata,
-	new HashSet<Integer>(Arrays.asList(cid_query)),
-	tids, 0, counts, fout_writer);
-
-      //Need drug-ccp edge.
-      if (include_ccps)
-      {
-        for (int scafid: s2t_global.keySet())
-        {
-          String edgeid=("S"+scafid+"_C"+cid_query);
-          if (scafdata.containsKey(edgeid))
-          {
-            lines.add("<edge label=\"S"+scafid+"_C"+cid_query+"\" source=\"C"+cid_query+"\" target=\"S"+scafid+"\">");
-            lines.add("  <att type=\"string\" name=\"ID\" value=\"S"+scafid+"_C"+cid_query+"\" />");
-            lines.add("  <att type=\"string\" name=\"class\" value=\"cpd2scaf\" />");
-            Float s2c_weight=Float.parseFloat(scafdata.get(edgeid).get("weight"));
-            if (s2c_weight!=null)
-              lines.add("  <att type=\"real\" name=\"weight\" value=\""+String.format("%.2f",s2c_weight)+"\" />");
-            lines.add("</edge>");
-            WriteLines(fout_writer,lines,"  ","\n",true);
-            counts.put("n_edge_scaf",counts.get("n_edge_scaf")+1);
-          }
-        }
-      }
-    }
-    else if (disease!=null)	//disease-query mode
-    {
-      WriteDiseaseEdges2XGMML(disease,counts,fout_writer);
-    }
-    return counts.get("n_node_tgt_rgt");
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  /**	Write reduced-graph to CYJS.
-	Annotated targets plus query entity: drug|disease.
-  */
-  public static int WriteReducedGraph2CYJS(
-	HashMap<Integer,HashMap<String,String> > tgtdata,
-	Disease disease,	//disease-query mode
-	Integer cid_query,	//drug-query mode
-	HashMap<Integer,HashSet<Integer> > t2c_global,
-	HashMap<Integer,HashSet<Integer> > s2t_global,
-	HashMap<Integer,HashSet<Integer> > s2c_global,
-	HashMap<Integer,HashSet<Integer> > m2t_global,
-	HashMap<Integer,HashSet<Integer> > m2c_global,
-	HashMap<Integer,HashMap<String,HashMap<String,Boolean> > > tgt_tgt_ids,
-	HashMap<Integer,HashMap<String,String> > actdata,
-	HashMap<Integer,HashMap<String,String> > cpddata,
-	HashMap<Integer,HashMap<String,Boolean> > cpdsynonyms,
-	HashMap<Integer,HashMap<String,HashSet<String> > > cpd_sbs_ids,
-	HashMap<String,HashMap<String,String> > scafdata,
-	HashMap<String,HashMap<String,String> > mcesdata,
-	boolean include_ccps,
-	HashMap<String,Integer> counts,
-	ArrayList<HashMap<String, Object> > nodes,
-	ArrayList<HashMap<String, Object> > edges)
-  {
-    if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt",0);
-    if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids",0);
-    if (counts.get("n_node_tgt_rgt")==null) counts.put("n_node_tgt_rgt",0);
-    if (counts.get("n_tgt_ext_ids_rgt")==null) counts.put("n_tgt_ext_ids_rgt",0);
+    if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt", 0);
+    if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids", 0);
+    if (counts.get("n_node_tgt_rgt")==null) counts.put("n_node_tgt_rgt", 0);
+    if (counts.get("n_tgt_ext_ids_rgt")==null) counts.put("n_tgt_ext_ids_rgt", 0);
 
     HashSet<Integer> tids = new HashSet<Integer>(tgtdata.keySet());
 
@@ -3397,7 +2441,7 @@ public class carlsbad_utils
           for (String tgt_id: tgt_tgt_ids.get(tid).get(tgt_id_type).keySet())
           {
             tgt_ids.add(tgt_id);
-            counts.put("n_tgt_ext_ids_rgt",counts.get("n_tgt_ext_ids_rgt")+1);
+            counts.put("n_tgt_ext_ids_rgt", counts.get("n_tgt_ext_ids_rgt")+1);
           }
           nodedata.put(tgt_id_type.replaceAll(" ", "_"), tgt_ids);
         }
@@ -3420,17 +2464,17 @@ public class carlsbad_utils
           c2t_global.get(cid).add(tid);
         }
       }
-      WriteCompoundNode2CYJS(cid_query, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, nodes);
+      WriteCompoundNode2Elements(cid_query, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, elements);
     }
     else if (disease!=null)	//disease-query mode
     {
-      WriteDiseaseNode2CYJS(disease, counts, nodes);
+      WriteDiseaseNode2Elements(disease, counts, elements);
     }
 
     if (include_ccps)
     {
       //Write ccp nodes (scafs)
-      counts.put("n_node_scaf",0);
+      counts.put("n_node_scaf", 0);
       for (int scafid: s2t_global.keySet())
       {
         HashMap<String, Object> node = new HashMap<String, Object>();
@@ -3453,11 +2497,11 @@ public class carlsbad_utils
         }
         node.put("data", nodedata);
         nodes.add(node);
-        counts.put("n_node_scaf",counts.get("n_node_scaf")+1);
+        counts.put("n_node_scaf", counts.get("n_node_scaf")+1);
       }
 
       //Write ccp nodes (mcess)
-      counts.put("n_node_mces",0);
+      counts.put("n_node_mces", 0);
       for (int mcesid: m2t_global.keySet())
       {
         HashMap<String, Object> node = new HashMap<String, Object>();
@@ -3480,12 +2524,12 @@ public class carlsbad_utils
         }
         node.put("data", nodedata);
         nodes.add(node);
-        counts.put("n_node_mces",counts.get("n_node_mces")+1);
+        counts.put("n_node_mces", counts.get("n_node_mces")+1);
       }
 
       //Create tgt-ccp edges if any shared cpds.
       //To do: add weight, n_cpds represented by edge?
-      counts.put("n_edge_tgtccp",0);
+      counts.put("n_edge_tgtccp", 0);
       for (int scafid: s2t_global.keySet())
       {
         for (int tid: s2t_global.get(scafid))
@@ -3499,7 +2543,7 @@ public class carlsbad_utils
           edgedata.put("class", "ts");
           edge.put("data", edgedata);
           edges.add(edge);
-          counts.put("n_edge_tgtccp",counts.get("n_edge_tgtccp")+1);
+          counts.put("n_edge_tgtccp", counts.get("n_edge_tgtccp")+1);
         }
       }
       for (int mcesid: m2t_global.keySet())
@@ -3515,7 +2559,7 @@ public class carlsbad_utils
           edgedata.put("class", "ts");
           edge.put("data", edgedata);
           edges.add(edge);
-          counts.put("n_edge_tgtccp",counts.get("n_edge_tgtccp")+1);
+          counts.put("n_edge_tgtccp", counts.get("n_edge_tgtccp")+1);
         }
       }
     }
@@ -3534,7 +2578,7 @@ public class carlsbad_utils
         boolean got_edge=(n_shared_cpd>0 || n_shared_scaf>0 || n_shared_mces>0);
         if (got_edge)
         {
-          counts.put("n_edge_tgttgt",counts.get("n_edge_tgttgt")+1);
+          counts.put("n_edge_tgttgt", counts.get("n_edge_tgttgt")+1);
           HashMap<String, Object> edge = new HashMap<String, Object>();
           HashMap<String, Object> edgedata = new HashMap<String, Object>();
           edgedata.put("source", "T"+tidA);
@@ -3555,7 +2599,7 @@ public class carlsbad_utils
 
     if (cid_query!=null)	//drug-query mode
     {
-      WriteActivityEdges2CYJS(actdata, new HashSet<Integer>(Arrays.asList(cid_query)), tids, 0, counts, edges);
+      WriteActivityEdges2Elements(actdata, new HashSet<Integer>(Arrays.asList(cid_query)), tids, 0, counts, elements);
 
       //Need drug-ccp edge.
       if (include_ccps)
@@ -3577,14 +2621,14 @@ public class carlsbad_utils
               edgedata.put("weight", s2c_weight);
             edge.put("data", edgedata);
             edges.add(edge);
-            counts.put("n_edge_scaf",counts.get("n_edge_scaf")+1);
+            counts.put("n_edge_scaf", counts.get("n_edge_scaf")+1);
           }
         }
       }
     }
     else if (disease!=null)	//disease-query mode
     {
-      WriteDiseaseEdges2CYJS(disease, counts, edges);
+      WriteDiseaseEdges2Elements(disease, counts, elements);
     }
     return counts.get("n_node_tgt_rgt");
   }
@@ -3611,37 +2655,6 @@ public class carlsbad_utils
       }
     }
     return null;
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  private static void WriteLines(
-	PrintWriter fout_writer,
-	ArrayList<String> lines,
-	String indent,
-	String nl,
-	Boolean clr)
-  {
-    for (String line: lines)
-      fout_writer.print(indent+line+nl);
-    if (clr) lines.clear();
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  /**   Replace HTML control characters with escape codes.
-  */
-  private static String HtmlEscape(String aText)
-  {
-    if (aText == null) { return ""; }
-    StringBuffer escapedText = new StringBuffer();
-    for (int i=0; i<aText.length(); i++) {
-      char ch = aText.charAt(i);
-      if (ch == '\'') escapedText.append("&#39;");
-      else if (ch == '\"') escapedText.append("&#34;");
-      else if (ch == '<') escapedText.append("&lt;");
-      else if (ch == '>') escapedText.append("&gt;");
-      else if (ch == '&') escapedText.append("&amp;");
-      else if (ch == '=') escapedText.append("&#61;");
-      else                escapedText.append(ch);
-    }
-    return escapedText.toString();
   }
   /////////////////////////////////////////////////////////////////////////////
   public static <T> ArrayList<T> UniquifyArrayList(ArrayList<T> alist)

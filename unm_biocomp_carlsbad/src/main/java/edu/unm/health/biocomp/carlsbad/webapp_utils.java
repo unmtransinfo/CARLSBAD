@@ -18,7 +18,6 @@ import edu.unm.health.biocomp.util.threads.*;
 import edu.unm.health.biocomp.util.http.*;
 
 /**	Static methods for Carlsbad applications: threads, results display.
-
 	@author Jeremy J Yang
 */
 public class webapp_utils
@@ -26,124 +25,30 @@ public class webapp_utils
   /////////////////////////////////////////////////////////////////////////////
   /**   Executes SQL statement via separate thread.
   */
-  public static ResultSet ExecuteSql_LaunchThread(String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,String sql,String servletname,HttpServletResponse response,PrintWriter out,int n_max,StringBuilder err_sb)
-      throws SQLException,IOException,ServletException
+  public static ResultSet ExecuteSql_LaunchThread(String dbhost, Integer dbport, String dbid, String dbusr, String dbpw, String sql, String servletname, HttpServletResponse response, PrintWriter out, int n_max, StringBuilder err_sb)
+      throws SQLException, IOException, ServletException
   {     
     ExecutorService exec=Executors.newSingleThreadExecutor();
     int tpoll=1000; //msec
       DBQuery_PG_Task dbquery_task =
-        new DBQuery_PG_Task(dbhost,dbport,dbid,dbusr,dbpw,sql,n_max);
-      TaskUtils.ExecTaskWeb(exec,dbquery_task,dbquery_task.taskstatus,servletname+" (sql-query)",tpoll,
-        out,response,(servletname+"_progress_win"));
+        new DBQuery_PG_Task(dbhost, dbport, dbid, dbusr, dbpw, sql, n_max);
+      TaskUtils.ExecTaskWeb(exec, dbquery_task, dbquery_task.taskstatus, servletname+" (sql-query)", tpoll, out, response, (servletname+"_progress_win"));
 
     ResultSet rset=dbquery_task.getRSet();
     err_sb.append(dbquery_task.getErrtxt());
     return rset;
   }
   /////////////////////////////////////////////////////////////////////////////
-  /**   Extracts subnet w/ multiple queries via separate thread.
-  */
-  public static HashMap<String,Integer> Extract2XGMML_LaunchThread(
-	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
-	String fout_subnet_path,
-	ArrayList<Integer> tids,
-	String cpd_id,String cpd_idtype,
-	String qcpd,String matchtype_qcpd,
-	Float minsim,
-	String cname,Boolean matchtype_cname_sub,
-	Integer mw_min,Integer mw_max,
-	ArrayList<Integer> cids,
-	ArrayList<Integer> scafids,
-	ArrayList<Integer> mcesids,
-	Boolean neighbortargets,
-	String subnet_title,
-	String servletname,
-	HttpServletResponse response,
-	PrintWriter out,
-	Integer n_max_a,Integer n_max_c,
-	ArrayList<String> sqls,
-	StringBuilder err_sb)
-      throws SQLException,IOException,ServletException
-  {
-    ExecutorService exec=Executors.newSingleThreadExecutor();
-    int tpoll=1000; //msec
-    Extract2XGMML_Task xsubnet_task =
-      new Extract2XGMML_Task(dbhost,dbport,dbid,dbusr,dbpw,fout_subnet_path,
-		tids,
-		cpd_id,cpd_idtype,
-		qcpd,matchtype_qcpd,minsim,
-		cname,matchtype_cname_sub,
-		mw_min,mw_max,
-		cids,scafids,mcesids,
-		neighbortargets,
-		subnet_title,
-		n_max_a,n_max_c,
-		sqls);
-    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (subnet-extraction)",tpoll,
-	out,response,(servletname+"_progress_win"));
-    /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
-    HashMap<String,Integer> counts=xsubnet_task.getCounts();
-    err_sb.append(xsubnet_task.getErrtxt());
-    return counts;
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  /**   Extracts subnet w/ multiple queries via separate thread.
-  */
-  public static HashMap<String,Integer> Extract2CYJS_LaunchThread(
-	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
-	String fout_subnet_path,
-	ArrayList<Integer> tids,
-	String cpd_id,String cpd_idtype,
-	String qcpd,String matchtype_qcpd,
-	Float minsim,
-	String cname,Boolean matchtype_cname_sub,
-	Integer mw_min,Integer mw_max,
-	ArrayList<Integer> cids,
-	ArrayList<Integer> scafids,
-	ArrayList<Integer> mcesids,
-	Boolean neighbortargets,
-	String subnet_title,
-	String servletname,
-	HttpServletResponse response,
-	PrintWriter out,
-	Integer n_max_a,Integer n_max_c,
-	ArrayList<String> sqls,
-	StringBuilder err_sb)
-      throws SQLException,IOException,ServletException
-  {
-    ExecutorService exec=Executors.newSingleThreadExecutor();
-    int tpoll=1000; //msec
-    Extract2CYJS_Task xsubnet_task =
-      new Extract2CYJS_Task(dbhost,dbport,dbid,dbusr,dbpw,fout_subnet_path,
-		tids,
-		cpd_id,cpd_idtype,
-		qcpd,matchtype_qcpd,minsim,
-		cname,matchtype_cname_sub,
-		mw_min,mw_max,
-		cids,scafids,mcesids,
-		neighbortargets,
-		subnet_title,
-		n_max_a,n_max_c,
-		sqls);
-    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (subnet-extraction)",tpoll,
-	out,response,(servletname+"_progress_win"));
-    /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
-    HashMap<String,Integer> counts=xsubnet_task.getCounts();
-    err_sb.append(xsubnet_task.getErrtxt());
-    return counts;
-  }
-  /////////////////////////////////////////////////////////////////////////////
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Target2Network_LaunchThread(
-	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
 	String fout_rgt_path,
 	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	Integer tid,
 	Float scaf_min,
-	Boolean act_filter,
 	String subnet_title,
 	String servletname,
 	HttpServletResponse response,
@@ -159,21 +64,19 @@ public class webapp_utils
     int tpoll=1000; //msec
     Target2Network_Task xsubnet_task =
       new Target2Network_Task(
-		dbhost,dbport,dbid,dbusr,dbpw,
+		dbhost, dbport, dbid, dbusr, dbpw,
 		fout_rgt_path,
 		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		tid,
 		scaf_min,
-		act_filter,
 		subnet_title,
 		n_max_a,n_max_c,
 		cpdlist,
 		ccplist,
 		sqls);
-    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (target2network)",tpoll,
-	out,response,(servletname+"_progress_win"));
+    TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (target2network)", tpoll, out, response, (servletname+"_progress_win"));
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
     HashMap<String,Integer> counts=xsubnet_task.getCounts();
     err_sb.append(xsubnet_task.getErrtxt());
@@ -184,14 +87,13 @@ public class webapp_utils
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Compound2Network_LaunchThread(
-	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
 	String fout_rgt_path,
 	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	Integer cid,
 	Float scaf_min,
-	Boolean act_filter,
 	String subnet_title,
 	String servletname,
 	HttpServletResponse response,
@@ -202,28 +104,26 @@ public class webapp_utils
 	CCPList ccplist,
 	ArrayList<String> sqls,
 	StringBuilder err_sb)
-      throws SQLException,IOException,ServletException
+      throws SQLException, IOException, ServletException
   {
     ExecutorService exec=Executors.newSingleThreadExecutor();
     int tpoll=1000; //msec
     Compound2Network_Task xsubnet_task =
       new Compound2Network_Task(
-		dbhost,dbport,dbid,dbusr,dbpw,
+		dbhost, dbport, dbid, dbusr, dbpw,
 		fout_rgt_path,
 		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		cid,
 		scaf_min,
-		act_filter,
 		subnet_title,
-		n_max_a,n_max_c,
+		n_max_a, n_max_c,
 		tids,
 		cpdlist,
 		ccplist,
 		sqls);
-    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (compound2network)",tpoll,
-	out,response,(servletname+"_progress_win"));
+    TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (compound2network)", tpoll, out, response, (servletname+"_progress_win"));
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
     HashMap<String,Integer> counts=xsubnet_task.getCounts();
     err_sb.append(xsubnet_task.getErrtxt());
@@ -234,45 +134,43 @@ public class webapp_utils
   /**   Extracts one-click subnet via separate thread.
   */
   public static HashMap<String,Integer> Disease2Network_LaunchThread(
-	String dbhost,Integer dbport,String dbid,String dbusr,String dbpw,
+	String dbhost, Integer dbport, String dbid, String dbusr, String dbpw,
 	String fout_rgt_path,
 	String fout_rgtp_path,
 	String fout_subnet_path,
 	String fout_cpd_path,
 	String kid,
 	Float scaf_min,
-	Boolean act_filter,
 	String subnet_title,
 	String servletname,
 	HttpServletResponse response,
 	PrintWriter out,
-	Integer n_max_a,Integer n_max_c,
+	Integer n_max_a, Integer n_max_c,
 	ArrayList<Integer> tids,
 	CompoundList cpdlist,
 	CCPList ccplist,
 	ArrayList<String> sqls,
 	StringBuilder err_sb)
-      throws SQLException,IOException,ServletException
+      throws SQLException, IOException, ServletException
   {
     ExecutorService exec=Executors.newSingleThreadExecutor();
     int tpoll=1000; //msec
     Disease2Network_Task xsubnet_task =
       new Disease2Network_Task(
-		dbhost,dbport,dbid,dbusr,dbpw,
+		dbhost, dbport, dbid, dbusr, dbpw,
 		fout_rgt_path,
 		fout_rgtp_path,
 		fout_subnet_path,
 		fout_cpd_path,
 		kid,
 		scaf_min,
-		act_filter,
 		subnet_title,
-		n_max_a,n_max_c,
+		n_max_a, n_max_c,
 		tids,
 		cpdlist,
 		ccplist,
 		sqls);
-    TaskUtils.ExecTaskWeb(exec,xsubnet_task,xsubnet_task.taskstatus,servletname+" (disease2network)",tpoll,
+    TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (disease2network)", tpoll,
 	out,response,(servletname+"_progress_win"));
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
     HashMap<String,Integer> counts=xsubnet_task.getCounts();
@@ -574,22 +472,6 @@ public class webapp_utils
     String htm=(
 	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyview+"?"+cyview_opts+"&infile="+fout_subnet_path+"','"+cyview_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
 	+("CyView<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cy3logoOrange.svg\"></BUTTON>\n");
-    return htm;
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static String XGMMLDownloadButtonHtm(
-	String fout_path,
-	String fname,
-	HttpServletResponse response,
-        String servletname)
-  {
-    File fout = new File(fout_path);
-    String htm=(
-      "<FORM METHOD=\"POST\" ACTION=\""+response.encodeURL(servletname)+"\">\n"+
-      "<INPUT TYPE=HIDDEN NAME=\"downloadfile\" VALUE=\""+fout_path+"\">\n"+
-      "<INPUT TYPE=HIDDEN NAME=\"fname\" VALUE=\""+fname+"\">\n"+
-      "<BUTTON TYPE=BUTTON onClick=\"this.form.submit()\">"+
-      "<B>Network XGMML ("+file_utils.NiceBytes(fout.length())+")</B></BUTTON>\n</FORM>");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
