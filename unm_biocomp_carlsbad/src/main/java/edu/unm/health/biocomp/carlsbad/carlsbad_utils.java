@@ -1990,10 +1990,10 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    if (counts.get("n_node_cpd")==null) counts.put("n_node_cpd",0);
-    if (counts.get("n_edge_act")==null) counts.put("n_edge_act",0);
-    if (counts.get("n_csynonyms")==null) counts.put("n_csynonyms",0);
-    if (counts.get("n_cpd_ext_ids")==null) counts.put("n_cpd_ext_ids",0);
+    if (counts.get("n_node_cpd")==null) counts.put("n_node_cpd", 0);
+    if (counts.get("n_edge_act")==null) counts.put("n_edge_act", 0);
+    if (counts.get("n_csynonyms")==null) counts.put("n_csynonyms", 0);
+    if (counts.get("n_cpd_ext_ids")==null) counts.put("n_cpd_ext_ids", 0);
     for (int cid: cpddata.keySet())
     {
       WriteCompoundNode2Elements(cid, cpddata, c2t_global, cpdsynonyms, cpd_sbs_ids, counts, elements);
@@ -2032,34 +2032,25 @@ public class carlsbad_utils
       nodedata.put("deg_tgt", deg_tgt);
       System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; deg_tgt="+deg_tgt);
     }
-    if (cpddata.get(cid).get("is_drug")!=null && cpddata.get(cid).get("is_drug").equalsIgnoreCase("T"))
-    {
-      nodedata.put("is_drug", new Boolean(true));
-    }
+    Boolean is_drug = (cpddata.get(cid).get("is_drug")!=null && cpddata.get(cid).get("is_drug").equalsIgnoreCase("T"));
+    nodedata.put("is_drug", is_drug);
+    System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; is_drug="+is_drug);
     if (cpdsynonyms!=null && cpdsynonyms.containsKey(cid))
     {
-      ArrayList<String> synonyms = new ArrayList<String>();
-      for (String synonym: cpdsynonyms.get(cid).keySet())
-      {
-        synonyms.add(synonym);
-        counts.put("n_csynonyms", counts.get("n_csynonyms")+1);
-      }
+      ArrayList<String> synonyms = new ArrayList<String>(cpdsynonyms.get(cid).keySet());
+      System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; synonyms.size()="+synonyms.size());
       nodedata.put("synonym", synonyms);
-      System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; synonyms="+synonyms);
     }
+    System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; synonyms--DONE.");
     if (cpd_sbs_ids!=null && cpd_sbs_ids.containsKey(cid)) 
     {
       for (String sbs_id_type: cpd_sbs_ids.get(cid).keySet())
       {
         if (cpd_sbs_ids.get(cid).get(sbs_id_type).size()==0) continue;
-        ArrayList<String> sbs_ids = new ArrayList<String>();
-        for (String sbs_id: cpd_sbs_ids.get(cid).get(sbs_id_type))
-        {
-          sbs_ids.add(sbs_id);
-          counts.put("n_cpd_ext_ids", counts.get("n_cpd_ext_ids")+1);
-        }
+        ArrayList<String> sbs_ids = new ArrayList<String>(cpd_sbs_ids.get(cid).get(sbs_id_type));
+        counts.put("n_cpd_ext_ids", counts.get("n_cpd_ext_ids")+(cpd_sbs_ids.get(cid).get(sbs_id_type).size()));
         nodedata.put(sbs_id_type.replaceAll(" ", "_"), sbs_ids);
-        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_ids="+sbs_ids);
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_id_type="+sbs_id_type+"; sbs_ids.size()="+sbs_ids.size());
       }
     }
     node.put("data", nodedata);
