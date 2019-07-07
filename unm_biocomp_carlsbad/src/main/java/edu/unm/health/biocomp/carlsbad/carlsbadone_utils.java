@@ -341,6 +341,7 @@ public class carlsbadone_utils
     for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
     carlsbad_utils.Compounds2Targets(c2t_global,dbcon,human_filter); //Get global-degree data.
 
+    System.err.println("DEBUG: (Compound2Network) scaffolds...");
     /// Scaffolds (wheres kept):
     sql=carlsbad_utils.ScaffoldSQL(null,null,wheres);
     sqls.add(sql);
@@ -355,6 +356,7 @@ public class carlsbadone_utils
     carlsbad_utils.Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
     carlsbad_utils.Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
 
+    System.err.println("DEBUG: (Compound2Network) mcess...");
     /// MCESs (NB: wheres kept):
     sql=carlsbad_utils.McesSQL(null,null,wheres);
     sqls.add(sql);
@@ -377,6 +379,7 @@ public class carlsbadone_utils
     int n_edge_removed = carlsbad_utils.Filter_By_S2C_Weight(scafdata,scaf_min);
     counts.put("n_edge_removed", n_edge_removed);
 
+    System.err.println("DEBUG: (Compound2Network) other cpds...");
     /// Find "other" compounds via CCPs:
     HashSet<Integer> cid_global = new HashSet<Integer>();
     for (int scafid: s2c_global.keySet())
@@ -474,6 +477,7 @@ public class carlsbadone_utils
 	false,	//include_ccps?
 	counts, elements);
 
+      System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements --DONE.");
       root.put("elements", elements);
       JsonGenerator jsg = jsf.createGenerator(fout_rgt_writer);
       jsg.useDefaultPrettyPrinter();
