@@ -2044,15 +2044,27 @@ public class carlsbad_utils
     System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; synonyms--DONE.");
     if (cpd_sbs_ids!=null && cpd_sbs_ids.containsKey(cid)) 
     {
-      for (String sbs_id_type: cpd_sbs_ids.get(cid).keySet())
+      ArrayList<String> sbs_id_types = new ArrayList<String>(cpd_sbs_ids.get(cid).keySet());
+      System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_id_types.size()="+sbs_id_types.size());
+      for (String sbs_id_type: sbs_id_types)
       {
-        if (cpd_sbs_ids.get(cid).get(sbs_id_type).size()==0) continue;
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_id_type="+sbs_id_type);
         ArrayList<String> sbs_ids = new ArrayList<String>(cpd_sbs_ids.get(cid).get(sbs_id_type));
-        counts.put("n_cpd_ext_ids", counts.get("n_cpd_ext_ids")+(cpd_sbs_ids.get(cid).get(sbs_id_type).size()));
-        nodedata.put(sbs_id_type.replaceAll(" ", "_"), sbs_ids);
         System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_id_type="+sbs_id_type+"; sbs_ids.size()="+sbs_ids.size());
+        if (sbs_ids.size()==0) continue;
+        String tag = sbs_id_type.replaceAll(" ", "_"); //DEBUG
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_id_type=\""+sbs_id_type+"\" > "+tag);
+        nodedata.put(sbs_id_type.replaceAll(" ", "_"), sbs_ids);
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; nodedata.put done.");
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; counts.get(\"n_cpd_ext_ids\")="+counts.get("n_cpd_ext_ids"));
+        if (counts.get("n_cpd_ext_ids")==null) counts.put("n_cpd_ext_ids", 0); //???
+        Integer foo = counts.get("n_cpd_ext_ids")+sbs_ids.size();
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; foo="+foo);
+        counts.put("n_cpd_ext_ids", counts.get("n_cpd_ext_ids")+sbs_ids.size());
+        System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; counts.put done.");
       }
     }
+    System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; sbs_ids--DONE.");
     node.put("data", nodedata);
     nodes.add(node);
     System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+" --DONE.");
