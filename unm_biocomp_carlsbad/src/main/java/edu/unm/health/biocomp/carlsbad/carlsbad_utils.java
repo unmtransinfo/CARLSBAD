@@ -2583,8 +2583,7 @@ public class carlsbad_utils
     }
 
     //Create tgt-tgt edges if any shared cpds, scafs or mcess.
-    counts.put("n_edge_tgttgt",0);
-    int n_edge_tt=0;
+    counts.put("n_edge_tgttgt", 0);
     System.err.println("DEBUG: (WriteReducedGraph2Elements) tgt-tgt edges...");
     for (int tidA: tids)
     {

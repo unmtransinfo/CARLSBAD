@@ -486,8 +486,8 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     Integer n_edge_scaf=((subnet_counts.get("n_edge_scaf")!=null)?subnet_counts.get("n_edge_scaf"):0);
     Integer n_edge_mces=((subnet_counts.get("n_edge_mces")!=null)?subnet_counts.get("n_edge_mces"):0);
     Integer n_edge_total=n_edge_act+n_edge_scaf+n_edge_mces;
-    Integer n_edge_tt=((subnet_counts.get("n_edge_tt")!=null)?subnet_counts.get("n_edge_tt"):0);
-    Integer n_edge_tp=((subnet_counts.get("n_edge_tp")!=null)?subnet_counts.get("n_edge_tp"):0);
+    Integer n_edge_tgttgt=((subnet_counts.get("n_edge_tgttgt")!=null)?subnet_counts.get("n_edge_tgttgt"):0);
+    Integer n_edge_tgtccp=((subnet_counts.get("n_edge_tgtccp")!=null)?subnet_counts.get("n_edge_tgtccp"):0);
     if (n_node_total==0)
       return ("NOTE: subnet empty; no targets nor compounds found.");
 
@@ -502,8 +502,8 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
       thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
-//BUG: rgt:n_edge_tt zero incorrectly.
-      thtm_butts+=("<TD>nodes: "+n_node_tgt+"<BR/>edges: "+n_edge_tt+"</TD>");
+//BUG: rgt:n_edge_tgttgt zero incorrectly.
+      thtm_butts+=("<TD>nodes: "+n_node_tgt+"<BR/>edges: "+n_edge_tgttgt+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgt+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
     }
@@ -513,8 +513,8 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
       thtm_butts+=("<B>(targets+CCPs)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
-//BUG: rgt:n_edge_tt+n_edge_tp zero incorrectly.
-      thtm_butts+=("<TD>nodes: "+(n_node_tgt+n_node_scaf+n_node_mces)+"<BR/>edges: "+(n_edge_tt+n_edge_tp)+"</TD>");
+//BUG: rgt:n_edge_tgttgt+n_edge_tgtccp zero incorrectly.
+      thtm_butts+=("<TD>nodes: "+(n_node_tgt+n_node_scaf+n_node_mces)+"<BR/>edges: "+(n_edge_tgttgt+n_edge_tgtccp)+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
     }
