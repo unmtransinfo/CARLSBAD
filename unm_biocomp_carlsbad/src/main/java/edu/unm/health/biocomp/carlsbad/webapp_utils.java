@@ -502,6 +502,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
       thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
+//BUG: rgt:n_edge_tt zero incorrectly.
       thtm_butts+=("<TD>nodes: "+n_node_tgt+"<BR/>edges: "+n_edge_tt+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgt+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
@@ -512,6 +513,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
       thtm_butts+=("<B>(targets+CCPs)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
+//BUG: rgt:n_edge_tt+n_edge_tp zero incorrectly.
       thtm_butts+=("<TD>nodes: "+(n_node_tgt+n_node_scaf+n_node_mces)+"<BR/>edges: "+(n_edge_tt+n_edge_tp)+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");

@@ -2329,12 +2329,8 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    //System.err.println("DEBUG: (WriteReducedGraph2Elements) counts==null? : "+(counts==null));
-    //System.err.println("DEBUG: (WriteReducedGraph2Elements) elements==null? : "+(elements==null));
     ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
     ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
-    //System.err.println("DEBUG: (WriteReducedGraph2Elements) nodes==null? : "+(nodes==null));
-    //System.err.println("DEBUG: (WriteReducedGraph2Elements) edges==null? : "+(edges==null));
 
     if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt", 0);
     if (counts.get("n_tgt_ext_ids")==null) counts.put("n_tgt_ext_ids", 0);
@@ -2415,7 +2411,6 @@ public class carlsbad_utils
       }
     }
 
-    //System.err.println("DEBUG: (WriteReducedGraph2Elements) tgt nodes...");
     for (int tid: tids)
     {
       HashMap<String, Object> node = new HashMap<String, Object>();
@@ -2492,8 +2487,6 @@ public class carlsbad_utils
     {
       WriteDiseaseNode2Elements(disease, counts, elements);
     }
-
-// Uncaught Error: Can not create edge `4b3718fb-172f-4027-bd3a-398fa1f53dea` with nonexistant target `S1287` (rgtp)
 
     if (include_ccps)
     {
