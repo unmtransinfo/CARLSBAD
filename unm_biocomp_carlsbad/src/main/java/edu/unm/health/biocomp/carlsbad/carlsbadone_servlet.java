@@ -188,7 +188,7 @@ public class carlsbadone_servlet extends HttpServlet
 
         HashMap<String,Integer> subnet_counts=null;
         String fout_rgt_path=null; //reduced-graph, tgts only
-        String fout_rgtp_path=null; //reduced-graph, tgts+CCPs
+        String fout_rgtp_path=null; //reduced-graph, tgts+scaffolds
         String fout_full_path=null; //full-graph
         String fout_cpd_path=null; //compounds
         ArrayList<String> sqls = new ArrayList<String>();
@@ -203,7 +203,7 @@ public class carlsbadone_servlet extends HttpServlet
           File dout=new File(SCRATCHDIR);
           File fout_rgt=File.createTempFile(PREFIX, "_subnet_rgt.cyjs", dout); //reduced-graph, tgts only
           fout_rgt_path=fout_rgt.getAbsolutePath();
-          File fout_rgtp=File.createTempFile(PREFIX, "_subnet_rgtp.cyjs", dout); //reduced-graph, tgts+CCPs
+          File fout_rgtp=File.createTempFile(PREFIX, "_subnet_rgtp.cyjs", dout); //reduced-graph, tgts+scaffolds
           fout_rgtp_path=fout_rgtp.getAbsolutePath();
           File fout_full=File.createTempFile(PREFIX, "_subnet_full.cyjs", dout);
           fout_full_path=fout_full.getAbsolutePath();
@@ -312,7 +312,7 @@ public class carlsbadone_servlet extends HttpServlet
         thtm+=("</TABLE></TD>\n");
 
         thtm+=("<TD WIDTH=\"33%\" ALIGN=CENTER VALIGN=TOP>");
-        thtm+=("<TABLE><TR><TD><H3>CCPs: "+ccplist.size()+"</H3></TD><TD>"+(ccplist.size()>0?ccps_bhtm:"")+"</TD></TR>");
+        thtm+=("<TABLE><TR><TD><H3>Scaffolds: "+ccplist.size()+"</H3></TD><TD>"+(ccplist.size()>0?ccps_bhtm:"")+"</TD></TR>");
         thtm+=("<TR><TD COLSPAN=2 ALIGN=CENTER>count: "+ccplist.size()+"</TD></TR>\n");
         thtm+=("</TABLE></TD>\n");
 
@@ -352,9 +352,9 @@ public class carlsbadone_servlet extends HttpServlet
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_csv_bhtm+"</TD><TD>&larr; SMILES with IDs</TD></TR>\n";
         thtm+="<TR><TD ALIGN=RIGHT>"+cpd_sdf_bhtm+"</TD><TD>&larr; SDF with IDs, data</TD></TR>\n";
 
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgt+"</TD><TD>&larr; <B>Lean (targets-only)</B></TD></TR>\n";
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgtp+"</TD><TD>&larr; <B>Medium (targets+CCPs)</B></TD></TR>\n";
-        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_full+"</TD><TD>&larr; <B>Full</B></TD></TR>\n";
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgt+"</TD><TD>&larr; <B>Lean (targets)</B></TD></TR>\n";
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_rgtp+"</TD><TD>&larr; <B>Medium (targets, scaffolds)</B></TD></TR>\n";
+        thtm+="<TR><TD ALIGN=RIGHT>"+bhtm_cyjs_full+"</TD><TD>&larr; <B>Full (targets, scaffolds, compounds)</B></TD></TR>\n";
         thtm+="<TR><TD COLSPAN=2 ALIGN=CENTER>(CYJS can be imported by Cytoscape.)</TD></TR>\n";
 
         thtm+="</TABLE>\n";
@@ -434,7 +434,7 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         String etag=request.getParameter("etag");
-        out.print(HtmUtils.HeaderHtm(title+":ViewCCPs", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewScaffolds", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
         String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
         Integer skip=null;
         try { skip=Integer.parseInt(request.getParameter("skip")); } catch (Exception e) {};
@@ -448,7 +448,7 @@ public class carlsbadone_servlet extends HttpServlet
 		request.getParameter("sortby"),
 		skip,
 		nmax,
-		"CCPs",
+		"Scaffolds",
 		mol2img_servleturl,
 		response,
 		SERVLETNAME));
@@ -460,7 +460,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewCCP", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewScaffold", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
         String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
         Integer id=Integer.parseInt(request.getParameter("id"));
         String ccptype=request.getParameter("ccptype");
@@ -801,6 +801,7 @@ public class carlsbadone_servlet extends HttpServlet
     +"<TABLE WIDTH=\"100%\"><TR><TD VALIGN=MIDDLE><H1>"+APPNAME+" &nbsp; "+logo_htm+"</H1></TD>\n"
     +"<TD ALIGN=LEFT> - bioactivity knowlegebase &amp; hypotheses via chemical patterns</TD>\n");
     htm+="<INPUT TYPE=HIDDEN NAME=\"dbid\" VALUE=\""+params.getVal("dbid")+"\">\n";
+    htm+="<INPUT TYPE=HIDDEN NAME=\"scaf_min\" VALUE=\""+params.getVal("scaf_min")+"\">\n";
     htm+=(
     "<TD ALIGN=RIGHT>\n"
     +("<BUTTON TYPE=BUTTON onClick=\"void window.open('"+response.encodeURL(SERVLETNAME)+"?help=TRUE','helpwin','width=600,height=400,scrollbars=1,resizable=1')\"><B>Help</B></BUTTON>\n")
@@ -835,7 +836,7 @@ public class carlsbadone_servlet extends HttpServlet
     +"</TD>\n"
     );
     htm+=(
-      "<TD WIDTH=\"45%\" VALIGN=TOP>\n"
+      "<TD WIDTH=\"50%\" VALIGN=TOP>\n"
       +"<FIELDSET STYLE=\"height:100%;\"><LEGEND><B>"+formmode+" query:</B></LEGEND>\n"
       +"&nbsp;name:<BR>\n"
     );
@@ -882,20 +883,20 @@ public class carlsbadone_servlet extends HttpServlet
       );
     }
 
-    htm+=(
-      "<TD WIDTH=\"30%\" VALIGN=TOP>\n"
-      +"<FIELDSET STYLE=\"height:100%;\"><LEGEND><B>filters:</B></LEGEND>\n"
-      +"<TABLE WIDTH=\"100%\">\n"
-      +"<TR><TD ALIGN=RIGHT>scaffold weight [0-1]:</TD>\n"
-      +"<TD><INPUT TYPE=\"TEXT\" NAME=\"scaf_min\" SIZE=3 VALUE=\""+params.getVal("scaf_min")+"\"></TD></TR>\n"
-      +"</TR></TABLE>\n"
-      +"<P></P><P></P><P></P>\n" //kludge to expand fieldset box
-      +"</FIELDSET></TD>\n"
-      );
+//    htm+=(
+//      "<TD WIDTH=\"30%\" VALIGN=TOP>\n"
+//      +"<FIELDSET STYLE=\"height:100%;\"><LEGEND><B>filters:</B></LEGEND>\n"
+//      +"<TABLE WIDTH=\"100%\">\n"
+//      +"<TR><TD ALIGN=RIGHT>scaffold weight [0-1]:</TD>\n"
+//      +"<TD><INPUT TYPE=\"TEXT\" NAME=\"scaf_min\" SIZE=3 VALUE=\""+params.getVal("scaf_min")+"\"></TD></TR>\n"
+//      +"</TR></TABLE>\n"
+//      +"<P></P><P></P><P></P>\n" //kludge to expand fieldset box
+//      +"</FIELDSET></TD>\n"
+//      );
 
     htm+=(
     "</TR>\n"
-    +"<TR><TD COLSPAN=4 ALIGN=CENTER>"
+    +"<TR><TD COLSPAN=3 ALIGN=CENTER>"
     +"<BUTTON CLASS=\"cb_button\" TYPE=BUTTON onClick=\"javascript:go_search(this.form,'"+formmode+"')\">Search Carlsbad</BUTTON>"
     +"</TD></TR>\n"
     +"</TABLE>\n"

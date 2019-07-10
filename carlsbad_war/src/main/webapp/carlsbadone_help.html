@@ -1,5 +1,6 @@
 <H1>CarlsbadOne Help</H1>
 <B>Bioactivity knowledgebase and hypotheses via chemical patterns.</B>
+<P>
 <H3>Introduction</H3>
 CarlsbadOne is a one-step, bioactivity data-mining,
 evidence-driven application for biophamaceutical knowledge discovery
@@ -29,7 +30,7 @@ migrating the relational database to a graph database platform such as Neo4j.
 <DT><B>disease-query mode</B>
 <DD>A single disease is the query.  Diseases are from KEGG.  KEGG also reports linked genes,
 which reference proteins via NCBI_GI and Uniprot IDs, and thereby CARLSBAD targets.
-The one-click network includes those targets, active compounds, their CCPs, and neighbor compounds.
+The one-click network includes those targets, active compounds, their scaffolds, and neighbor compounds.
 <DT><B>drug-query mode</B>
 <DD>A single drug is the query.  All targets for which the drug is active are included in the retrieved
 subnet.  In addition, targets are included for which the active compounds are associated with the drug query
@@ -43,7 +44,7 @@ Targets and compounds found each have a relationship to the query, and in Carlsb
 relationships are either:
 <UL>
 <LI><B>Empirical</B> - related via empirical activity data.
-<LI><B>Hypothesis</B> - related via common chemical pattern (CCP) <I>and</I> empirical data.
+<LI><B>Hypothesis</B> - related via scaffold <I>and</I> empirical data.
 </UL>
 Relationships generally also vary in network distance.  However, in CarlsbadOne, 
 to be regarded as empirical, entities must be associated by only ONE link of each type
@@ -61,9 +62,14 @@ available:
 <OL>
 <LI><B>Targets-only</B>: target-target edges represent shared compounds.
 Activity profile information is reflected via visual cues (e.g. target-node size).
-<LI><B>Targets-and-CCPs</B>: compounds are hidden and represented via their CCPs. Target-target edges
+<LI><B>Targets-and-scaffolds</B>: compounds are hidden and represented via their scaffolds. Target-target edges
 representing shared compounds included.
 </OL>
+<P>
+<H3>Scaffolds and MCES</H3>
+Carlsbad includes two types of chemical patterns, (1) <B>scaffolds</B>, and (2) <B>maximum-common-edge-subgraphs (MCES)</B>, each defined by rigorous
+published cheminformatics algorithms. In the CarlsbadOne app, these are referred to generically as scaffolds, though previously
+we used the less familiar term <B>common chemical pattern (CCP)</B>.
 <P>
 <H3>Output</H3>
 <UL>
@@ -84,8 +90,7 @@ For a detailed profile of database contents, see the
 <H3>Notes</H3>
 <UL>
 <LI>Ref: The CARLSBAD Database: A Confederated Database of Chemical Bioactivities, S. L. Mathias, J. Hines-Kay, J. J. Yang, G. Zahoransky-Kohalmi, C. G. Bologa, O. Ursu and T. I. Oprea, Database, 2013, bat044.
-<LI><I>Chemical Pattern Detection and Visualization in Biological Networks</I>,
-supported by NIH R21 award, PI Tudor Oprea).
+<LI><I>Chemical Pattern Detection and Visualization in Biological Networks</I>, supported by NIH R21 award, PI Tudor Oprea).
 </UL>
 <P>
 <a href="http://carlsbad.health.unm.edu"><img height="240" src="/tomcat/carlsbad/images/carlsbad_logo.png" align=right border=0></a>

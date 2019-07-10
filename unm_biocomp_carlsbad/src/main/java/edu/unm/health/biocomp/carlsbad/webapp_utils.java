@@ -22,6 +22,8 @@ import edu.unm.health.biocomp.util.http.*;
 */
 public class webapp_utils
 {
+  private static Integer N_NODE_MAX_VIEWABLE = 200;
+
   /////////////////////////////////////////////////////////////////////////////
   /**   Executes SQL statement via separate thread.
   */
@@ -466,7 +468,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
   public static String SubnetResultsHtm(
 	HashMap<String,Integer> subnet_counts,
 	String fout_rgt_path, //reduced-graph, tgts only
-	String fout_rgtp_path, //reduced-graph, tgts+CCPs
+	String fout_rgtp_path, //reduced-graph, tgts+scaffolds
 	String fout_subnet_path, //full-graph
 	String title,
 	HttpServletResponse response,
@@ -491,9 +493,9 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     if (n_node_total==0)
       return ("NOTE: subnet empty; no targets nor compounds found.");
 
-    String advice_full=((n_node_total>1000)?"&larr;NOT recommended, since total nodes &gt;1000.":"");
-    String advice_rgt=((n_node_tgt>100)?"&larr;NOT recommended, since target nodes &gt;100.":"");
-    String advice_rgtp=(((n_node_tgt+n_node_scaf+n_node_mces)>100)?"&larr;NOT recommended, since target+CCPs nodes &gt;100.":"");
+    String advice_rgt=((n_node_tgt>N_NODE_MAX_VIEWABLE)?"&larr;WARNING: size may affect viewability (n_node&gt;"+N_NODE_MAX_VIEWABLE+").":"");
+    String advice_rgtp=(((n_node_tgt+n_node_scaf+n_node_mces)>N_NODE_MAX_VIEWABLE)?"&larr;WARNING: size may affect viewability (n_node&gt;"+N_NODE_MAX_VIEWABLE+").":"");
+    String advice_full=((n_node_total>N_NODE_MAX_VIEWABLE)?"&larr;WARNING: size may affect viewability (n_node&gt;"+N_NODE_MAX_VIEWABLE+").":"");
 
     String thtm_butts="<TABLE CELLSPACING=5 CELLPADDING=5>\n";
     if (fout_rgt_path!=null)
@@ -502,7 +504,6 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
       thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
-//BUG: rgt:n_edge_tgttgt zero incorrectly.
       thtm_butts+=("<TD>nodes: "+n_node_tgt+"<BR/>edges: "+n_edge_tgttgt+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgt+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
@@ -511,9 +512,8 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     {
       String bhtm_rgtp=CyviewButtonHtm(fout_rgtp_path, "rgtp", response, contextpath, title, cyview, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
-      thtm_butts+=("<B>(targets+CCPs)</B><BR/></TD>");
+      thtm_butts+=("<B>(targets+scaffolds)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
-//BUG: rgt:n_edge_tgttgt+n_edge_tgtccp zero incorrectly.
       thtm_butts+=("<TD>nodes: "+(n_node_tgt+n_node_scaf+n_node_mces)+"<BR/>edges: "+(n_edge_tgttgt+n_edge_tgtccp)+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
@@ -1150,7 +1150,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
-  /**	For popup window display of hitlist CCPs, from cache.
+  /**	For popup window display of hitlist scaffolds, from cache.
   */
   public static String ViewCCPsHtm(
 	CCPList ccplist,
@@ -1191,7 +1191,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     String bhtm_nextpg=(n_ccp>skip+2*nmax)?("&nbsp;&gt;&nbsp;<a href=\"javascript:void(0)\" onClick=\"window.location.replace('"+url+"&sortby="+sortby+"&skip="+(skip+nmax)+"&nmax="+nmax+"')\">next</a>\n"):"";
     String bhtm_lastpg=(n_ccp>skip+nmax)?("&nbsp;&gt;&nbsp;<a href=\"javascript:void(0)\" onClick=\"window.location.replace('"+url+"&sortby="+sortby+"&skip="+(n_ccp%nmax==0?(n_ccp-nmax):(n_ccp-(n_ccp%nmax)))+"&nmax="+nmax+"')\">last</a>\n"):"";
 
-    String htm="<TABLE WIDTH=\"100%\"><TR><TD><H1>"+(title==null?"CCPs":title)+"</H1></TD>\n";
+    String htm="<TABLE WIDTH=\"100%\"><TR><TD><H1>"+(title==null?"scaffolds":title)+"</H1></TD>\n";
     if (nmax<n_ccp) { htm+=("<TD ALIGN=CENTER><I>"+bhtm_1stpg+bhtm_prevpg+("<b>["+(skip+1)+"-"+Math.min(skip+nmax,n_ccp)+"]</b>")+bhtm_nextpg+bhtm_lastpg+"</I></TD>"); }
     htm+=("<TD ALIGN=RIGHT>scaffolds:"+n_scaf+"<BR>mcess:"+n_mces+"<BR>total ccps:"+n_ccp+"</TD></TR></TABLE>\n");
 
@@ -1260,7 +1260,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
 	throws SQLException
   {
     Boolean human_only=true;
-    String htm="<H3>CCP Summary ["+ccptype+": ID = "+id+"]:</H3>\n";
+    String htm="<H3>scaffold Summary ["+ccptype+": ID = "+id+"]:</H3>\n";
     String thtm="";
     String imghtm;
     String depopts=("mode=cow&imgfmt=png&kekule=true");
