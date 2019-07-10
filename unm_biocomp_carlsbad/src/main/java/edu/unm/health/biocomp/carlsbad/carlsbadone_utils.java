@@ -207,7 +207,7 @@ public class carlsbadone_utils
 	null,	//cpdsynonyms not needed?
 	null,	//cpd_sbs_ids not needed?
 	scafdata, mcesdata,
-	false,	//include_ccps?
+	false,	//include_ccps
 	counts, elements);
 
       root.put("elements", elements);

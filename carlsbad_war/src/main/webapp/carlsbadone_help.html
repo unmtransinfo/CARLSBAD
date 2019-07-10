@@ -1,6 +1,5 @@
 <H1>CarlsbadOne Help</H1>
 <B>Bioactivity knowledgebase and hypotheses via chemical patterns.</B>
-<HR>
 <H3>Introduction</H3>
 CarlsbadOne is a one-step, bioactivity data-mining,
 evidence-driven application for biophamaceutical knowledge discovery
@@ -10,24 +9,20 @@ This web app queries the CARLSBAD database, which consists of targets, small mol
 bioactivities, related data, and chemical patterns comprised of scaffolds
 and MCES clusters.
 <P>
-<TABLE WIDTH="100%" BORDER CELLSPACING=5 CELLPADDING=5><TR><TD>
-<CENTER><B>Note to experienced Carlsbad users about CarlsbadOne:</B></CENTER><BR/>
-The newly named CarlsbadOne web app responds to the needs and feedback of users,
-by providing a unified portal, designed for usability and simplicity,
+The CarlsbadOne web app provids a unified portal, designed for usability and simplicity,
 with useful, relevant results for scientifically meaningful queries.
 Specifically, this means:
 <UL>
-<LI> One webapp UI for query and network viewing via CytoscapeWeb.
+<LI> One webapp UI for query and network viewing via CytoscapeJS.
 <LI> One step, one topic query logic, with queries defined by one disease, drug, or target.
 <LI> One degree of separation via chemical pattern associations to novel target/compound hypotheses.
 <LI> One unified, coherent data resource.
 <LI> Step One for bioactivity knowledge discovery.
 </UL>
-The previous SNAKE&rarr;XGMML &rarr; Cytoscape &rarr; Carlsbad-Plugin workflow
-remains the most powerful and flexible way to utilize Carlsbad.  However, even for advanced
-users with complex queries, CarlsbadOne can provide an effective starting point for initial
-and exploratory data analysis.
-</TD></TR></TABLE>
+CarlsbadOne can provide an effective starting point for initial and exploratory data
+analysis.  More advanced queries will require 
+alternative interfaces, such as via direct SQL access to the database, or by 
+migrating the relational database to a graph database platform such as Neo4j.
 <P>
 <H3>Query logic</H3>
 <DL>
@@ -74,14 +69,14 @@ representing shared compounds included.
 <UL>
 <LI> View summary of subnet.
 <LI> View a table of targets.
-<LI> View reduced-graph[s] subnet using CytoscapeWeb.
-<LI> View full subnet using CytoscapeWeb.
-<LI> Download XGMML file of reduced-graph[s] subnet.
-<LI> Download XGMML file of full subnet.
+<LI> View reduced-graph[s] subnet using CytoscapeJS.
+<LI> View full subnet using CytoscapeJS.
+<LI> Download CYJS file of reduced-graph[s] subnet.
+<LI> Download CYJS file of full subnet.
 <LI> Download a CSV file of subnet targets and associated data.
 <LI> Download a CSV file of subnet compounds and associated data.
 </UL>
-(XGMML files can be directly imported by Cytoscape 2.8.0+ and processed with the CarlsbadPlugin.)
+(CYJS files can be directly imported by Cytoscape.)
 <P>
 For a detailed profile of database contents, see the
 <A HREF="http://carlsbad.health.unm.edu/">CARLSBAD Project Homepage</A>.

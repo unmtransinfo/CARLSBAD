@@ -2493,6 +2493,8 @@ public class carlsbad_utils
       WriteDiseaseNode2Elements(disease, counts, elements);
     }
 
+// Uncaught Error: Can not create edge `4b3718fb-172f-4027-bd3a-398fa1f53dea` with nonexistant target `S1287` (rgtp)
+
     if (include_ccps)
     {
       System.err.println("DEBUG: (WriteReducedGraph2Elements) ccp nodes...");
@@ -2606,7 +2608,7 @@ public class carlsbad_utils
           HashMap<String, Object> edge = new HashMap<String, Object>();
           HashMap<String, Object> edgedata = new HashMap<String, Object>();
           edgedata.put("source", "T"+tidA);
-          edgedata.put("target", "S"+tidB);
+          edgedata.put("target", "T"+tidB);
           edgedata.put("ID", "TT"+counts.get("n_edge_tgttgt"));
           edgedata.put("class", "tt");
           if (n_shared_cpd>0)
