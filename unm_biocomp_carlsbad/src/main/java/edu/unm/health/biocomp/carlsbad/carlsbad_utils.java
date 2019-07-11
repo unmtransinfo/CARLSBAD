@@ -1074,20 +1074,20 @@ public class carlsbad_utils
         if (!actdata.containsKey(act_id))
         {
           actdata.put(act_id,new HashMap<String,String>());
-          actdata.get(act_id).put("act_id",""+act_id);
-          actdata.get(act_id).put("tid",""+tid);
-          actdata.get(act_id).put("cid",""+cid);
-          actdata.get(act_id).put("act_type",rset.getString("act_type"));
-          actdata.get(act_id).put("act_value_std",rset.getString("act_value_std"));
-          actdata.get(act_id).put("confidence",rset.getString("confidence"));
+          actdata.get(act_id).put("act_id", ""+act_id);
+          actdata.get(act_id).put("tid", ""+tid);
+          actdata.get(act_id).put("cid", ""+cid);
+          actdata.get(act_id).put("act_type", rset.getString("act_type"));
+          actdata.get(act_id).put("act_value_std", rset.getString("act_value_std"));
+          actdata.get(act_id).put("confidence", rset.getString("confidence"));
         }
       }
       if (!cpddata.containsKey(cid))
       {
         ++n_new_cpd;
-        cpddata.put(cid,new HashMap<String,String>());
-        cpddata.get(cid).put("smiles",rset.getString("smiles"));
-        cpddata.get(cid).put("is_drug",rset.getString("is_drug"));
+        cpddata.put(cid, new HashMap<String,String>());
+        cpddata.get(cid).put("smiles", rset.getString("smiles"));
+        cpddata.get(cid).put("is_drug", rset.getString("is_drug"));
       }
       if (rset.getString("csynonym")!=null)
       {
@@ -1638,13 +1638,13 @@ public class carlsbad_utils
       catch (Exception e) { System.err.println("error: "+e.getMessage()); continue; }
       if (!actdata.containsKey(act_id))
       {
-        actdata.put(act_id,new HashMap<String,String>());
-        actdata.get(act_id).put("act_id",""+act_id);
-        actdata.get(act_id).put("tid",""+tid);
-        actdata.get(act_id).put("cid",""+cid);
-        actdata.get(act_id).put("act_type",rset.getString("act_type"));
-        actdata.get(act_id).put("act_value_std",rset.getString("act_value_std"));
-        actdata.get(act_id).put("confidence",rset.getString("confidence"));
+        actdata.put(act_id, new HashMap<String,String>());
+        actdata.get(act_id).put("act_id", ""+act_id);
+        actdata.get(act_id).put("tid", ""+tid);
+        actdata.get(act_id).put("cid", ""+cid);
+        actdata.get(act_id).put("act_type", rset.getString("act_type"));
+        actdata.get(act_id).put("act_value_std", rset.getString("act_value_std"));
+        actdata.get(act_id).put("confidence", rset.getString("confidence"));
       }
     }
     return n_row;
@@ -2171,8 +2171,10 @@ public class carlsbad_utils
         edgedata.put("act_type", actdata.get(act_id).get("act_type"));
       if (actdata.get(act_id).get("act_value_std")!=null)
         edgedata.put("val_std", actdata.get(act_id).get("act_value_std"));
-      if (actdata.get(act_id).get("confidence")!=null)
-        edgedata.put("confidence", actdata.get(act_id).get("confidence"));
+      try {
+        Integer confidence = Integer.parseInt(actdata.get(act_id).get("confidence"));
+        edgedata.put("confidence", confidence);
+      } catch (Exception e) { }
       if (counts.get("n_edge_act")==null) counts.put("n_edge_act", 0); //???
       counts.put("n_edge_act", counts.get("n_edge_act")+1);
       if (counts.get("n_edge_act")==n_max_a) break;

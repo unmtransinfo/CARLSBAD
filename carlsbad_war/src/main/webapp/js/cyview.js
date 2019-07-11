@@ -1,21 +1,26 @@
 function go_init(form) {
-  form.nodescale.checked=true;
-  form.nodeshape.checked=true;
-  form.nodecolor.checked=true;
-  form.edgescale.checked=true;
+  form.nodestyle.checked=true;
+  form.edgestyle.checked=true;
   form.edgemerge.checked=true;
   for (i=0;i<form.layout.length;++i)
     if (form.layout.options[i].value=='cose')
       form.layout.options[i].selected=true;
-  mod_nodeSize(form);
-  mod_nodeColor(form);
-  mod_nodeShape(form);
-  mod_edgeWidth(form);
-  mod_edgeMerge(form);
-  mod_labelStyle(form);
+  mod_nodeStyle(form);
+  mod_edgeStyle(form);
   mod_layout(form);
   cy.nodes().on('tap', tap_node);
   cy.edges().on('tap', tap_edge);
+}
+function mod_nodeStyle(form) {
+  mod_nodeSize(form);
+  mod_nodeColor(form);
+  mod_nodeShape(form);
+  mod_nodeLabelStyle(form);
+  preferred_compoundLabels(form);
+}
+function mod_edgeStyle(form) {
+  mod_edgeWidth(form);
+  mod_edgeMerge(form);
 }
 function netSummary(form) {
   var htm='<B>network summary:</B><ul>';
@@ -60,7 +65,7 @@ function redo_layout(form) {
   mod_layout(form);
 }
 function mod_nodeSize(form) {
-  if (form.nodescale.checked) {
+  if (form.nodestyle.checked) {
     cy.style().selector('node').style('width', 25).style('height', 25).update();
     cy.style().selector('node[class = "target"]').style('width', 60).style('height', 60).update();
     cy.style().selector('node[class = "compound"]').style('width', 25).style('height', 25).update();
@@ -75,22 +80,23 @@ function mod_nodeSize(form) {
   return;
 }
 function mod_nodeColor(form) {
-  if (form.nodecolor.checked) {
-    cy.style().selector('node').style('background-color', '#444444').update();
+  if (form.nodestyle.checked) {
+    cy.style().selector('node').style('border-width', 1).update();
+    cy.style().selector('node').style('background-color', '#AAAAAA').style('border-color', '#FFFFFF').update();
     cy.style().selector('node[class = "target"]').style('background-color', '#0B94B1').update();
     cy.style().selector('node[class = "compound"]').style('background-color', '#88CC88').update();
     cy.style().selector('node[class = "scaffold"]').style('background-color', '#FFAF00').update();
     cy.style().selector('node[class = "mces"]').style('background-color', '#FFDD00').update();
     cy.style().selector('node[class = "disease"]').style('background-color', '#EE8888').update();
-    cy.style().selector('node[?is_drug]').style('background-color', '#00FF00').style('border-width', 3).style('border-color', '#FFFF00').style('border-style', 'dotted').update();
+    cy.style().selector('node[?is_drug]').style('background-color', '#22FF22').style('border-width', 3).style('border-color', '#EEEE22').update();
   }
   else {
-    cy.style().selector('node').style('background-color', '#444444').update();
+    cy.style().selector('node').style('background-color', '#888888').update();
   }
   return;
 }
 function mod_nodeShape(form) {
-  if (form.nodeshape.checked) {
+  if (form.nodestyle.checked) {
     cy.style().selector('node[class = "target"]').style('shape', 'octagon').update();
     cy.style().selector('node[class = "compound"]').style('shape', 'rectangle').update();
     cy.style().selector('node[class = "scaffold"]').style('shape', 'hexagon').update();
@@ -105,12 +111,14 @@ function mod_nodeShape(form) {
 function mod_edgeMerge(form) {
   return;
 }
-function mod_edgeWidth(form) { //Revise for degree-weighted width.
-  if (form.edgescale.checked) {
-    cy.style().selector('edge').style('width', 5).style('line-color', 'orange').style('line-style', 'dotted').update();
+function mod_edgeWidth(form) { //Evidence-weighted width.
+  if (form.edgestyle.checked) {
+    cy.style().selector('edge').style('width', 1).style('line-color', 'gray').style('line-style', 'dotted').update();
+    cy.style().selector('edge[class = "tt"]').style('width', 'mapData(shared_cpd, 1, 100, 1, 10)').update();
+    cy.style().selector('edge[class = "activity"]').style('line-color', 'orange').style('line-style', 'solid').style('width', 'mapData(confidence, 1, 10, 1, 10)').update();
   }
   else {
-    cy.style().selector('edge').style('width', 2).style('line-color', 'gray').update();
+    cy.style().selector('edge').style('width', 1).style('line-color', 'gray').update();
   }
   return;
 }
@@ -130,7 +138,7 @@ function mod_targetLabel(form) {
   cy.style().selector('node[class = "target"]').style('label', 'data('+tgt_label+')').update();
   return;
 }
-function mod_labelStyle(form) {
+function mod_nodeLabelStyle(form) {
   cy.style().selector('node').style('font-size', '12px').update();
   cy.style().selector('node').style('text-wrap', 'wrap').update();
   cy.style().selector('node').style('text-max-width', '120px').update();
@@ -148,6 +156,14 @@ function show_cheminfo(form) {
       cy.style().selector('node').style().update();
     });
   }
+}
+function preferred_compoundLabels(form) {
+  cy.nodes('[class = "compound"]').forEach(function(n) {
+    if (typeof n.data('synonym') !== 'undefined') {
+      n.style('label', preferred_synonym(n.data('synonym')));
+    }
+    cy.style().selector('node').style().update();
+  });
 }
 function preferred_synonym(synonyms) { // Find "name-like"
   if (synonyms.length==0) return '';
