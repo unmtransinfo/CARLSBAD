@@ -95,6 +95,10 @@ function mod_nodeColor(form) {
   }
   return;
 }
+function mod_nodeHideClass(c, hide) {
+  //Edges must be hidden independently.
+  cy.style().selector('node[class = "'+c+'"]').style('visibility', (hide?'hidden':'visible')).update();
+}
 function mod_nodeShape(form) {
   if (form.nodestyle.checked) {
     cy.style().selector('node[class = "target"]').style('shape', 'octagon').update();
