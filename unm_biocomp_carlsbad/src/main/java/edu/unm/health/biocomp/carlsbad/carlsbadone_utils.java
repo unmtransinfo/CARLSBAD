@@ -285,7 +285,7 @@ public class carlsbadone_utils
 	ArrayList<Integer> tids, CompoundList cpdlist, CCPList ccplist, ArrayList<String> sqls)	//return value
 	throws Exception
   {
-    System.err.println("DEBUG: (Compound2Network)...");
+    //System.err.println("DEBUG: (Compound2Network)...");
     Boolean human_filter=true;
     HashMap<String,Integer> counts = new HashMap<String,Integer>(); //for return counts
     PrintWriter fout_writer = (fout!=null) ? (new PrintWriter(new BufferedWriter(new FileWriter(fout, false)))) : null;
@@ -341,7 +341,7 @@ public class carlsbadone_utils
     for (int cid: cpddata.keySet()) c2t_global.put(cid,null);
     carlsbad_utils.Compounds2Targets(c2t_global,dbcon,human_filter); //Get global-degree data.
 
-    System.err.println("DEBUG: (Compound2Network) scaffolds...");
+    //System.err.println("DEBUG: (Compound2Network) scaffolds...");
     /// Scaffolds (wheres kept):
     sql=carlsbad_utils.ScaffoldSQL(null,null,wheres);
     sqls.add(sql);
@@ -356,7 +356,7 @@ public class carlsbadone_utils
     carlsbad_utils.Scaffolds2Compounds(s2c_global,dbcon); //Get global-degree data.
     carlsbad_utils.Scaffolds2Targets(s2t_global,dbcon); //Get global-degree data.
 
-    System.err.println("DEBUG: (Compound2Network) mcess...");
+    //System.err.println("DEBUG: (Compound2Network) mcess...");
     /// MCESs (NB: wheres kept):
     sql=carlsbad_utils.McesSQL(null,null,wheres);
     sqls.add(sql);
@@ -379,7 +379,7 @@ public class carlsbadone_utils
     int n_edge_removed = carlsbad_utils.Filter_By_S2C_Weight(scafdata,scaf_min);
     counts.put("n_edge_removed", n_edge_removed);
 
-    System.err.println("DEBUG: (Compound2Network) other cpds...");
+    //System.err.println("DEBUG: (Compound2Network) other cpds...");
     /// Find "other" compounds via CCPs:
     HashSet<Integer> cid_global = new HashSet<Integer>();
     for (int scafid: s2c_global.keySet())
@@ -452,7 +452,7 @@ public class carlsbadone_utils
 
     tids.addAll(tgtdata.keySet());
 
-    System.err.println("DEBUG: (Compound2Network) done with SQL/db...");
+    //System.err.println("DEBUG: (Compound2Network) done with SQL/db...");
 
     HashMap<String, Object> elements = new HashMap<String, Object>();
     ArrayList<HashMap<String, Object> > nodes = new ArrayList<HashMap<String, Object> >();
@@ -465,7 +465,7 @@ public class carlsbadone_utils
 
     if (fout_rgt!=null) // Write targets-only reduced-graph to CYJS.  
     {
-      System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements...");
+      //System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements...");
       carlsbad_utils.WriteReducedGraph2Elements(tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -477,7 +477,7 @@ public class carlsbadone_utils
 	false,	//include_ccps?
 	counts, elements);
 
-      System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements --DONE.");
+      //System.err.println("DEBUG: (Compound2Network) rgt-WriteReducedGraph2Elements --DONE.");
       root.put("elements", elements);
       JsonGenerator jsg = jsf.createGenerator(fout_rgt_writer);
       jsg.useDefaultPrettyPrinter();
@@ -486,7 +486,7 @@ public class carlsbadone_utils
     }
     if (fout_rgtp!=null) // Write targets+CCPs reduced-graph to CYJS.  
     {
-      System.err.println("DEBUG: (Compound2Network) rgtp-WriteReducedGraph2Elements...");
+      //System.err.println("DEBUG: (Compound2Network) rgtp-WriteReducedGraph2Elements...");
       carlsbad_utils.WriteReducedGraph2Elements(tgtdata,
 	null,	//disease n/a
 	cid_query,
@@ -506,7 +506,7 @@ public class carlsbadone_utils
     }
     if (fout!=null) // Write full graph to CYJS.  
     {
-      System.err.println("DEBUG: (Compound2Network) full-*2Elements...");
+      //System.err.println("DEBUG: (Compound2Network) full-*2Elements...");
       carlsbad_utils.WriteTargets2Elements(tgtdata, t2c_global, tgt_tgt_ids, counts, elements);
       carlsbad_utils.WriteCompounds2Elements(cpddata, c2t_global, cpd_sbs_ids, actdata, cpdsynonyms, n_max_c, n_max_a, counts, elements);
       HashSet<Integer> scafids_written = new HashSet<Integer>();

@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.*; //ObjectMapper, JsonNode
 import edu.unm.health.biocomp.util.http.*;
 import edu.unm.health.biocomp.util.db.*;
 import edu.unm.health.biocomp.smarts.smarts_utils;
-import edu.unm.health.biocomp.cytoscape.*;
 
 /**	Static utility methods for CARLSBAD database system.
 	<br>
@@ -1933,7 +1932,7 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    System.err.println("DEBUG: (WriteTargets2Elements)...");
+    //System.err.println("DEBUG: (WriteTargets2Elements)...");
     ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
 
     if (counts.get("n_node_tgt")==null) counts.put("n_node_tgt",0);
@@ -2024,7 +2023,7 @@ public class carlsbad_utils
     nodedata.put("canonicalName", "cpd_"+String.format("%06d",cid));
     String smiles=cpddata.get(cid).get("smiles");
     nodedata.put("smiles", smiles);
-    System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; smiles="+smiles);
+    //System.err.println("DEBUG: (WriteCompoundNode2Elements) cid="+cid+"; smiles="+smiles);
     if (c2t_global.containsKey(cid)) //degree_target (global)
     {
       Integer deg_tgt=(c2t_global.get(cid)==null)?0:c2t_global.get(cid).size();
@@ -2125,7 +2124,7 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    System.err.println("DEBUG: (WriteDiseaseEdges2Elements)...");
+    //System.err.println("DEBUG: (WriteDiseaseEdges2Elements)...");
     ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_edge_dis")==null) counts.put("n_edge_dis",0);
     for (Integer tid: disease.getTIDs())
@@ -2151,7 +2150,7 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    System.err.println("DEBUG: (WriteActivityEdges2Elements)...");
+    //System.err.println("DEBUG: (WriteActivityEdges2Elements)...");
     ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_edge_act")==null) counts.put("n_edge_act", 0);
     for (int act_id: actdata.keySet())
@@ -2195,7 +2194,7 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    System.err.println("DEBUG: (WriteScaffolds2Elements)...");
+    //System.err.println("DEBUG: (WriteScaffolds2Elements)...");
     ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
     ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_node_scaf")==null) counts.put("n_node_scaf",0);
@@ -2257,7 +2256,7 @@ public class carlsbad_utils
 	HashMap<String,Integer> counts,
 	HashMap<String, Object> elements)
   {
-    System.err.println("DEBUG: (WriteMcess2Elements)...");
+    //System.err.println("DEBUG: (WriteMcess2Elements)...");
     ArrayList<HashMap<String, Object> > nodes = (ArrayList<HashMap<String, Object> >)elements.get("nodes");
     ArrayList<HashMap<String, Object> > edges = (ArrayList<HashMap<String, Object> >)elements.get("edges");
     if (counts.get("n_node_mces")==null) counts.put("n_node_mces",0);
@@ -2472,7 +2471,7 @@ public class carlsbad_utils
     HashMap<Integer,HashSet<Integer> > c2t_global = null;
     if (cid_query!=null)	//drug-query mode
     {
-      System.err.println("DEBUG: (WriteReducedGraph2Elements) drug-query mode...");
+      //System.err.println("DEBUG: (WriteReducedGraph2Elements) drug-query mode...");
       // Transform t2c_global to c2t_global
       c2t_global = new HashMap<Integer,HashSet<Integer> >();
       for (int tid: t2c_global.keySet())
@@ -2492,7 +2491,7 @@ public class carlsbad_utils
 
     if (include_ccps)
     {
-      System.err.println("DEBUG: (WriteReducedGraph2Elements) ccp nodes...");
+      //System.err.println("DEBUG: (WriteReducedGraph2Elements) ccp nodes...");
       //Write ccp nodes (scafs)
       counts.put("n_node_scaf", 0);
       for (int scafid: s2t_global.keySet())
@@ -2576,7 +2575,7 @@ public class carlsbad_utils
           edgedata.put("source", "T"+tid);
           edgedata.put("target", "M"+mcesid);
           edgedata.put("ID", "TS"+counts.get("n_edge_tgtccp"));
-          edgedata.put("class", "ts");
+          edgedata.put("class", "tm");
           edge.put("data", edgedata);
           edges.add(edge);
           counts.put("n_edge_tgtccp", counts.get("n_edge_tgtccp")+1);
@@ -2586,7 +2585,7 @@ public class carlsbad_utils
 
     //Create tgt-tgt edges if any shared cpds, scafs or mcess.
     counts.put("n_edge_tgttgt", 0);
-    System.err.println("DEBUG: (WriteReducedGraph2Elements) tgt-tgt edges...");
+    //System.err.println("DEBUG: (WriteReducedGraph2Elements) tgt-tgt edges...");
     for (int tidA: tids)
     {
       for (int tidB: tids)
@@ -2655,7 +2654,7 @@ public class carlsbad_utils
     {
       WriteDiseaseEdges2Elements(disease, counts, elements);
     }
-    System.err.println("DEBUG: (WriteReducedGraph2Elements) : --DONE.");
+    //System.err.println("DEBUG: (WriteReducedGraph2Elements) : --DONE.");
     return counts.get("n_node_tgt_rgt");
   }
   /////////////////////////////////////////////////////////////////////////////

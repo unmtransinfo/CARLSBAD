@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.sql.*;
 
-import edu.unm.health.biocomp.cytoscape.*;
 import edu.unm.health.biocomp.kegg.*;
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.db.*;

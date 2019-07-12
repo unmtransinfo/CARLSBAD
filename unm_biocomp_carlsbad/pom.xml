@@ -12,11 +12,9 @@
 
   <groupId>unmbiocomputing</groupId>
   <artifactId>unm_biocomp_carlsbad</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>UNM_BIOCOMP_CARLSBAD</name>
   <description>CARLSBAD web app and project code</description>
-  <url>https://github.com/unmtransinfo/CARLSBAD</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,11 +22,6 @@
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>unmbiocomputing</groupId>
-      <artifactId>unm_biocomp_cytoscape</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>unmbiocomputing</groupId>
       <artifactId>unm_biocomp_kegg</artifactId>

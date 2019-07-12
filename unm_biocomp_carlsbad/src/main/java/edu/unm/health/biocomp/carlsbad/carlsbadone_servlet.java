@@ -1179,7 +1179,7 @@ public class carlsbadone_servlet extends HttpServlet
 	"ds:H00043",	//Neuroblastoma
 	"ds:H00013",	//Small cell lung cancer
 	//"ds:H00032"	//Thyroid cancer
-	"ds:H00409"	//Type II diabetes mellitus
+	"ds:H00408"	//Type I diabetes mellitus
 	));
     ArrayList<Integer> tids_demo = new ArrayList<Integer>(Arrays.asList(
 	1730,	//GABA A Alpha4Beta3Gamma2

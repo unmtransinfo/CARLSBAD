@@ -45,21 +45,21 @@
   </servlet-mapping>
 
   <servlet>
+    <servlet-name>cyview</servlet-name>
+    <servlet-class>edu.unm.health.biocomp.carlsbad.cyview_servlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cyview</servlet-name>
+    <url-pattern>/cyview</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
     <servlet-name>mol2img</servlet-name>
     <servlet-class>edu.unm.health.biocomp.depict.mol2img_servlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>mol2img</servlet-name>
     <url-pattern>/mol2img</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>cyview</servlet-name>
-    <servlet-class>edu.unm.health.biocomp.cytoscape.cyview_servlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>cyview</servlet-name>
-    <url-pattern>/cyview</url-pattern>
   </servlet-mapping>
 
 </web-app>

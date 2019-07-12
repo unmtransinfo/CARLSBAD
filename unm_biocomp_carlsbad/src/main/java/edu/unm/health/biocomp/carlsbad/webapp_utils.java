@@ -101,17 +101,17 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
 		subnet_title,
 		n_max_a, n_max_c,
 		tids, cpdlist, ccplist, sqls);
-    System.err.println("DEBUG: (Compound2Network_LaunchThread) instantiated Compound2Network_Task...");
+    //System.err.println("DEBUG: (Compound2Network_LaunchThread) instantiated Compound2Network_Task...");
     TaskUtils.ExecTaskWeb(exec, xsubnet_task, xsubnet_task.taskstatus, servletname+" (compound2network)", tpoll, out, response, (servletname+"_progress_win"));
-    System.err.println("DEBUG: (Compound2Network_LaunchThread) done with Compound2Network_Task...");
+    //System.err.println("DEBUG: (Compound2Network_LaunchThread) done with Compound2Network_Task...");
     /// Problem with ExecTaskWeb is exceptions can occur with only stderr logging.
     HashMap<String,Integer> counts=null;
     try {
       counts=xsubnet_task.getCounts();
     } catch (Exception  e) {
-      System.err.println("DEBUG: (Compound2Network_LaunchThread) getCounts() Exception: "+e.toString());
+      //System.err.println("DEBUG: (Compound2Network_LaunchThread) getCounts() Exception: "+e.toString());
     }
-    System.err.println("DEBUG: (Compound2Network_LaunchThread) counts=="+counts.toString());
+    //System.err.println("DEBUG: (Compound2Network_LaunchThread) counts=="+counts.toString());
     err_sb.append(xsubnet_task.getErrtxt());
     return counts;
   }
@@ -502,7 +502,7 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     {
       String bhtm_rgt=CyviewButtonHtm(fout_rgt_path, "rgt", response, contextpath, title, cyview, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Lean:</H3>");
-      thtm_butts+=("<B>(targets-only)</B><BR/></TD>");
+      thtm_butts+=("<B>(targets)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgt+"</TD>\n");
       thtm_butts+=("<TD>nodes: "+n_node_tgt+"<BR/>edges: "+n_edge_tgttgt+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgt+"</I></B></TD>\n");
@@ -512,14 +512,15 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     {
       String bhtm_rgtp=CyviewButtonHtm(fout_rgtp_path, "rgtp", response, contextpath, title, cyview, proxy_prefix);
       thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Medium:</H3>");
-      thtm_butts+=("<B>(targets+scaffolds)</B><BR/></TD>");
+      thtm_butts+=("<B>(targets, scaffolds)</B><BR/></TD>");
       thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_rgtp+"</TD>\n");
       thtm_butts+=("<TD>nodes: "+(n_node_tgt+n_node_scaf+n_node_mces)+"<BR/>edges: "+(n_edge_tgttgt+n_edge_tgtccp)+"</TD>");
       thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_rgtp+"</I></B></TD>\n");
       thtm_butts+=("</TR>\n");
     }
     String bhtm_full=CyviewButtonHtm(fout_subnet_path, null, response, contextpath, title, cyview, proxy_prefix);
-    thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Full:</H3></TD>");
+    thtm_butts+=("<TR><TD ALIGN=RIGHT><H3>Full:</H3>");
+      thtm_butts+=("<B>(targets, scaffolds, compounds)</B><BR/></TD>");
     thtm_butts+=("<TD ALIGN=CENTER VALIGN=MIDDLE>"+bhtm_full+"</TD>\n");
     thtm_butts+=("<TD>nodes: "+n_node_total+"<BR/>edges: "+n_edge_total+"</TD>");
     thtm_butts+=("<TD ALIGN=LEFT><B><I>"+advice_full+"</I></B></TD>\n");
@@ -656,10 +657,10 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     }
     if (kid_query!=null && diseaselist.containsKey(kid_query))
     {
-      System.err.println("DEBUG: (FlagTargetsEmpirical) kid_query="+kid_query);
+      //System.err.println("DEBUG: (FlagTargetsEmpirical) kid_query="+kid_query);
       for (int tid: diseaselist.get(kid_query).getTIDs())
       {
-        System.err.println("DEBUG: (FlagTargetsEmpirical) tid="+tid);
+        //System.err.println("DEBUG: (FlagTargetsEmpirical) tid="+tid);
         if (tgtlist.containsKey(tid)) tgtlist.get(tid).setEmpirical(true);
       }
     }

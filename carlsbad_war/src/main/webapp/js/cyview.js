@@ -95,9 +95,15 @@ function mod_nodeColor(form) {
   }
   return;
 }
-function mod_nodeHideClass(c, hide) {
-  //Edges must be hidden independently.
-  cy.style().selector('node[class = "'+c+'"]').style('visibility', (hide?'hidden':'visible')).update();
+function mod_nodeHideClass(form) {
+  cy.style().selector('node[class = "mces"]').style('visibility', (form.nodehide_mces.checked?'hidden':'visible')).update();
+  cy.style().selector('node[class = "scaffold"]').style('visibility', (form.nodehide_scaffold.checked?'hidden':'visible')).update();
+  cy.style().selector('node[class = "compound"]').style('visibility', (form.nodehide_compound.checked?'hidden':'visible')).update();
+  cy.style().selector('edge[class = "cpd2mces"]').style('visibility', ((form.nodehide_mces.checked||form.nodehide_compound.checked)?'hidden':'visible')).update();
+  cy.style().selector('edge[class = "tm"]').style('visibility', ((form.nodehide_mces.checked)?'hidden':'visible')).update();
+  cy.style().selector('edge[class = "cpd2scaf"]').style('visibility', ((form.nodehide_scaffold.checked||form.nodehide_compound.checked)?'hidden':'visible')).update();
+  cy.style().selector('edge[class = "ts"]').style('visibility', ((form.nodehide_scaffold.checked)?'hidden':'visible')).update();
+  cy.style().selector('edge[class = "activity"]').style('visibility', (form.nodehide_compound.checked?'hidden':'visible')).update();
 }
 function mod_nodeShape(form) {
   if (form.nodestyle.checked) {
