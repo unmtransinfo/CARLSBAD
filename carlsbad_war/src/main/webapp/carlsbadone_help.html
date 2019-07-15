@@ -21,21 +21,20 @@ Specifically, this means:
 <LI> Step One for bioactivity knowledge discovery.
 </UL>
 CarlsbadOne can provide an effective starting point for initial and exploratory data
-analysis.  More advanced queries will require 
-alternative interfaces, such as via direct SQL access to the database, or by 
-migrating the relational database to a graph database platform such as Neo4j.
+analysis.  Advanced queries will require alternative interfaces and methods, such as
+via direct SQL access to the database.
 <P>
 <H3>Query logic</H3>
 <DL>
-<DT><B>disease-query mode</B>
+<DT><B>Disease-query mode</B>
 <DD>A single disease is the query.  Diseases are from KEGG.  KEGG also reports linked genes,
 which reference proteins via NCBI_GI and Uniprot IDs, and thereby CARLSBAD targets.
 The one-click network includes those targets, active compounds, their scaffolds, and neighbor compounds.
-<DT><B>drug-query mode</B>
+<DT><B>Drug-query mode</B>
 <DD>A single drug is the query.  All targets for which the drug is active are included in the retrieved
 subnet.  In addition, targets are included for which the active compounds are associated with the drug query
 via chemical patterns.
-<DT><B>target-query mode</B>
+<DT><B>Target-query mode</B>
 <DD>A single protein target is the query.  All active compounds are included in the retrieved subnet.
 In addition, compounds are included which are associated with the active compounds via chemical patterns.
 </DL>
@@ -54,17 +53,17 @@ to be regarded as empirical, entities must be associated by only ONE link of eac
 <LI>Minimum scaffold weight: Scaffold-compound associations are weighted based on an approximation of the 
 fraction of compound heavy atoms which are in the scaffold.  Lower weights are thus correlated with weaker
 associations of less significance.  Currently, this filter affects both the known active compounds and
-scaffold-associated unknowns.
+scaffold-associated unknowns, and is set to 0.2.
 </UL>
-<H3>Reduced-graph representations:</H3>
+<H3>Full and reduced-graph (RG) representations:</H3>
 To facilitate effective visualization of large networks, reduced-graph representations are
 available:
 <OL>
-<LI><B>Targets-only</B>: target-target edges represent shared compounds.
-Activity profile information is reflected via visual cues (e.g. target-node size).
-<LI><B>Targets-and-scaffolds</B>: compounds are hidden and represented via their scaffolds. Target-target edges
-representing shared compounds included.
+<LI><B>Targets only (RGT)</B>: target-target edges represent shared compounds.
+<LI><B>Targets and scaffolds (RGTP)</B>: compounds are hidden and represented via their scaffolds. Target-target edges representing shared compounds included.
+<LI><B>Targets, scaffolds, and compounds (Full)</B>
 </OL>
+Also the disease is always included in disese-query mode.
 <P>
 <H3>Scaffolds and MCES</H3>
 Carlsbad includes two types of chemical patterns, (1) <B>scaffolds</B>, and (2) <B>maximum-common-edge-subgraphs (MCES)</B>, each defined by rigorous
