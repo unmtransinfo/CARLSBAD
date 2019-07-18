@@ -22,6 +22,7 @@
   </properties>
 
   <dependencies>
+    <!-- From separate github.com/unmtransinfo repos. -->
     <dependency>
       <groupId>unmbiocomputing</groupId>
       <artifactId>unm_biocomp_kegg</artifactId>
