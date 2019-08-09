@@ -45,11 +45,13 @@ function tap_node(event){
   if (node.data('class')=='compound' || node.data('class')=='scaffold') {
     var smi = (typeof node.data()['smiles'] !== 'undefined') ? node.data()['smiles'] : '*';
     smi = smi.replace('\\\\', '\\');
-    write2div('depict', '<img src="http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
+    //write2div('depict', '<img src="http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
+    write2div('depict', '<img src="'+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
   } else if (node.data('class')=='mces') {
     var smi = (typeof node.data()['smarts'] !== 'undefined') ? node.data()['smarts'] : '*';
     smi = smi.replace('\\\\', '\\');
-    write2div('depict', '<img src="http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
+    //write2div('depict', '<img src="http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
+    write2div('depict', '<img src="'+MOL2IMG+'?smiles='+encodeURIComponent(smi)+'&width=180&height=140" height="140">', true);
   }
   //write2div('log', 'DEBUG: node: id='+node.id()+'; class='+node.data('class')+'<br>', false);
 }
@@ -161,7 +163,8 @@ function show_cheminfo(form) {
     cy.nodes('[class = "compound"]').forEach(function(n) {
       if (typeof n.data('smiles') !== 'undefined') {
         var smi = n.data('smiles').replace('\\\\', '\\');
-        n.style('background-image', 'http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)).style('background-fit', 'cover');
+        //n.style('background-image', 'http://'+servername()+MOL2IMG+'?smiles='+encodeURIComponent(smi)).style('background-fit', 'cover');
+        n.style('background-image', MOL2IMG+'?smiles='+encodeURIComponent(smi)).style('background-fit', 'cover');
       }
       cy.style().selector('node').style().update();
     });
