@@ -441,9 +441,10 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
       cyview_opts+=("&mode="+cyview_mode+"&layout=Circle");
       cyview_winname+=("_"+cyview_mode);
     }
+    String imgurl=((proxy_prefix!=null)?("/"+proxy_prefix+contextpath+"/"):(""))+("images/cy3logoOrange.svg");
     String htm=(
 	"<BUTTON TYPE=BUTTON onClick=\"void window.open('"+cyview+"?"+cyview_opts+"&infile="+fout_subnet_path+"','"+cyview_winname+"','width=900,height=700,scrollbars=1,resizable=1')\">")
-	+("CyView<IMG BORDER=0 HEIGHT=30 SRC=\"/"+proxy_prefix+contextpath+"/images/cy3logoOrange.svg\"></BUTTON>\n");
+	+("CyView<IMG BORDER=0 HEIGHT=30 SRC=\""+imgurl+"\"></BUTTON>\n");
     return htm;
   }
   /////////////////////////////////////////////////////////////////////////////
@@ -883,7 +884,8 @@ String dbname, String dbusr, String dbpw, String sql, String servletname, HttpSe
     String name = disease.getName();
     String kegg_url="http://www.kegg.jp/dbget-bin/www_bget";
 
-    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\"/"+proxy_prefix+contextpath+"/images/kegg_logo.gif\">");
+    String imgurl=((proxy_prefix!=null)?("/"+proxy_prefix+contextpath+"/"):(""))+("images/kegg_logo.gif");
+    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\""+imgurl+"\">");
     String kegg_butt="<BUTTON TYPE=BUTTON onClick=\"void window.open('"+kegg_url+"?"+kid+"','keggwin','')\">View in KEGG"+imghtm+"</BUTTON>";
 
     String thtm=("<TABLE WIDTH=\"100%\" CELLSPACING=2 CELLPADDING=2>\n");

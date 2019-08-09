@@ -61,8 +61,8 @@ public class carlsbadone_servlet extends HttpServlet
   private static String REMOTEAGENT=null;
   private static String DATESTR=null;
   private static File LOGFILE=null;
-  private static String PROXY_PREFIX=null;
   private static String color1="#EEEEEE";
+  private static String MOL2IMG_SERVLETURL=null;
   private static ArrayList<String> dbids=null;
   private static DiseaseList DISEASELIST=null;	//Parsed once by init().
   private static CompoundList DRUGLIST=null;	//Parsed once by init().
@@ -112,10 +112,8 @@ public class carlsbadone_servlet extends HttpServlet
       throw new ServletException("ERROR: PostgreSQL connection failed.",e);
     }
     boolean ok=Initialize(request,mrequest);
-    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList("carlsbad.css","jquery-ui.css"));
-    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList("biocomp.js","ddtip.js","jquery-1.9.1.js","jquery-ui.js"));
-
-    PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"jetty":"tomcat";
+    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/css/carlsbad.css",CONTEXTPATH+"/css/jquery-ui.css"));
+    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/js/biocomp.js",CONTEXTPATH+"/js/ddtip.js","/js/jquery-1.9.1.js",CONTEXTPATH+"/js/jquery-ui.js"));
 
     String title=APPNAME;
     if (!params.getVal("formmode").isEmpty()) title+=":"+params.getVal("formmode");
@@ -123,7 +121,7 @@ public class carlsbadone_servlet extends HttpServlet
     {
       response.setContentType("text/html");
       out=response.getWriter();
-      out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
+      out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, null));
       out.print(HtmUtils.FooterHtm(errors,true));
     }
     else if (mrequest!=null)		//method=POST, normal operation
@@ -132,7 +130,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, null));
         out.println(FormHtm(mrequest,response,params,params.getVal("formmode")));
         out.println("<SCRIPT>go_init(window.document.mainform,true)</SCRIPT>");
         out.print(HtmUtils.FooterHtm(errors,true));
@@ -141,7 +139,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, null));
         out.println(FormHtm(mrequest, response, params, params.getVal("formmode")));
         out.flush();
         response.flushBuffer();
@@ -172,12 +170,11 @@ public class carlsbadone_servlet extends HttpServlet
         }
         else if (params.getVal("formmode").equals("drug"))
         {
-          String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
           if (cid==null || cid==0) cid=DRUGLIST.synonym2CID(params.getVal("qbuff"));
           if (cid==null)
             outputs.add("ERROR: Aaack!  cid==null.  This should not happen!");
           else
-            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+CompoundQueryHtm(cid, DRUGLIST, DBCON, mol2img_servleturl, response, SERVLETNAME)+"</BLOCKQUOTE>");
+            outputs.add("<H2>Query:</H2><BLOCKQUOTE>"+CompoundQueryHtm(cid, DRUGLIST, DBCON, MOL2IMG_SERVLETURL, response, SERVLETNAME)+"</BLOCKQUOTE>");
         }
         else
         {
@@ -263,7 +260,7 @@ public class carlsbadone_servlet extends HttpServlet
 		fout_rgt_path, fout_rgtp_path, fout_full_path,
 		APPNAME+" ["+params.getVal("formmode")+"]:"+params.getVal("subnet_title"),
 		response, CONTEXTPATH, SERVLETNAME,
-		"/"+PROXY_PREFIX+CONTEXT.getContextPath()+"/"+CYVIEW, PROXY_PREFIX);
+		CONTEXTPATH+"/"+CYVIEW, null);
           PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
           out_log.printf("%s\t%s\t%s\t%d\t%d\t%d\n",DATESTR,REMOTEHOST,params.getVal("formmode"),subnet_counts.get("n_node_tgt"),subnet_counts.get("n_node_cpd"),0);
           out_log.close();
@@ -377,7 +374,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, null));
         out.println(HelpHtm(DBCON));
         out.println(HtmUtils.FooterHtm(errors,true));
       }
@@ -395,8 +392,7 @@ public class carlsbadone_servlet extends HttpServlet
         String etag=request.getParameter("etag");
         out.print(HtmUtils.HeaderHtm(
 		((etag!=null && etag.equals("drugs"))?title+":ViewDrugs":title+":ViewCompounds"),
-		jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
-        String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
+		jsincludes, cssincludes, "", "", color1, request, null));
         Integer skip=null;
         try { skip=Integer.parseInt(request.getParameter("skip")); } catch (Exception e) {};
         Integer nmax=null;
@@ -411,7 +407,7 @@ public class carlsbadone_servlet extends HttpServlet
 		skip,
 		nmax,
 		((etag!=null && etag.equals("drugs"))?"Drug Compounds":"Compounds"),
-		mol2img_servleturl,
+		MOL2IMG_SERVLETURL,
 		response,
 		SERVLETNAME));
         }
@@ -422,10 +418,9 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewCompound", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
-        String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
+        out.print(HtmUtils.HeaderHtm(title+":ViewCompound", jsincludes, cssincludes, "", "", color1, request, null));
         Integer cid=Integer.parseInt(request.getParameter("cid"));
-        try { out.print(webapp_utils.ViewCompoundHtm(cid,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
+        try { out.print(webapp_utils.ViewCompoundHtm(cid,DBCON,MOL2IMG_SERVLETURL,response,SERVLETNAME)); }
         catch (Exception e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
@@ -434,8 +429,7 @@ public class carlsbadone_servlet extends HttpServlet
         response.setContentType("text/html");
         out=response.getWriter();
         String etag=request.getParameter("etag");
-        out.print(HtmUtils.HeaderHtm(title+":ViewScaffolds", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
-        String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
+        out.print(HtmUtils.HeaderHtm(title+":ViewScaffolds", jsincludes, cssincludes, "", "", color1, request, null));
         Integer skip=null;
         try { skip=Integer.parseInt(request.getParameter("skip")); } catch (Exception e) {};
         Integer nmax=null;
@@ -449,7 +443,7 @@ public class carlsbadone_servlet extends HttpServlet
 		skip,
 		nmax,
 		"Scaffolds",
-		mol2img_servleturl,
+		MOL2IMG_SERVLETURL,
 		response,
 		SERVLETNAME));
         }
@@ -460,11 +454,10 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewScaffold", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
-        String mol2img_servleturl=("http://"+SERVERNAME+"/"+PROXY_PREFIX+CONTEXTPATH+"/mol2img");
+        out.print(HtmUtils.HeaderHtm(title+":ViewScaffold", jsincludes, cssincludes, "", "", color1, request, null));
         Integer id=Integer.parseInt(request.getParameter("id"));
         String ccptype=request.getParameter("ccptype");
-        try { out.print(webapp_utils.ViewCCPHtm(id,ccptype,DBCON,mol2img_servleturl,response,SERVLETNAME)); }
+        try { out.print(webapp_utils.ViewCCPHtm(id,ccptype,DBCON,MOL2IMG_SERVLETURL,response,SERVLETNAME)); }
         catch (SQLException e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
@@ -472,7 +465,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewTargets", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewTargets", jsincludes, cssincludes, "", "", color1, request, null));
         String etag=request.getParameter("etag");
         String species=request.getParameter("species");
         Integer skip=null;
@@ -509,7 +502,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewTarget", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewTarget", jsincludes, cssincludes, "", "", color1, request, null));
         Integer tid=Integer.parseInt(request.getParameter("tid"));
         out.print(webapp_utils.ViewTargetHtm(tid,TARGETLIST,response,SERVLETNAME));
         out.println(HtmUtils.FooterHtm(errors,false));
@@ -518,7 +511,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewDiseases", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewDiseases", jsincludes, cssincludes, "", "", color1, request, null));
         out.print(webapp_utils.ViewDiseasesHtm(DISEASELIST,TARGETLIST,
 		(request.getParameter("sortby")==null?"id":request.getParameter("sortby")),
 		response,SERVLETNAME));
@@ -528,9 +521,9 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title+":ViewDisease", jsincludes, cssincludes, "", "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title+":ViewDisease", jsincludes, cssincludes, "", "", color1, request, null));
         String kid=request.getParameter("kid");
-        try { out.print(webapp_utils.ViewDiseaseHtm(kid, DISEASELIST, TARGETLIST, DBCON, response, CONTEXTPATH, SERVLETNAME, PROXY_PREFIX)); }
+        try { out.print(webapp_utils.ViewDiseaseHtm(kid, DISEASELIST, TARGETLIST, DBCON, response, CONTEXTPATH, SERVLETNAME, null)); }
         catch (SQLException e) { errors.add("ERROR: "+e.getMessage()); }
         out.println(HtmUtils.FooterHtm(errors,false));
       }
@@ -551,7 +544,7 @@ public class carlsbadone_servlet extends HttpServlet
       {
         response.setContentType("text/html");
         out=response.getWriter();
-        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, PROXY_PREFIX));
+        out.print(HtmUtils.HeaderHtm(title, jsincludes, cssincludes, JavaScript(), "", color1, request, null));
 //        if (REMOTEAGENT!=null && (REMOTEAGENT.contains("Explorer")||REMOTEAGENT.contains("MSIE")))
 //          out.println("<CENTER><H2>Sorry, "+APPNAME+" NOT compatible with Internet Explorer. Limited functionality may be available.</H2></CENTER><HR>");
         out.println(FormHtm(mrequest,response,params,request.getParameter("formmode")));
@@ -572,21 +565,22 @@ public class carlsbadone_servlet extends HttpServlet
     errors = new ArrayList<String>();
     params = new HttpParams();
     Calendar calendar=Calendar.getInstance();
+    MOL2IMG_SERVLETURL=(CONTEXTPATH+"/mol2img");
 
     String logo_htm="<TABLE CELLSPACING=5 CELLPADDING=5><TR><TD>";
-    String imghtm=("<IMG BORDER=\"0\" SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/biocomp_logo_only.gif\">");
+    String imghtm=("<IMG BORDER=\"0\" SRC=\""+CONTEXTPATH+"/images/biocomp_logo_only.gif\">");
 
     String tiphtm=(APPNAME+" web app from UNM Translational Informatics.");
     String href=("http://medicine.unm.edu/informatics/");
     logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
     logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=0 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/chemaxon_powered_100px.png\">");
+    imghtm=("<IMG BORDER=0 SRC=\""+CONTEXTPATH+"/images/chemaxon_powered_100px.png\">");
     tiphtm=("JChem from ChemAxon Ltd.");
     href=("http://www.chemaxon.com");
     logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
     logo_htm+="</TD><TD>";
     logo_htm+="</TD><TD>";
-    imghtm=("<IMG BORDER=\"0\" HEIGHT=\"60\" SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/cy3logoOrange.svg\">");
+    imghtm=("<IMG BORDER=\"0\" HEIGHT=\"60\" SRC=\""+CONTEXTPATH+"/images/cy3logoOrange.svg\">");
     tiphtm=("Cytoscape and Cytoscape.JS");
     href=("http://cytoscape.org/");
     logo_htm+=(HtmUtils.HtmTipper(imghtm, tiphtm, href, 200, "white"));
@@ -790,7 +784,7 @@ public class carlsbadone_servlet extends HttpServlet
     else if (formmode.equals("target")) formmode_target="CHECKED";
     else formmode_disease="CHECKED";
 
-    String imghtm=("<IMG BORDER=0 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/BatAlone_48x36.png\" HEIGHT=28>");
+    String imghtm=("<IMG BORDER=0 SRC=\""+CONTEXTPATH+"/images/BatAlone_48x36.png\" HEIGHT=28>");
     String tiphtm=("CARLSBAD Project, UNM Translational Informatics Division");
     String href=("http://carlsbad.health.unm.edu");
     String logo_htm=(HtmUtils.HtmTipper(imghtm,tiphtm,href,200,"white"));
@@ -1048,7 +1042,7 @@ public class carlsbadone_servlet extends HttpServlet
 "  pwin.document.close(); //if window exists, clear\n"+
 "  pwin.document.open('text/html');\n"+
 "  pwin.document.writeln('<HTML><HEAD>');\n"+
-"  pwin.document.writeln('<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\"/"+PROXY_PREFIX+CONTEXTPATH+"/css/biocomp.css\" />');\n"+
+"  pwin.document.writeln('<LINK REL=\"stylesheet\" type=\"text/css\" HREF=\""+CONTEXTPATH+"/css/biocomp.css\" />');\n"+
 "  pwin.document.writeln('</HEAD><BODY BGCOLOR=\"#DDDDDD\">');\n"+
 "  pwin.document.writeln('"+APPNAME+"...<BR>');\n"+
 "  pwin.document.writeln('"+DateFormat.getDateInstance(DateFormat.FULL).format(new java.util.Date())+"<BR>');\n"+
@@ -1267,7 +1261,7 @@ public class carlsbadone_servlet extends HttpServlet
   {
     String diseasename=DISEASELIST.get(kid).getName();
     String kegg_url="http://www.kegg.jp/dbget-bin/www_bget";
-    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\"/"+PROXY_PREFIX+CONTEXTPATH+"/images/kegg_logo.gif\">");
+    String imghtm=("<IMG ALIGN=MIDDLE BORDER=0 HEIGHT=50 SRC=\""+CONTEXTPATH+"/images/kegg_logo.gif\">");
     String kegg_butt="<BUTTON TYPE=BUTTON onClick=\"void window.open('"+kegg_url+"?"+kid+"','keggwin','')\">View in KEGG"+imghtm+"</BUTTON>";
 
     String htm="<TABLE WIDTH=\"80%\" CELLPADDING=5 CELLSPACING=5>";

@@ -25,6 +25,8 @@ public class cyview_servlet extends HttpServlet
   private static String CONTEXTPATH=null;
   private static String SERVLETNAME=null;
   private static String SERVERNAME=null;
+  private static Integer SERVERPORT=null;
+  private static String SERVERSCHEME=null;
   private static String APPNAME=null;
   private static String NETNAME=null;
   private static String DEMOFILE=null;
@@ -52,10 +54,13 @@ public class cyview_servlet extends HttpServlet
   {
     SERVERNAME=request.getServerName();
     if (SERVERNAME.equals("localhost")) SERVERNAME=InetAddress.getLocalHost().getHostAddress(); //May cause COR rule violation (cross-origin request).
+    SERVERPORT=request.getServerPort();
+    //SERVERSCHEME=request.getServerScheme(); //"http" or "https"
+    SERVERSCHEME="http";
     rb=ResourceBundle.getBundle("LocalStrings",request.getLocale());
 
-    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList("biocomp.css", "cyview.css"));
-    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList("cyview.js", "biocomp.js", "ddtip.js", "cytoscape.min.js"));
+    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/css/biocomp.css", CONTEXTPATH+"/css/cyview.css"));
+    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/js/cyview.js", CONTEXTPATH+"/js/biocomp.js", CONTEXTPATH+"/js/ddtip.js", CONTEXTPATH+"/js/cytoscape.min.js"));
 
     initialize(request);
     response.setContentType("text/html");
@@ -64,7 +69,6 @@ public class cyview_servlet extends HttpServlet
     ERRORS.add("ServerInfo: "+CONTEXT.getServerInfo());
     ERRORS.add("ContextPath: "+CONTEXT.getContextPath()); 
 
-    String proxy_prefix = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"jetty":"tomcat";
     String netjs=null;
     try {
       netjs = NetJS(CYJSTXT);
@@ -77,8 +81,8 @@ public class cyview_servlet extends HttpServlet
     String cynethtm = CyViewHtm(title, MODES.get(params.getVal("mode")), netjs, response);
     out.println(HtmUtils.HeaderHtm(title,
 	jsincludes, cssincludes,
-	HeaderJS(proxy_prefix), "", 
-	BGCOLOR, request, proxy_prefix));
+	HeaderJS(SERVERNAME, SERVERPORT, SERVERSCHEME, CONTEXTPATH), "", 
+	BGCOLOR, request, null));
     out.println(cynethtm);
     out.println("<SCRIPT>go_init(window.document.mainform)</SCRIPT>");
     HtmDivWrite("log", ERRORS, out);
@@ -228,11 +232,11 @@ public class cyview_servlet extends HttpServlet
     return js;
   }
   /////////////////////////////////////////////////////////////////////////////
-  private static String HeaderJS(String proxy_prefix)
+  private static String HeaderJS(String servername, Integer serverport, String serverscheme, String contextpath)
   {
     return(
-"var MOL2IMG='/"+proxy_prefix+CONTEXT.getContextPath()+"/mol2img';\n"+
-"function servername() { return('"+SERVERNAME+"'); }\n");
+"var MOL2IMG='"+serverscheme+"://"+servername+":"+serverport+contextpath+"/mol2img';\n"+
+"function servername() { return('"+servername+"'); }\n");
   }
   /////////////////////////////////////////////////////////////////////////////
   private static String FormHtm(HttpServletResponse response)
