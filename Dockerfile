@@ -18,9 +18,8 @@ RUN apt-get install -y postgresql-server-dev-10
 RUN sudo -u postgres pg_config
 COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
 RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
-RUN if [ ! -e /var/log/postgresql ]; then mkdir /var/log/postgresql; fi
-RUN chown postgres /var/log/postgresql
-RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /var/lib/postgresql/10/main -l /var/log/postgresql/logfile start
+RUN chown postgres /etc/postgresql/10/main/pg_hba.conf 
+RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /etc/postgresql/10/main start
 RUN echo "=== Done installing PostgreSQL."
 #
 ###
@@ -29,9 +28,9 @@ COPY /home/data/carlsbad/carlsbad-pgdump.sql.gz /home/data/carlsbad
 RUN sudo -u postgres createdb carlsbad
 RUN gunzip -c /home/data/carlsbad/carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
 RUN sudo -u postgres psql -d carlsbad -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ROLE batman"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ROLE batman"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ROLE batman"
+RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman"
+RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO batman"
+RUN sudo -u postgres psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO batman"
 RUN echo "=== Done loading database."
 #
 ###
