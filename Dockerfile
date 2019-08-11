@@ -23,8 +23,8 @@ RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /etc/postgresql/10/mai
 RUN echo "=== Done installing PostgreSQL."
 #
 ###
-RUN mkdir /home/data/carlsbad
-COPY /home/data/carlsbad/carlsbad-pgdump.sql.gz /home/data/carlsbad
+RUN mkdir -p /home/data/carlsbad
+COPY -L data/carlsbad-pgdump.sql.gz /home/data/carlsbad
 RUN sudo -u postgres createdb carlsbad
 RUN gunzip -c /home/data/carlsbad/carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
 RUN sudo -u postgres psql -d carlsbad -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'"
