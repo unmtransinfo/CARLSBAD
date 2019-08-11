@@ -12,14 +12,15 @@ RUN apt-get install -y curl
 RUN echo "=== Done installing Ubuntu."
 #
 ###
-RUN apt-get install -y postgresql:10+190
+RUN apt-get install -y postgresql-10
+RUN apt-cache policy postgresql-10
 RUN apt-get install -y postgresql-server-dev-10
 RUN sudo -u postgres pg_config
-RUN systemctl -l enable postgresql
 COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
 RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
-RUN systemctl -l start postgresql
-RUN systemctl -l status postgresql
+RUN if [ ! -e /var/log/postgresql ]; then mkdir /var/log/postgresql; fi
+RUN chown postgres /var/log/postgresql
+RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /var/lib/postgresql/10/main -l /var/log/postgresql/logfile start
 RUN echo "=== Done installing PostgreSQL."
 #
 ###
