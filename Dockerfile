@@ -1,4 +1,4 @@
-#
+# See: https://docs.docker.com/config/containers/multi-service_container/
 FROM ubuntu:18.10
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
@@ -19,20 +19,24 @@ RUN sudo -u postgres pg_config
 COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
 RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
 RUN chown postgres /etc/postgresql/10/main/pg_hba.conf 
-RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /etc/postgresql/10/main start
-RUN sudo -u postgres psql -l
 RUN echo "=== Done installing PostgreSQL."
 #
-###
 RUN mkdir -p /home/data/carlsbad
 COPY data/carlsbad-pgdump.sql.gz /home/data/carlsbad
-RUN sudo -u postgres createdb carlsbad
-RUN gunzip -c /home/data/carlsbad/carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
-RUN sudo -u postgres psql -d carlsbad -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO batman"
-RUN sudo -u postgres psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO batman"
-RUN echo "=== Done loading database."
+RUN echo "=== Done copying db data."
+#
+USER postgres
+RUN /etc/init.d/postgresql start && \
+	psql -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'" && \
+	createdb -O postgres carlsbad && \
+	psql -l && \
+	(gunzip -c /home/data/carlsbad/carlsbad-pgdump.sql.gz |psql -d carlsbad) && \
+	psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman" && \
+	psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO batman" && \
+	psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO batman"
+RUN echo "=== Done instantiating and loading db."
+USER root
+RUN service postgresql stop && service postgresql start
 #
 ###
 RUN apt-get install -y openjdk-8-jdk

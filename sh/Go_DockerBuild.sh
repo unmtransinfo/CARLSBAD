@@ -17,7 +17,7 @@ sudo docker build -t ${INAME}:${TAG} .
 #
 printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
-rm ${cwd}/data/carlsbad-pgdump.sql.gz
+rm -f ${cwd}/data/carlsbad-pgdump.sql.gz
 #
-sudo docker images
+sudo docker images -a
 #
