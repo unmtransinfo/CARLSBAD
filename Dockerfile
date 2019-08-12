@@ -20,11 +20,12 @@ COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
 RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
 RUN chown postgres /etc/postgresql/10/main/pg_hba.conf 
 RUN sudo -u postgres /usr/lib/postgresql/10/bin/pg_ctl -D /etc/postgresql/10/main start
+RUN sudo -u postgres psql -l
 RUN echo "=== Done installing PostgreSQL."
 #
 ###
 RUN mkdir -p /home/data/carlsbad
-COPY -L data/carlsbad-pgdump.sql.gz /home/data/carlsbad
+COPY data/carlsbad-pgdump.sql.gz /home/data/carlsbad
 RUN sudo -u postgres createdb carlsbad
 RUN gunzip -c /home/data/carlsbad/carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
 RUN sudo -u postgres psql -d carlsbad -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'"
