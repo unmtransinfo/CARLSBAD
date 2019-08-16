@@ -76,3 +76,5 @@ mvn javadoc:javadoc
 In accordance with the guideline ___one service per container___, CARLSBAD is organized
 into `carlsbad_db` and `carlsbad_ui` from separate
 [Dockerfile\_Db](Dockerfile_Db) and [Dockerfile\_UI](Dockerfile_UI).
+These containers communicate via
+[user-defined bridge network](https://docs.docker.com/network/bridge/).
