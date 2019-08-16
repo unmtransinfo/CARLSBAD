@@ -70,3 +70,9 @@ mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.b
 ```
 mvn javadoc:javadoc
 ```
+
+## Docker
+
+In accordance with the guideline ___one service per container___, CARLSBAD is organized
+into `carlsbad_db` and `carlsbad_ui` from separate
+[Dockerfile\_Db](Dockerfile_Db) and [Dockerfile\_UI](Dockerfile_UI).

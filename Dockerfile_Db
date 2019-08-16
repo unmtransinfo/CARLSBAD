@@ -1,21 +1,18 @@
-# See: https://docs.docker.com/config/containers/multi-service_container/
+#
 FROM ubuntu:18.10
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 RUN apt-get install -y apt-utils
-RUN apt-get install -y sudo
 ENV TZ=America/Denver
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
 RUN apt-get install -y tzdata
-RUN apt-get install -y curl
 RUN echo "=== Done installing Ubuntu."
 #
 ###
 RUN apt-get install -y postgresql-10
 RUN apt-cache policy postgresql-10
 RUN apt-get install -y postgresql-server-dev-10
-RUN sudo -u postgres pg_config
 COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
 RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
 RUN chown postgres /etc/postgresql/10/main/pg_hba.conf 
@@ -26,6 +23,7 @@ COPY data/carlsbad-pgdump.sql.gz /home/data/carlsbad
 RUN echo "=== Done copying db data."
 #
 USER postgres
+RUN pg_config
 RUN /etc/init.d/postgresql start && \
 	psql -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'" && \
 	createdb -O postgres carlsbad && \
@@ -34,30 +32,9 @@ RUN /etc/init.d/postgresql start && \
 	psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman" && \
 	psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO batman" && \
 	psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO batman"
-RUN echo "=== Done instantiating and loading db."
+RUN service postgresql stop
 USER root
-RUN service postgresql stop && service postgresql start
+RUN echo "=== Done instantiating and loading db."
 #
-###
-RUN apt-get install -y openjdk-8-jdk
-RUN apt-cache policy openjdk-8-jdk
-RUN java -version
-RUN echo "=== Done installing Java."
-#
-###
-RUN apt-get install -y software-properties-common
-RUN apt-add-repository -y "deb http://us.archive.ubuntu.com/ubuntu/ bionic universe"
-RUN apt-get install -y tomcat9 tomcat9-admin
-RUN apt-cache policy tomcat9
-RUN cp -r /etc/tomcat9 /usr/share/tomcat9/conf
-COPY conf/tomcat/tomcat-users.xml /usr/share/tomcat9/conf/
-COPY conf/tomcat/server.xml /usr/share/tomcat9/conf/
-RUN mkdir /usr/share/tomcat9/temp
-RUN echo "=== Done installing Tomcat."
-#
-###
-COPY carlsbad_war/target/carlsbad_war-0.0.1-SNAPSHOT.war /usr/share/tomcat9/webapps/carlsbad.war
-RUN echo "=== Done installing application CARLSBAD."
-#
-CMD ["/usr/share/tomcat9/bin/catalina.sh", "run"]
+CMD ["/etc/init.d/postgresql", "start"]
 #

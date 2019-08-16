@@ -1,4 +1,7 @@
 #!/bin/bash
+###
+# See: https://docs.docker.com/config/containers/multi-service_container/
+###
 
 # Start the first process
 ./my_first_process -D
