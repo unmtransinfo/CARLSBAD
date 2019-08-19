@@ -78,3 +78,6 @@ into `carlsbad_db` and `carlsbad_ui` from separate
 [Dockerfile\_Db](Dockerfile_Db) and [Dockerfile\_UI](Dockerfile_UI).
 These containers communicate via
 [user-defined bridge network](https://docs.docker.com/network/bridge/).
+
+[Dockerfile\_Db](Dockerfile_Db) currently takes about 1h:45m, mostly to load the 
+database.
