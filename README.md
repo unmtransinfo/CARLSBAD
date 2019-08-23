@@ -12,7 +12,12 @@ T. I. Oprea, Database, 2013, bat044, DOI: 10.1093/database/bat044,
 ## Dependencies
 * Java 8
 * Maven 3.5+
-* [`unm_biocomp_cytoscape`](https://github.com/unmtransinfo/unm_biocomp_cytoscape), [`unm_biocomp_kegg`](https://github.com/unmtransinfo/unm_biocomp_kegg), [`unm_biocomp_smarts`](https://github.com/unmtransinfo/unm_biocomp), [`unm_biocomp_depict`](https://github.com/unmtransinfo/unm_biocomp_depict), [`unm_biocomp_util`](https://github.com/unmtransinfo/unm_biocomp_util)
+* [`unm_biocomp_util`](https://github.com/unmtransinfo/unm_biocomp_util),
+[`unm_biocomp_text`](https://github.com/unmtransinfo/unm_biocomp_text),
+[`unm_biocomp_smarts`](https://github.com/unmtransinfo/unm_biocomp_smarts),
+[`unm_biocomp_depict`](https://github.com/unmtransinfo/unm_biocomp_depict),
+[`unm_biocomp_cytoscape`](https://github.com/unmtransinfo/unm_biocomp_cytoscape),
+[`unm_biocomp_kegg`](https://github.com/unmtransinfo/unm_biocomp_kegg)
 * ChemAxon JChem (19.3.0 ok)
 * Access to [ChemAxon Maven repository](https://hub.chemaxon.com) (see [documentation](https://docs.chemaxon.com/display/docs/Public+Repository)).
   * Requires ChemAxon-Hub Artifactory credentials.
