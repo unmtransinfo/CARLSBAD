@@ -1,11 +1,18 @@
-#!/bin/sh
+#!/bin/bash
 ###
+#
+set -e
+#
 cwd=$(pwd)
 #
 sudo docker version
 #
 INAME="carlsbad_db"
 TAG="v0.0.1-SNAPSHOT"
+#
+if [ ! -e "${cwd}/data" ]; then
+	mkdir ${cwd}/data/
+fi
 #
 cp /home/data/carlsbad/carlsbad-pgdump.sql.gz ${cwd}/data/
 #
