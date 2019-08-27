@@ -448,241 +448,241 @@ public class carlsbad_utils
 	If we go with this target classification scheme, should return
 	all target classifications (overlapping) as we do target ids.
   */
-  public static String TargetQuerySQL(
-	List<Integer> tids,
-	String ttype,
-	ArrayList<String> tclasses,
-	String tname,
-	Boolean matchtype_tname_sub,
-	String tdesc,
-	Boolean matchtype_tdesc_sub,
-	String species,
-	String tgt_id,
-	String tgt_idtype,
-	String sbs_id,
-	String sbs_idtype,
-	String qcpd,
-	String matchtype_qcpd,
-	Float minsim,
-	String cname,
-	Boolean matchtype_cname_sub,
-	Integer mw_min,
-	Integer mw_max,
-	ArrayList<Integer> cids,
-	ArrayList<Integer> scafids,
-	ArrayList<Integer> mcesids,
-	Integer n_max_t
-	)
-  {
-    ArrayList<String> wheres = new ArrayList<String>();
-    ArrayList<String> wheres_tgt = new ArrayList<String>();
-    if (tids!=null && tids.size()>0)
-    {
-      String where=("target.id IN (");
-      for (int i=0;i<tids.size();++i)
-      {
-        where+=(((i==0)?"":",")+tids.get(i));
-      }
-      where+=")";
-      wheres_tgt.add(where); //expect tgt_idtype=CARLSBAD
-    }
-    else
-    {
-      if (tgt_id!=null && !tgt_id.isEmpty())
-      {
-        if (tgt_idtype!=null && !tgt_idtype.isEmpty() && tgt_idtype.equals("any") && tgt_id.matches("^[0-9]*$"))
-        {
-          wheres.add("(identifier_tgt.id='"+tgt_id+"' OR target.id="+tgt_id+")");
-        }
-        else
-        {
-          wheres.add("identifier_tgt.id='"+tgt_id+"'");
-          if (tgt_idtype!=null && !tgt_idtype.isEmpty() && !tgt_idtype.equals("any"))
-            wheres.add("identifier_tgt.id_type='"+tgt_idtype+"'");
-        }
-      }
-    }
-    if (tname!=null && !tname.isEmpty())
-      wheres_tgt.add(matchtype_tname_sub?"target.name ILIKE '%"+tname+"%'":"LOWER(target.name)=LOWER('"+tname+"')");
-    if (tdesc!=null && !tdesc.isEmpty())
-      wheres_tgt.add(matchtype_tdesc_sub?"target.descr ILIKE '%"+tdesc+"%'":"LOWER(target.descr)=LOWER('"+tdesc+"')");
-    if (species!=null && !species.isEmpty() && !species.equals("any"))
-      wheres_tgt.add("target.species='"+species+"'");
-    if (ttype!=null && !ttype.isEmpty() && !ttype.equals("any"))
-      wheres_tgt.add("target.type='"+ttype+"'");
-    if (tclasses!=null && tclasses.size()>0)
-    {
-      wheres.add("target_classifier.type='"+target_classifier_type+"'");
-      String where=("target_classifier.id IN (");
-      for (int i=0;i<tclasses.size();++i)
-      {
-        String tclass=tclasses.get(i);
-        tclass=tclass.replaceAll("'","''");
-        where+=(((i==0)?"":",")+"'"+tclass+"'");
-      }
-      where+=")";
-      wheres.add(where);
-    }
-    ArrayList<String> wheres_cpd = new ArrayList<String>();
-    if (qcpd!=null && !qcpd.isEmpty())
-    {
-      if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("sim") && minsim!=null)
-      {
-        wheres_cpd.add("gnova.tanimoto(gnova.fp('"+qcpd+"'),compound.gfp)>"+minsim);
-      }
-      else if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("exa"))
-      {
-        wheres_cpd.add("compound.gfp=gnova.fp('"+qcpd+"')"); //fp-screen for speed
-        wheres_cpd.add("compound.smiles=gnova.cansmiles('"+qcpd+"')");
-      }
-      else if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("sub"))
-      {
-        // If query is valid smiles, parse as such and aromatize, else handle as smarts.
-        try {
-          Molecule mol = MolImporter.importMol(qcpd,"smiles:d");
-          if (mol.isQuery() || qcpd.matches(".*[&,;~].*$") || qcpd.matches(".*#[0-9].*$"))
-          {
-            wheres_cpd.add("gnova.matches(compound.smiles,'"+qcpd+"')");
-          }
-          else
-          {
-            String qsmi=mol.exportToFormat("smiles:+a");
-            wheres_cpd.add("gnova.bit_contains(compound.gfp,gnova.fp('"+qsmi+"'))"); //fp-screen for speed
-            wheres_cpd.add("gnova.matches(compound.smiles,'"+qsmi+"')");
-          }
-        }
-        catch (Exception e) {
-          wheres_cpd.add("gnova.matches(compound.smiles,'"+qcpd+"')");
-        }
-      }
-    }
-    if (cname!=null && !cname.isEmpty())
-    {
-      wheres_cpd.add(matchtype_cname_sub?"synonym.name ILIKE '%"+cname+"%'":"LOWER(synonym.name)=LOWER('"+cname+"')");
-    }
-    if (mw_min!=null)
-      wheres_cpd.add("compound.mol_weight>"+mw_min);
-    if (mw_max!=null)
-      wheres_cpd.add("compound.mol_weight<"+mw_max);
-
-    if (cids!=null)
-    {
-      String where="compound.id IN (";
-      for (int i=0;i<cids.size();++i)
-        where+=(((i==0)?"":",")+cids.get(i));
-      where+=")";
-      wheres_cpd.add(where);
-    }
-    if (sbs_id!=null && !sbs_id.isEmpty())
-    {
-      if (sbs_idtype!=null && !sbs_idtype.isEmpty() && sbs_idtype.equals("CARLSBAD"))
-      {
-        // Handled by (cids)
-      }
-      else if (sbs_idtype!=null && !sbs_idtype.isEmpty() && sbs_idtype.equals("any") && sbs_id.matches("^[0-9]*$"))
-      {
-        wheres_cpd.add("(identifier_sbs.id='"+sbs_id+"' OR substance.id="+sbs_id+" OR compound.id="+sbs_id+")");
-      }
-      else
-      {
-        wheres_cpd.add("identifier_sbs.id='"+sbs_id+"'");
-        if (sbs_idtype!=null && !sbs_idtype.isEmpty() && !sbs_idtype.equals("any"))
-          wheres_cpd.add("identifier_sbs.id_type='"+sbs_idtype+"'");
-      }
-    }
-    if (scafids!=null)
-    {
-      String where="scaffold.id IN (";
-      for (int i=0;i<scafids.size();++i)
-        where+=(((i==0)?"":",")+scafids.get(i));
-      where+=")";
-      wheres_cpd.add(where);
-    }
-    if (mcesids!=null)
-    {
-      String where="compound.cluster_id IN (";
-      for (int i=0;i<mcesids.size();++i)
-        where+=(((i==0)?"":",")+mcesids.get(i));
-      where+=")";
-      wheres_cpd.add(where);
-    }
-
-    String sql="SELECT DISTINCT\n"
-      +"\ttarget.id AS tid,\n"
-      +"\ttarget.name,\n"
-      +"\ttarget.type,\n"
-      +"\ttarget.species,\n"
-      +"\ttarget.descr,\n";
-    sql+=
-      "\tidentifier_tgt.id_type AS tgt_id_type,\n"
-      +"\tidentifier_tgt.id AS tgt_id\n"
-      +"FROM\n"
-      +"\ttarget\n"
-      +"LEFT OUTER JOIN\n"
-      +"\tidentifier AS identifier_tgt ON (identifier_tgt.target_id=target.id)\n";
-
-    String subsql="\t\tSELECT DISTINCT\n"
-      +"\t\t\ttarget.id\n"
-      +"\t\tFROM\n"
-      +"\t\t\ttarget\n"
-      +"\t\tLEFT OUTER JOIN\n"
-      +"\t\t\tidentifier AS identifier_tgt ON (identifier_tgt.target_id=target.id)\n";
-    if (wheres_tgt.size()>0)
-    {
-      wheres.addAll(wheres_tgt);
-    }
-    if (wheres_cpd.size()>0)
-    {
-      wheres.addAll(wheres_cpd);
-      wheres.add("s2c.is_active");
-      subsql+=("\t\tJOIN\n"
-        +"\t\t\tcbactivity ON (target.id=cbactivity.target_id)\n"
-        +"\t\tJOIN\n"
-        +"\t\t\tsubstance ON (cbactivity.substance_id=substance.id)\n"
-        +"\t\tJOIN\n"
-        +"\t\t\ts2c ON (substance.id=s2c.substance_id)\n"
-        +"\t\tJOIN\n"
-        +"\t\t\tcompound ON (s2c.compound_id=compound.id)\n");
-      if (cname!=null && !cname.isEmpty())
-        subsql+=("\t\tLEFT OUTER JOIN\n"
-          +"\t\t\tsynonym ON (synonym.substance_id=substance.id)\n");
-      if (sbs_id!=null && !sbs_id.isEmpty())
-        subsql+=("\t\tJOIN\n"
-          +"\t\t\tidentifier AS identifier_sbs ON (identifier_sbs.substance_id=substance.id)\n");
-      if (scafids!=null)
-        subsql+=("\t\tJOIN\n"
-          +"\t\t\tscafid2cid ON (compound.id=scafid2cid.compound_id)\n"
-          +"\t\tJOIN\n"
-          +"\t\t\tscaffold ON (scafid2cid.scaffold_id=scaffold.id)\n");
-    }
-    if (wheres.size()==0) return null;
-    if (tclasses!=null && tclasses.size()>0)
-    {
-      //THIS NEEDS TO BE SEPARATE QUERY OR WE GET CARTESIAN PRODUCT W/ ID JOIN.
-      subsql+=("\t\tLEFT OUTER JOIN\n"
-        +"\t\t\ttarget_classifier ON (target_classifier.target_id=target.id)\n");
-    }
-    subsql+="\t\tWHERE\n";
-    wheres=UniquifyArrayList(wheres);
-    for (int i=0;i<wheres.size();++i)
-      subsql+="\t\t\t"+((i>0)?"AND ":"")+wheres.get(i)+"\n";
-    if (n_max_t!=null) subsql+=("\t\tLIMIT "+n_max_t);
-    sql+=(
-      "WHERE\n"
-      +"\ttarget.id IN (\n"
-      +subsql+"\n"
-      +"\t)\n"
-    );
-    sql+=("ORDER BY target.id,target.name ASC\n");
-    return sql;
-  }
-  public static String TargetQuerySQL(List<Integer> tids)
-  {
-    return TargetQuerySQL(
-	tids, null, null, null, null, null, null, null, null, null,
-	null, null, null, null, null, null, null, null, null, null,
-	null, null, null);
-  }
+//  public static String TargetQuerySQL(
+//	List<Integer> tids,
+//	String ttype,
+//	ArrayList<String> tclasses,
+//	String tname,
+//	Boolean matchtype_tname_sub,
+//	String tdesc,
+//	Boolean matchtype_tdesc_sub,
+//	String species,
+//	String tgt_id,
+//	String tgt_idtype,
+//	String sbs_id,
+//	String sbs_idtype,
+//	String qcpd,
+//	String matchtype_qcpd,
+//	Float minsim,
+//	String cname,
+//	Boolean matchtype_cname_sub,
+//	Integer mw_min,
+//	Integer mw_max,
+//	ArrayList<Integer> cids,
+//	ArrayList<Integer> scafids,
+//	ArrayList<Integer> mcesids,
+//	Integer n_max_t
+//	)
+//  {
+//    ArrayList<String> wheres = new ArrayList<String>();
+//    ArrayList<String> wheres_tgt = new ArrayList<String>();
+//    if (tids!=null && tids.size()>0)
+//    {
+//      String where=("target.id IN (");
+//      for (int i=0;i<tids.size();++i)
+//      {
+//        where+=(((i==0)?"":",")+tids.get(i));
+//      }
+//      where+=")";
+//      wheres_tgt.add(where); //expect tgt_idtype=CARLSBAD
+//    }
+//    else
+//    {
+//      if (tgt_id!=null && !tgt_id.isEmpty())
+//      {
+//        if (tgt_idtype!=null && !tgt_idtype.isEmpty() && tgt_idtype.equals("any") && tgt_id.matches("^[0-9]*$"))
+//        {
+//          wheres.add("(identifier_tgt.id='"+tgt_id+"' OR target.id="+tgt_id+")");
+//        }
+//        else
+//        {
+//          wheres.add("identifier_tgt.id='"+tgt_id+"'");
+//          if (tgt_idtype!=null && !tgt_idtype.isEmpty() && !tgt_idtype.equals("any"))
+//            wheres.add("identifier_tgt.id_type='"+tgt_idtype+"'");
+//        }
+//      }
+//    }
+//    if (tname!=null && !tname.isEmpty())
+//      wheres_tgt.add(matchtype_tname_sub?"target.name ILIKE '%"+tname+"%'":"LOWER(target.name)=LOWER('"+tname+"')");
+//    if (tdesc!=null && !tdesc.isEmpty())
+//      wheres_tgt.add(matchtype_tdesc_sub?"target.descr ILIKE '%"+tdesc+"%'":"LOWER(target.descr)=LOWER('"+tdesc+"')");
+//    if (species!=null && !species.isEmpty() && !species.equals("any"))
+//      wheres_tgt.add("target.species='"+species+"'");
+//    if (ttype!=null && !ttype.isEmpty() && !ttype.equals("any"))
+//      wheres_tgt.add("target.type='"+ttype+"'");
+//    if (tclasses!=null && tclasses.size()>0)
+//    {
+//      wheres.add("target_classifier.type='"+target_classifier_type+"'");
+//      String where=("target_classifier.id IN (");
+//      for (int i=0;i<tclasses.size();++i)
+//      {
+//        String tclass=tclasses.get(i);
+//        tclass=tclass.replaceAll("'","''");
+//        where+=(((i==0)?"":",")+"'"+tclass+"'");
+//      }
+//      where+=")";
+//      wheres.add(where);
+//    }
+//    ArrayList<String> wheres_cpd = new ArrayList<String>();
+//    if (qcpd!=null && !qcpd.isEmpty())
+//    {
+//      if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("sim") && minsim!=null)
+//      {
+//        wheres_cpd.add("gnova.tanimoto(gnova.fp('"+qcpd+"'),compound.gfp)>"+minsim);
+//      }
+//      else if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("exa"))
+//      {
+//        wheres_cpd.add("compound.gfp=gnova.fp('"+qcpd+"')"); //fp-screen for speed
+//        wheres_cpd.add("compound.smiles=gnova.cansmiles('"+qcpd+"')");
+//      }
+//      else if (matchtype_qcpd!=null && matchtype_qcpd.equalsIgnoreCase("sub"))
+//      {
+//        // If query is valid smiles, parse as such and aromatize, else handle as smarts.
+//        try {
+//          Molecule mol = MolImporter.importMol(qcpd,"smiles:d");
+//          if (mol.isQuery() || qcpd.matches(".*[&,;~].*$") || qcpd.matches(".*#[0-9].*$"))
+//          {
+//            wheres_cpd.add("gnova.matches(compound.smiles,'"+qcpd+"')");
+//          }
+//          else
+//          {
+//            String qsmi=mol.exportToFormat("smiles:+a");
+//            wheres_cpd.add("gnova.bit_contains(compound.gfp,gnova.fp('"+qsmi+"'))"); //fp-screen for speed
+//            wheres_cpd.add("gnova.matches(compound.smiles,'"+qsmi+"')");
+//          }
+//        }
+//        catch (Exception e) {
+//          wheres_cpd.add("gnova.matches(compound.smiles,'"+qcpd+"')");
+//        }
+//      }
+//    }
+//    if (cname!=null && !cname.isEmpty())
+//    {
+//      wheres_cpd.add(matchtype_cname_sub?"synonym.name ILIKE '%"+cname+"%'":"LOWER(synonym.name)=LOWER('"+cname+"')");
+//    }
+//    if (mw_min!=null)
+//      wheres_cpd.add("compound.mol_weight>"+mw_min);
+//    if (mw_max!=null)
+//      wheres_cpd.add("compound.mol_weight<"+mw_max);
+//
+//    if (cids!=null)
+//    {
+//      String where="compound.id IN (";
+//      for (int i=0;i<cids.size();++i)
+//        where+=(((i==0)?"":",")+cids.get(i));
+//      where+=")";
+//      wheres_cpd.add(where);
+//    }
+//    if (sbs_id!=null && !sbs_id.isEmpty())
+//    {
+//      if (sbs_idtype!=null && !sbs_idtype.isEmpty() && sbs_idtype.equals("CARLSBAD"))
+//      {
+//        // Handled by (cids)
+//      }
+//      else if (sbs_idtype!=null && !sbs_idtype.isEmpty() && sbs_idtype.equals("any") && sbs_id.matches("^[0-9]*$"))
+//      {
+//        wheres_cpd.add("(identifier_sbs.id='"+sbs_id+"' OR substance.id="+sbs_id+" OR compound.id="+sbs_id+")");
+//      }
+//      else
+//      {
+//        wheres_cpd.add("identifier_sbs.id='"+sbs_id+"'");
+//        if (sbs_idtype!=null && !sbs_idtype.isEmpty() && !sbs_idtype.equals("any"))
+//          wheres_cpd.add("identifier_sbs.id_type='"+sbs_idtype+"'");
+//      }
+//    }
+//    if (scafids!=null)
+//    {
+//      String where="scaffold.id IN (";
+//      for (int i=0;i<scafids.size();++i)
+//        where+=(((i==0)?"":",")+scafids.get(i));
+//      where+=")";
+//      wheres_cpd.add(where);
+//    }
+//    if (mcesids!=null)
+//    {
+//      String where="compound.cluster_id IN (";
+//      for (int i=0;i<mcesids.size();++i)
+//        where+=(((i==0)?"":",")+mcesids.get(i));
+//      where+=")";
+//      wheres_cpd.add(where);
+//    }
+//
+//    String sql="SELECT DISTINCT\n"
+//      +"\ttarget.id AS tid,\n"
+//      +"\ttarget.name,\n"
+//      +"\ttarget.type,\n"
+//      +"\ttarget.species,\n"
+//      +"\ttarget.descr,\n";
+//    sql+=
+//      "\tidentifier_tgt.id_type AS tgt_id_type,\n"
+//      +"\tidentifier_tgt.id AS tgt_id\n"
+//      +"FROM\n"
+//      +"\ttarget\n"
+//      +"LEFT OUTER JOIN\n"
+//      +"\tidentifier AS identifier_tgt ON (identifier_tgt.target_id=target.id)\n";
+//
+//    String subsql="\t\tSELECT DISTINCT\n"
+//      +"\t\t\ttarget.id\n"
+//      +"\t\tFROM\n"
+//      +"\t\t\ttarget\n"
+//      +"\t\tLEFT OUTER JOIN\n"
+//      +"\t\t\tidentifier AS identifier_tgt ON (identifier_tgt.target_id=target.id)\n";
+//    if (wheres_tgt.size()>0)
+//    {
+//      wheres.addAll(wheres_tgt);
+//    }
+//    if (wheres_cpd.size()>0)
+//    {
+//      wheres.addAll(wheres_cpd);
+//      wheres.add("s2c.is_active");
+//      subsql+=("\t\tJOIN\n"
+//        +"\t\t\tcbactivity ON (target.id=cbactivity.target_id)\n"
+//        +"\t\tJOIN\n"
+//        +"\t\t\tsubstance ON (cbactivity.substance_id=substance.id)\n"
+//        +"\t\tJOIN\n"
+//        +"\t\t\ts2c ON (substance.id=s2c.substance_id)\n"
+//        +"\t\tJOIN\n"
+//        +"\t\t\tcompound ON (s2c.compound_id=compound.id)\n");
+//      if (cname!=null && !cname.isEmpty())
+//        subsql+=("\t\tLEFT OUTER JOIN\n"
+//          +"\t\t\tsynonym ON (synonym.substance_id=substance.id)\n");
+//      if (sbs_id!=null && !sbs_id.isEmpty())
+//        subsql+=("\t\tJOIN\n"
+//          +"\t\t\tidentifier AS identifier_sbs ON (identifier_sbs.substance_id=substance.id)\n");
+//      if (scafids!=null)
+//        subsql+=("\t\tJOIN\n"
+//          +"\t\t\tscafid2cid ON (compound.id=scafid2cid.compound_id)\n"
+//          +"\t\tJOIN\n"
+//          +"\t\t\tscaffold ON (scafid2cid.scaffold_id=scaffold.id)\n");
+//    }
+//    if (wheres.size()==0) return null;
+//    if (tclasses!=null && tclasses.size()>0)
+//    {
+//      //THIS NEEDS TO BE SEPARATE QUERY OR WE GET CARTESIAN PRODUCT W/ ID JOIN.
+//      subsql+=("\t\tLEFT OUTER JOIN\n"
+//        +"\t\t\ttarget_classifier ON (target_classifier.target_id=target.id)\n");
+//    }
+//    subsql+="\t\tWHERE\n";
+//    wheres=UniquifyArrayList(wheres);
+//    for (int i=0;i<wheres.size();++i)
+//      subsql+="\t\t\t"+((i>0)?"AND ":"")+wheres.get(i)+"\n";
+//    if (n_max_t!=null) subsql+=("\t\tLIMIT "+n_max_t);
+//    sql+=(
+//      "WHERE\n"
+//      +"\ttarget.id IN (\n"
+//      +subsql+"\n"
+//      +"\t)\n"
+//    );
+//    sql+=("ORDER BY target.id,target.name ASC\n");
+//    return sql;
+//  }
+//  public static String TargetQuerySQL(List<Integer> tids)
+//  {
+//    return TargetQuerySQL(
+//	tids, null, null, null, null, null, null, null, null, null,
+//	null, null, null, null, null, null, null, null, null, null,
+//	null, null, null);
+//  }
   /////////////////////////////////////////////////////////////////////////////
   public static ArrayList<Integer> TargetExternalIDs2TIDs(Collection<String> ids,String id_type,DBCon dbcon)
 	throws SQLException
