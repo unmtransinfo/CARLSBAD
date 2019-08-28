@@ -1,5 +1,7 @@
 #!/bin/bash
 ###
+# Takes ~5-20min, depending on server, mostly pg_restore.
+###
 #
 set -e
 #
