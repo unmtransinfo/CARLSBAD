@@ -24,13 +24,16 @@ RUN echo "=== Done copying db data."
 #
 USER postgres
 RUN pg_config
+ENV dbname=carlsbad
+ENV dbusr=batman
+ENV dbpw=foobar
 RUN /etc/init.d/postgresql start && \
-	psql -c "CREATE ROLE batman WITH LOGIN PASSWORD 'foobar'" && \
-	createdb -O postgres carlsbad && \
-	pg_restore --schema public -d carlsbad /home/data/carlsbad/carlsbad.dump && \
-	psql -d carlsbad -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO batman" && \
-	psql -d carlsbad -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO batman" && \
-	psql -d carlsbad -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO batman" && \
+	psql -c "CREATE ROLE ${dbusr} WITH LOGIN PASSWORD '${dbpw}'" && \
+	createdb -O postgres ${dbname} && \
+	pg_restore -v --schema public -d ${dbname} /home/data/carlsbad/carlsbad.dump && \
+	psql -d ${dbname} -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${dbusr}" && \
+	psql -d ${dbname} -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${dbusr}" && \
+	psql -d ${dbname} -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${dbusr}" && \
 	psql -l
 RUN service postgresql stop
 USER root
