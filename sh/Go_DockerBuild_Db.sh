@@ -29,5 +29,5 @@ printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
 rm -f ${cwd}/data/carlsbad.dump
 #
-sudo docker images -a
+sudo docker images
 #

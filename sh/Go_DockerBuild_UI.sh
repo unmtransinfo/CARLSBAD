@@ -16,5 +16,5 @@ sudo docker build -f ${dockerfile} -t ${INAME}:${TAG} .
 #
 printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
-sudo docker images -a
+sudo docker images
 #

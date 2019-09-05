@@ -22,6 +22,7 @@ RUN mkdir -p /home/data/carlsbad
 COPY data/carlsbad.dump /home/data/carlsbad
 RUN echo "=== Done copying db data."
 #
+# Note that user postgres must start db differently than user root.
 USER postgres
 RUN pg_config
 ENV dbname=carlsbad
@@ -35,9 +36,9 @@ RUN /etc/init.d/postgresql start && \
 	psql -d ${dbname} -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${dbusr}" && \
 	psql -d ${dbname} -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${dbusr}" && \
 	psql -l
-RUN service postgresql stop
 USER root
+RUN service postgresql stop
 RUN echo "=== Done instantiating and loading db."
 #
-CMD ["/etc/init.d/postgresql", "start"]
+CMD ["/usr/sbin/service", "postgresql", "start"]
 #
