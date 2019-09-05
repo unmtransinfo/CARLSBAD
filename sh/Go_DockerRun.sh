@@ -23,6 +23,7 @@ sudo docker container logs "${INAME_DB}_container"
 #
 ###
 # Can we test db before proceeding?
+sudo docker exec "${INAME_DB}_container" su - postgres psql -l
 ###
 #
 ###

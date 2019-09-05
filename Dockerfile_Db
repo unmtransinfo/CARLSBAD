@@ -3,6 +3,7 @@ FROM ubuntu:18.10
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
+RUN apt-get install -y sudo
 RUN apt-get install -y apt-utils
 ENV TZ=America/Denver
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
@@ -40,5 +41,6 @@ USER root
 RUN service postgresql stop
 RUN echo "=== Done instantiating and loading db."
 #
-CMD ["/usr/sbin/service", "postgresql", "start"]
+# CMD must be in foreground.
+CMD ["sudo", "-u", "postgres", "/usr/lib/postgresql/10/bin/postgres", "-D", "/var/lib/postgresql/10/main", "-c", "config_file=/etc/postgresql/10/main/postgresql.conf"]
 #
