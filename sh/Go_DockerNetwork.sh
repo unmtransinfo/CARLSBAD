@@ -22,5 +22,8 @@ sudo docker network ls
 #
 sudo docker exec ${INAME_UI}_container ping -c 1 ${INAME_DB}_container
 #
-sudo docker exec ${INAME_UI}_container psql -h ${INAME_DB}_container -d carlsbad -c "SELECT name,version FROM dataset"
+sudo docker exec -it ${INAME_UI}_container psql -h ${INAME_DB}_container -d carlsbad -U batman -c "SELECT name,version FROM dataset"
 #
+###
+# If ok, app at: http://localhost:9091/carlsbad/carlsbadone
+###

@@ -33,6 +33,8 @@ RUN echo "=== Done installing Tomcat."
 #
 ###
 RUN apt-get install -y postgresql-client-10
+COPY conf/postgresql/.pgpass /home/app
+RUN chmod 600 /home/app/.pgpass
 RUN echo "=== Done installing Postgresql (client)."
 #
 ###
@@ -45,7 +47,8 @@ RUN echo "=== Done installing application CARLSBAD."
 #
 ###
 # Configure db host "carlsbad_db_container":
-COPY conf/carlsbad/web.xml /usr/share/tomcat9/webapps/carlsbad/WEB-INF/
+COPY conf/carlsbad/web.xml /home/app/conf/carlsbad
+RUN cp /home/app/conf/carlsbad/web.xml /usr/share/tomcat9/webapps/carlsbad/WEB-INF
 RUN echo "=== Done configuring application CARLSBAD."
 #
 CMD ["/usr/share/tomcat9/bin/catalina.sh", "run"]

@@ -1,9 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 ###
 # Instantiate and run containers.
 # -dit = --detached --interactive --tty
 ###
 set -e
+#
+cwd=$(pwd)
 #
 VTAG="v0.0.1-SNAPSHOT"
 #
@@ -21,6 +23,10 @@ sudo docker run -dit \
 #
 sudo docker container logs "${INAME_DB}_container"
 #
+#
+###
+echo "Sleep while db server starting up..."
+sleep 10
 ###
 # Test db before proceeding.
 sudo docker exec "${INAME_DB}_container" sudo -u postgres psql -l
@@ -48,4 +54,6 @@ printf "CARLSBAD PostgreSQL Endpoint: localhost:%s\n" "${DOCKERPORT_UI}"
 #
 printf "Tomcat Web Application Manager: http://localhost:%s/manager/html\n" "${DOCKERPORT_UI}"
 printf "CARLSBAD Web Application: http://localhost:%s/${INAME_UI}\n" "${DOCKERPORT_UI}"
+#
+${cwd}/sh/Go_DockerNetwork.sh
 #

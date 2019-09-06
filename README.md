@@ -79,10 +79,25 @@ mvn javadoc:javadoc
 ## Docker
 
 In accordance with the guideline ___one service per container___, CARLSBAD is organized
-into `carlsbad_db` and `carlsbad_ui` from separate
+into images `carlsbad_db` and `carlsbad_ui`, built from separate
 [Dockerfile\_Db](Dockerfile_Db) and [Dockerfile\_UI](Dockerfile_UI).
-These containers communicate via
-[user-defined bridge network](https://docs.docker.com/network/bridge/).
+The running containers communicate via
+[user-defined bridge network](https://docs.docker.com/network/bridge/), which
+allows private communication between the containers, via container names
+as hostnames: `carlsbad_db_container` and `carlsbad_ui_container`.
+
+From the Docker engine host, the application is accessible at 
+<http://localhost:9091/carlsbad/carlsbadone>.
 
 [Dockerfile\_Db](Dockerfile_Db) currently takes about 1h:45m, mostly to load the 
 database.
+
+See:
+
+* [Dockerfile\_Db](DockerFile_Db)
+* [Dockerfile\_UI](DockerFile_UI)
+* [Go\_DockerBuild\_Db.sh](sh/Go_DockerBuild_Db.sh)
+* [Go\_DockerBuild\_UI.sh](sh/Go_DockerBuild_UI.sh)
+* [Go\_DockerRun.sh](sh/Go_DockerRun.sh)
+* [Go\_DockerNetwork.sh](sh/Go_DockerNetwork.sh)
+* [Go\_DockerClean.sh](sh/Go_DockerClean.sh)
