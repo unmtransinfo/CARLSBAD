@@ -27,16 +27,24 @@ RUN cp -r /etc/tomcat9 /usr/share/tomcat9/conf
 COPY conf/tomcat/tomcat-users.xml /usr/share/tomcat9/conf/
 COPY conf/tomcat/server.xml /usr/share/tomcat9/conf/
 RUN mkdir /usr/share/tomcat9/temp
+RUN mkdir /usr/share/tomcat9/logs
 RUN /usr/share/tomcat9/bin/catalina.sh start
 RUN echo "=== Done installing Tomcat."
 #
 ###
+RUN apt-get install -y postgresql-client-10
+RUN echo "=== Done installing Postgresql (client)."
+#
+###
+# WAR should auto-deploy (sleep allows time for this).
 COPY carlsbad_war/target/carlsbad_war-0.0.1-SNAPSHOT.war /usr/share/tomcat9/webapps/carlsbad.war
+RUN sleep 10
+RUN /usr/share/tomcat9/bin/catalina.sh stop
+RUN ls -laR /usr/share/tomcat9/webapps
 RUN echo "=== Done installing application CARLSBAD."
 #
 ###
 # Configure db host "carlsbad_db_container":
-RUN /usr/share/tomcat9/bin/catalina.sh stop
 COPY conf/carlsbad/web.xml /usr/share/tomcat9/webapps/carlsbad/WEB-INF/
 RUN echo "=== Done configuring application CARLSBAD."
 #
