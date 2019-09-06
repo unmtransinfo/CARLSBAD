@@ -1,5 +1,11 @@
 #!/bin/sh
 ###
+# https://docs.docker.com/network/
+# https://docs.docker.com/network/bridge/
+# Default network driver is "bridge".
+# On a user-defined bridge network, containers can resolve each other
+# by name (container ID) or alias (container name).
+###
 #
 NETNAME="carlsbad"
 #

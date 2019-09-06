@@ -22,8 +22,9 @@ sudo docker run -dit \
 sudo docker container logs "${INAME_DB}_container"
 #
 ###
-# Can we test db before proceeding?
-sudo docker exec "${INAME_DB}_container" su - postgres psql -l
+# Test db before proceeding.
+sudo docker exec "${INAME_DB}_container" sudo -u postgres psql -l
+sudo docker exec "${INAME_DB}_container" sudo -u postgres psql -d carlsbad -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
 ###
 #
 ###
