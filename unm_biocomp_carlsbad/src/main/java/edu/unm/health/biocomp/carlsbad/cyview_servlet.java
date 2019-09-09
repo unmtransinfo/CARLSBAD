@@ -234,8 +234,10 @@ public class cyview_servlet extends HttpServlet
   /////////////////////////////////////////////////////////////////////////////
   private static String HeaderJS(String servername, Integer serverport, String serverscheme, String contextpath)
   {
+    //Global MOL2IMG must be relative URL to work in all environments (e.g. Docker).
     return(
-"var MOL2IMG='"+serverscheme+"://"+servername+":"+serverport+contextpath+"/mol2img';\n"+
+//"var MOL2IMG='"+serverscheme+"://"+servername+":"+serverport+contextpath+"/mol2img';\n"+
+"var MOL2IMG='"+contextpath+"/mol2img';\n"+
 "function servername() { return('"+servername+"'); }\n");
   }
   /////////////////////////////////////////////////////////////////////////////

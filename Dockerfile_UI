@@ -29,25 +29,20 @@ COPY conf/tomcat/tomcat-users.xml /usr/share/tomcat9/conf/
 COPY conf/tomcat/server.xml /usr/share/tomcat9/conf/
 RUN mkdir /usr/share/tomcat9/temp
 RUN mkdir /usr/share/tomcat9/logs
-#RUN /usr/share/tomcat9/bin/catalina.sh start
-#RUN i=0; while [ ! -f /usr/share/tomcat9/logs/catalina.out ]; do sleep 1; i=$(($i+1)); printf "%d. Waiting for Tomcat start...\n" "$i"; done
-#RUN cat /usr/share/tomcat9/logs/catalina.out
 RUN echo "=== Done installing Tomcat."
 #
 ###
-# WAR should auto-deploy; why not?
-#USER tomcat
+# WAR should auto-deploy, but seems we must manually unzip.
+#RUN /usr/share/tomcat9/bin/catalina.sh start
 COPY carlsbad_war/target/carlsbad_war-0.0.1-SNAPSHOT.war /usr/share/tomcat9/webapps/carlsbad.war
 #RUN i=0; while [ ! -d /usr/share/tomcat9/webapps/carlsbad ]; do sleep 1; i=$(($i+1)); printf "%d. Waiting for auto-deploy...\n" "$i"; done
-#RUN /usr/share/tomcat9/bin/catalina.sh stop
 RUN cd /usr/share/tomcat9/webapps; mkdir carlsbad; cd carlsbad; unzip ../carlsbad.war
 RUN chown -R tomcat /usr/share/tomcat9/webapps/carlsbad
 RUN ls -laR /usr/share/tomcat9/webapps
 RUN echo "=== Done installing application CARLSBAD."
 #
 ###
-# Configure db host "carlsbad_db_container":
-#USER root
+# web.xml has db access credentials.
 RUN mkdir -p /home/app/conf/carlsbad
 COPY conf/carlsbad/web.xml /home/app/conf/carlsbad
 RUN cp /home/app/conf/carlsbad/web.xml /usr/share/tomcat9/webapps/carlsbad/WEB-INF
@@ -55,10 +50,12 @@ RUN chown tomcat /usr/share/tomcat9/webapps/carlsbad/WEB-INF/web.xml
 RUN echo "=== Done configuring application CARLSBAD."
 #
 ###
+# Needed?
 RUN /usr/share/tomcat9/bin/catalina.sh start
 RUN echo "=== Done starting Tomcat."
 #
 ###
+# psql useful for testing.
 RUN apt-get install -y postgresql-client-10
 COPY conf/postgresql/.pgpass /home/app
 RUN chmod 600 /home/app/.pgpass
