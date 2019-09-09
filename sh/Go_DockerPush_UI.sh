@@ -1,7 +1,7 @@
 #!/bin/sh
 ###
 #
-INAME="carlsbad"
+INAME="carlsbad_ui"
 #
 ###
 if [ ! "$DOCKER_ID_USER" ]; then
