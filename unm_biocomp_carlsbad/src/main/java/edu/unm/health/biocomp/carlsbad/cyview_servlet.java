@@ -48,6 +48,7 @@ public class cyview_servlet extends HttpServlet
     try { APPNAME=conf.getInitParameter("APPNAME"); }
     catch (Exception e) { APPNAME=this.getServletName(); }
     DEMOFILE=CONTEXT.getRealPath("")+"/data/"+conf.getInitParameter("DEMOFILE");
+    PROXY_PREFIX=((PROXY_PREFIX!=null)?conf.getInitParameter("PROXY_PREFIX"):"");
   }
   /////////////////////////////////////////////////////////////////////////////
   public void doGet(HttpServletRequest request,HttpServletResponse response)
@@ -60,7 +61,7 @@ public class cyview_servlet extends HttpServlet
     SERVERSCHEME="http";
     rb=ResourceBundle.getBundle("LocalStrings",request.getLocale());
 
-    PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
+    //PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
 
     ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/biocomp.css", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/cyview.css"));
     ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cyview.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/biocomp.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/ddtip.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cytoscape.min.js"));
@@ -83,7 +84,7 @@ public class cyview_servlet extends HttpServlet
     ERRORS.add("NetworkName: "+title);
     String cynethtm = CyViewHtm(title, MODES.get(params.getVal("mode")), netjs, response);
     out.println(HtmUtils.HeaderHtm(title, jsincludes, cssincludes,
-	HeaderJS(SERVERNAME, SERVERPORT, SERVERSCHEME, PROXY_PREFIX+CONTEXTPATH), "", BGCOLOR, request));
+	HeaderJS(SERVERNAME, SERVERPORT, SERVERSCHEME, ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH), "", BGCOLOR, request));
     out.println(cynethtm);
     out.println("<SCRIPT>go_init(window.document.mainform)</SCRIPT>");
     HtmDivWrite("log", ERRORS, out);
