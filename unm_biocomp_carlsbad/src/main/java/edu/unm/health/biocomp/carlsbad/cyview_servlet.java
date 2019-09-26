@@ -37,6 +37,7 @@ public class cyview_servlet extends HttpServlet
   private static String BGCOLOR="#EEEEEE";
   private static String CYJSTXT="";
   private static HashMap<String,String> MODES = null;
+  private static String PROXY_PREFIX=null;
 
   /////////////////////////////////////////////////////////////////////////////
   public void init(ServletConfig conf) throws ServletException
@@ -59,8 +60,10 @@ public class cyview_servlet extends HttpServlet
     SERVERSCHEME="http";
     rb=ResourceBundle.getBundle("LocalStrings",request.getLocale());
 
-    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/css/biocomp.css", CONTEXTPATH+"/css/cyview.css"));
-    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(CONTEXTPATH+"/js/cyview.js", CONTEXTPATH+"/js/biocomp.js", CONTEXTPATH+"/js/ddtip.js", CONTEXTPATH+"/js/cytoscape.min.js"));
+    PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
+
+    ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/biocomp.css", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/cyview.css"));
+    ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cyview.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/biocomp.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/ddtip.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cytoscape.min.js"));
 
     initialize(request);
     response.setContentType("text/html");
@@ -79,10 +82,8 @@ public class cyview_servlet extends HttpServlet
     String title = (params.hasVal("title")?params.getVal("title"):NETNAME);
     ERRORS.add("NetworkName: "+title);
     String cynethtm = CyViewHtm(title, MODES.get(params.getVal("mode")), netjs, response);
-    out.println(HtmUtils.HeaderHtm(title,
-	jsincludes, cssincludes,
-	HeaderJS(SERVERNAME, SERVERPORT, SERVERSCHEME, CONTEXTPATH), "", 
-	BGCOLOR, request, null));
+    out.println(HtmUtils.HeaderHtm(title, jsincludes, cssincludes,
+	HeaderJS(SERVERNAME, SERVERPORT, SERVERSCHEME, PROXY_PREFIX+CONTEXTPATH), "", BGCOLOR, request));
     out.println(cynethtm);
     out.println("<SCRIPT>go_init(window.document.mainform)</SCRIPT>");
     HtmDivWrite("log", ERRORS, out);
@@ -232,12 +233,11 @@ public class cyview_servlet extends HttpServlet
     return js;
   }
   /////////////////////////////////////////////////////////////////////////////
-  private static String HeaderJS(String servername, Integer serverport, String serverscheme, String contextpath)
+  private static String HeaderJS(String servername, Integer serverport, String serverscheme, String prefix)
   {
     //Global MOL2IMG must be relative URL to work in all environments (e.g. Docker).
     return(
-//"var MOL2IMG='"+serverscheme+"://"+servername+":"+serverport+contextpath+"/mol2img';\n"+
-"var MOL2IMG='"+contextpath+"/mol2img';\n"+
+"var MOL2IMG='"+prefix+"/mol2img';\n"+
 "function servername() { return('"+servername+"'); }\n");
   }
   /////////////////////////////////////////////////////////////////////////////
