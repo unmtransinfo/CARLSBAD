@@ -38,6 +38,8 @@
       <param-value>logs</param-value></init-param>
     <init-param> <param-name>DEBUG</param-name>
       <param-value>FALSE</param-value></init-param>
+    <init-param> <param-name>PROXY_PREFIX</param-name>
+      <param-value>/tomcat</param-value></init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>carlsbadone</servlet-name>

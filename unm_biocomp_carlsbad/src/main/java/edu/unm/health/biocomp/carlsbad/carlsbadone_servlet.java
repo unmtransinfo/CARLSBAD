@@ -52,6 +52,7 @@ public class carlsbadone_servlet extends HttpServlet
   private static String DRUGCSVURL=null; // configured in web.xml
   private static String HELP_FILE=null; // configured in web.xml
   private static Boolean DEBUG=null; // configured in web.xml
+  private static String PROXY_PREFIX=null; // configured in web.xml
   private static String PREFIX=null;
   private static int SCRATCH_RETIRE_SEC=3600;
   private static ServletContext CONTEXT=null;
@@ -71,7 +72,6 @@ public class carlsbadone_servlet extends HttpServlet
   private static HashMap<String,TargetList> TGTLISTCACHE=null;	//Init by init(); for caching cpd hitlists.
   private static HashMap<String,CCPList> CCPLISTCACHE=null;	//Init by init(); for caching ccp hitlists.
   private static final int AUTOSUGGESTMINLEN=3;
-  private static String PROXY_PREFIX=null;
 
   //Non-static, owned by object/servlet-instance:
   private HttpParams params=null;
@@ -106,7 +106,7 @@ public class carlsbadone_servlet extends HttpServlet
       catch (IOException e) { this.getServletContext().log("not a valid MultipartRequest", e); }
     }
 
-    PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
+    //PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
 
     // main logic:
     try { DBCON = new DBCon("postgres", DBHOST, DBPORT, DBNAME, DBUSR, DBPW); }
@@ -1321,6 +1321,7 @@ public class carlsbadone_servlet extends HttpServlet
     try { CYVIEW=conf.getInitParameter("CYVIEW"); }
     catch (Exception e) { CYVIEW="cyview"; }
     DEBUG=(conf.getInitParameter("DEBUG")!=null && conf.getInitParameter("DEBUG").equalsIgnoreCase("true"));
+    PROXY_PREFIX=((conf.getInitParameter("PROXY_PREFIX")!=null)?conf.getInitParameter("PROXY_PREFIX"):"");
 
     // This connection only used for deployment and one-time initialization of lists.
     DBCon dbcon=null;
