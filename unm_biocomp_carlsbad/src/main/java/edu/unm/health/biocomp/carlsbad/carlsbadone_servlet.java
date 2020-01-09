@@ -16,6 +16,7 @@ import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 
 import chemaxon.struc.*;
 import chemaxon.formats.*;
+import chemaxon.license.*; //LicenseManager
 
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.http.*;
@@ -264,9 +265,11 @@ public class carlsbadone_servlet extends HttpServlet
 		APPNAME+" ["+params.getVal("formmode")+"]:"+params.getVal("subnet_title"),
 		response, CONTEXTPATH, SERVLETNAME,
 		((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/"+CYVIEW, null);
-          PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
-          out_log.printf("%s\t%s\t%s\t%d\t%d\t%d\n",DATESTR,REMOTEHOST,params.getVal("formmode"),subnet_counts.get("n_node_tgt"),subnet_counts.get("n_node_cpd"),0);
-          out_log.close();
+          if (LOGFILE!=null) {
+            PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
+            out_log.printf("%s\t%s\t%s\t%d\t%d\t%d\n",DATESTR,REMOTEHOST,params.getVal("formmode"),subnet_counts.get("n_node_tgt"),subnet_counts.get("n_node_cpd"),0);
+            out_log.close();
+          }
           if (DEBUG)
           {
             ArrayList<String> countkeys = new ArrayList<String>(subnet_counts.keySet());
@@ -539,9 +542,11 @@ public class carlsbadone_servlet extends HttpServlet
       {
         ServletOutputStream ostream=response.getOutputStream();
         HtmUtils.DownloadFile(response,ostream,downloadfile,request.getParameter("fname"));
-        PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
-        out_log.printf("%s\t%s\t\t%d\t%d\t%.1f\n",DATESTR,REMOTEHOST,0,0,((new File(downloadfile)).length()/1024.0));
-        out_log.close();
+        if (LOGFILE!=null) {
+          PrintWriter out_log=new PrintWriter(new BufferedWriter(new FileWriter(LOGFILE,true)));
+          out_log.printf("%s\t%s\t\t%d\t%d\t%.1f\n",DATESTR,REMOTEHOST,0,0,((new File(downloadfile)).length()/1024.0));
+          out_log.close();
+        }
       }
       else	// GET method, initial invocation of servlet w/ no params
       {
@@ -567,7 +572,6 @@ public class carlsbadone_servlet extends HttpServlet
     outputs = new ArrayList<String>();
     errors = new ArrayList<String>();
     params = new HttpParams();
-    Calendar calendar=Calendar.getInstance();
     MOL2IMG_SERVLETURL=(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/mol2img");
     
     String logo_htm="<TABLE CELLSPACING=5 CELLPADDING=5><TR><TD>";
@@ -594,6 +598,11 @@ public class carlsbadone_servlet extends HttpServlet
     errors.add(APPNAME+" drugs: "+DRUGLIST.size()+"; synonyms: "+DRUGLIST.synonymCount()+" [loaded: "+DRUGLIST.getTimestamp().toString()+"]");
     errors.add(APPNAME+" targets (human): "+TARGETLIST.speciesCount("human")+" [loaded: "+TARGETLIST.getTimestamp().toString()+"]");
 
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(new java.util.Date());
+    DATESTR = String.format("%04d%02d%02d%02d%02d", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)); Random rand = new Random();
+    PREFIX = SERVLETNAME+"."+DATESTR+"."+String.format("%03d",rand.nextInt(1000));
+
     //Create webapp-specific log dir if necessary:
     File dout=new File(LOGDIR);
     if (!dout.exists())
@@ -606,54 +615,60 @@ public class carlsbadone_servlet extends HttpServlet
         return false;
       }
     }
-
-    String logpath=LOGDIR+"/"+SERVLETNAME+".log";
-    LOGFILE=new File(logpath);
+    LOGFILE = new File(LOGDIR+"/"+SERVLETNAME+".log");
     if (!LOGFILE.exists())
     {
-      try { LOGFILE.createNewFile(); }
-      catch (IOException e) {
-        errors.add("ERROR: Logfile creation failed: "+logpath+"\n"+e.getMessage());
-        return false;
+      try {
+        LOGFILE.createNewFile();
+        LOGFILE.setWritable(true,true);
+        PrintWriter out_log = new PrintWriter(LOGFILE);
+        out_log.println("date\tIP\tquery_mode\tN_tgt\tN_cpd\tKB"); 
+        out_log.flush();
+        out_log.close();
       }
-      LOGFILE.setWritable(true,true);
-      PrintWriter out_log=new PrintWriter(LOGFILE);
-      out_log.println("date\tIP\tquery_mode\tN_tgt\tN_cpd\tKB"); 
-      out_log.flush();
-      out_log.close();
+      catch (IOException e) {
+        errors.add("ERROR: LOGFILE creation failed (logging disabled): "+e.getMessage());
+        LOGFILE = null;
+      }
     }
-    if (!LOGFILE.canWrite())
+    else if (!LOGFILE.canWrite())
     {
-      errors.add("ERROR: Log file not writable: "+logpath);
-      return false;
+      errors.add("ERROR: LOGFILE not writable (logging disabled).");
+      LOGFILE = null;
     }
-    BufferedReader buff=new BufferedReader(new FileReader(LOGFILE));
-    if (buff==null)
-    {
-      errors.add("ERROR: Cannot open log file.");
-      return false;
+    if (LOGFILE!=null) {
+      BufferedReader buff = new BufferedReader(new FileReader(LOGFILE));
+      if (buff==null)
+      {
+        errors.add("ERROR: Cannot open LOGFILE (logging disabled).");
+        LOGFILE = null;
+      }
+      else
+      {
+        int n_lines=0;
+        String line=null;
+        String startdate=null;
+        while ((line=buff.readLine())!=null)
+        {
+          ++n_lines;
+          String[] fields = Pattern.compile("\\t").split(line);
+          if (n_lines==2) startdate = fields[0];
+        }
+        buff.close(); //Else can result in error: "Too many open files"
+        if (n_lines>2)
+        {
+          calendar.set(Integer.parseInt(startdate.substring(0,4)),
+                   Integer.parseInt(startdate.substring(4,6))-1,
+                   Integer.parseInt(startdate.substring(6,8)),
+                   Integer.parseInt(startdate.substring(8,10)),
+                   Integer.parseInt(startdate.substring(10,12)),0);
+          DateFormat df = DateFormat.getDateInstance(DateFormat.FULL,Locale.US);
+          errors.add("since "+df.format(calendar.getTime())+", times used: "+(n_lines-1));
+        }
+      }
     }
-    int n_lines=0;
-    String line=null;
-    String startdate=null;
-    while ((line=buff.readLine())!=null)
-    {
-      ++n_lines;
-      String[] fields=Pattern.compile("\\t").split(line);
-      if (n_lines==2) startdate=fields[0];
-    }
-    buff.close(); //Else can result in error: "Too many open files"
-    if (n_lines>2)
-    {
-      calendar.set(Integer.parseInt(startdate.substring(0,4)),
-               Integer.parseInt(startdate.substring(4,6))-1,
-               Integer.parseInt(startdate.substring(6,8)),
-               Integer.parseInt(startdate.substring(8,10)),
-               Integer.parseInt(startdate.substring(10,12)),0);
-      DateFormat df=DateFormat.getDateInstance(DateFormat.FULL,Locale.US);
-      errors.add("since "+df.format(calendar.getTime())+", times used: "+(n_lines-1));
-    }
-    File scratchdir=new File(SCRATCHDIR);
+
+    File scratchdir = new File(SCRATCHDIR);
     if (!scratchdir.exists())
     {
       boolean ok=false;
@@ -666,15 +681,18 @@ public class carlsbadone_servlet extends HttpServlet
       CONTEXT.log("SCRATCHDIR creation "+(ok?"succeeded":"failed")+": "+SCRATCHDIR);
     }
 
-    calendar.setTime(new java.util.Date());
-    DATESTR=String.format("%04d%02d%02d%02d%02d",
-      calendar.get(Calendar.YEAR),
-      calendar.get(Calendar.MONTH)+1,
-      calendar.get(Calendar.DAY_OF_MONTH),
-      calendar.get(Calendar.HOUR_OF_DAY),
-      calendar.get(Calendar.MINUTE));
-    Random rand = new Random();
-    PREFIX=SERVLETNAME+"."+DATESTR+"."+String.format("%03d",rand.nextInt(1000));
+    try {
+      LicenseManager.setLicenseFile(CONTEXT.getRealPath("")+"/.chemaxon/license.cxl");
+    } catch (Exception e) {
+      errors.add("ERROR: ChemAxon LicenseManager error: "+e.getMessage());
+    }
+    LicenseManager.refresh();
+    //May not need ChemAxon license.
+    //if (!LicenseManager.isLicensed(LicenseManager.JCHEM))
+    //{
+    //  errors.add("ERROR: ChemAxon license error; JCHEM is required.");
+    //  return false;
+    //}
 
     if (DEBUG) errors.add("DEBUG MODE ON.");
     if (DBCON==null)
