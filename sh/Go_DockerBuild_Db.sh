@@ -16,7 +16,7 @@ if [ ! -e "${cwd}/data" ]; then
 	mkdir ${cwd}/data/
 fi
 #
-cp /home/data/carlsbad/carlsbad.dump ${cwd}/data/
+cp /home/data/CARLSBAD/carlsbad.pgdump ${cwd}/data/
 #
 T0=$(date +%s)
 #
@@ -27,7 +27,7 @@ sudo docker build -f ${dockerfile} -t ${INAME}:${TAG} .
 #
 printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
-rm -f ${cwd}/data/carlsbad.dump
+rm -f ${cwd}/data/carlsbad.pgdump
 #
 sudo docker images
 #

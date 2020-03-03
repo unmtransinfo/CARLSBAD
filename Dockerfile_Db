@@ -22,8 +22,8 @@ RUN chmod 644 /etc/postgresql/10/main/postgresql.conf
 RUN chown postgres /etc/postgresql/10/main/postgresql.conf
 RUN echo "=== Done installing PostgreSQL."
 #
-RUN mkdir -p /home/data/carlsbad
-COPY data/carlsbad.dump /home/data/carlsbad
+RUN mkdir -p /home/data/CARLSBAD
+COPY data/carlsbad.pgdump /home/data/CARLSBAD
 RUN echo "=== Done copying db data."
 #
 # Note that user postgres must start db differently than user root.
@@ -35,7 +35,7 @@ ENV dbpw=foobar
 RUN /etc/init.d/postgresql start && \
 	psql -c "CREATE ROLE ${dbusr} WITH LOGIN PASSWORD '${dbpw}'" && \
 	createdb -O postgres ${dbname} && \
-	pg_restore -v --schema public -d ${dbname} /home/data/carlsbad/carlsbad.dump && \
+	pg_restore -v --schema public -d ${dbname} /home/data/CARLSBAD/carlsbad.pgdump && \
 	psql -d ${dbname} -c "GRANT SELECT ON ALL TABLES IN SCHEMA public TO ${dbusr}" && \
 	psql -d ${dbname} -c "GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO ${dbusr}" && \
 	psql -d ${dbname} -c "GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ${dbusr}" && \
