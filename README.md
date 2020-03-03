@@ -68,6 +68,8 @@ gunzip -c carlsbad-pgdump.sql.gz |sudo -u postgres psql -d carlsbad
 ```
 mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -cid 5442 -v -o cid_5442.cyjs"
 mvn --projects unm_biocomp_carlsbad exec:java -Dexec.mainClass="edu.unm.health.biocomp.carlsbad.carlsbadone_app" -Dexec.args="-dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -tid 17 -v -o tid_17.cyjs"
+java -jar
+unm_biocomp_carlsbad/target/unm_biocomp_carlsbad-0.0.1-SNAPSHOT-jar-with-dependencies.jar -dbhost localhost -dbname carlsbad -dbusr batman -dbpw 'foobar' -tid 1855 -v -o tid_1855.cyjs
 ```
 
 ## Etc.

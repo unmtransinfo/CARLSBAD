@@ -163,9 +163,7 @@
             <configuration>
               <archive>
                 <manifest>
-                  <mainClass>
-                    edu.unm.health.biocomp.carlsbad.carlsbadone_app
-                  </mainClass>
+                  <mainClass>edu.unm.health.biocomp.carlsbad.carlsbadone_app</mainClass>
                 </manifest>
               </archive>
               <descriptorRefs>
