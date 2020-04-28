@@ -2,19 +2,24 @@
 ###
 cwd=$(pwd)
 #
-sudo docker version
+if [ $(whoami) != "root" ]; then
+	echo "${0} should be run as root or via sudo."
+	exit
+fi
+#
+docker version
 #
 INAME="carlsbad_ui"
-TAG="v0.0.1-SNAPSHOT"
+TAG="latest"
 #
 T0=$(date +%s)
 #
 ###
 # Build image from Dockerfile.
 dockerfile="${cwd}/Dockerfile_UI"
-sudo docker build -f ${dockerfile} -t ${INAME}:${TAG} .
+docker build -f ${dockerfile} -t ${INAME}:${TAG} .
 #
 printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
-sudo docker images
+docker images
 #

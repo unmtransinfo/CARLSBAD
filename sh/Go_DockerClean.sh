@@ -4,20 +4,25 @@
 INAME="carlsbad"
 CNAME="${INAME}_container"
 #
+if [ $(whoami) != "root" ]; then
+	echo "${0} should be run as root or via sudo."
+	exit
+fi
+#
 ###
 # Stop and clean up.
-sudo docker stop ${CNAME}
-sudo docker ps -a
-sudo docker rm ${CNAME}
-sudo docker rmi ${INAME}
+docker stop ${CNAME}
+docker ps -a
+docker rm ${CNAME}
+docker rmi ${INAME}
 #
-IIDS=$(sudo docker images -f dangling=true \
+IIDS=$(docker images -f dangling=true \
 	|sed -e '1d' \
 	|awk -e '{print $3}')
 for iid in $IIDS ; do
-	sudo docker rmi ${iid}
+	docker rmi ${iid}
 done
 #
 #
-sudo docker container ls -a
+docker container ls -a
 #

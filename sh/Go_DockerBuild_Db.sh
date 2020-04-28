@@ -5,12 +5,17 @@
 #
 set -e
 #
+if [ $(whoami) != "root" ]; then
+	echo "${0} should be run as root or via sudo."
+	exit
+fi
+#
 cwd=$(pwd)
 #
-sudo docker version
+docker version
 #
 INAME="carlsbad_db"
-TAG="v0.0.1-SNAPSHOT"
+TAG="latest"
 #
 if [ ! -e "${cwd}/data" ]; then
 	mkdir ${cwd}/data/
@@ -23,11 +28,11 @@ T0=$(date +%s)
 ###
 # Build image from Dockerfile.
 dockerfile="${cwd}/Dockerfile_Db"
-sudo docker build -f ${dockerfile} -t ${INAME}:${TAG} .
+docker build -f ${dockerfile} -t ${INAME}:${TAG} .
 #
 printf "Elapsed time: %ds\n" "$[$(date +%s) - ${T0}]"
 #
 rm -f ${cwd}/data/carlsbad.pgdump
 #
-sudo docker images
+docker images
 #

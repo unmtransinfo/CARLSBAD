@@ -12,17 +12,22 @@ NETNAME="carlsbad"
 INAME_DB="carlsbad_db"
 INAME_UI="carlsbad_ui"
 #
+if [ $(whoami) != "root" ]; then
+	echo "${0} should be run as root or via sudo."
+	exit
+fi
+#
 ###
-sudo docker network create $NETNAME
+docker network create $NETNAME
 #
-sudo docker network connect $NETNAME ${INAME_DB}_container
-sudo docker network connect $NETNAME ${INAME_UI}_container
+docker network connect $NETNAME ${INAME_DB}_container
+docker network connect $NETNAME ${INAME_UI}_container
 #
-sudo docker network ls
+docker network ls
 #
-sudo docker exec ${INAME_UI}_container ping -c 1 ${INAME_DB}_container
+docker exec ${INAME_UI}_container ping -c 1 ${INAME_DB}_container
 #
-sudo docker exec -it ${INAME_UI}_container psql -h ${INAME_DB}_container -d carlsbad -U batman -c "SELECT name,version FROM dataset"
+docker exec -it ${INAME_UI}_container psql -h ${INAME_DB}_container -d carlsbad -U batman -c "SELECT name,version FROM dataset"
 #
 ###
 # If ok, app at: http://localhost:9091/carlsbad/carlsbadone
