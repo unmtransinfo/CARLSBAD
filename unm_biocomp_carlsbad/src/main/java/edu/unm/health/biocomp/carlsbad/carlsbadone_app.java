@@ -5,9 +5,13 @@ import java.util.*;
 import java.util.regex.*;
 import java.sql.*;
 
+import org.apache.commons.cli.*; // CommandLine, CommandLineParser, HelpFormatter, OptionBuilder, Options, ParseException, PosixParser
+import org.apache.commons.cli.Option.*; // Builder
+
 import edu.unm.health.biocomp.kegg.*;
 import edu.unm.health.biocomp.util.*;
 import edu.unm.health.biocomp.util.db.*;
+import edu.unm.health.biocomp.util.jre.*; //JREUtils
 
 /**	CARLSBAD "one-click" subnet query app.
 	The general use case is to provide interesting subnets based on simple
@@ -23,39 +27,13 @@ import edu.unm.health.biocomp.util.db.*;
 public class carlsbadone_app
 {
   /////////////////////////////////////////////////////////////////////////////
-  private static String DBHOST=null;
-  private static String DBNAME=null;
-  private static String DBUSR=null;
-  private static String DBPW=null;
+  private static String APPNAME="CARLSBADONE";
+  private static String dbhost=null;
+  private static Integer dbport=5432;
+  private static String dbname=null;
+  private static String dbusr=null;
+  private static String dbpw=null;
   private static Float scaf_min=0.0f;
-
-  /////////////////////////////////////////////////////////////////////////////
-  private static void Help(String msg)
-  {
-    System.err.println(msg+"\n"
-      +"carlsbadone_app - Carlsbad one-click subnet extraction application\n"
-      +"usage: carlsbadone_app [options]\n"
-      +"  required:\n"
-      +"    -tid ID ................ query target ID (int)\n"
-      +"   or\n"
-      +"    -cid ID ................ query compound ID (int)\n"
-      +"   or\n"
-      +"    -kid ID ................ query disease (KEGG) ID\n"
-      +"   and\n"
-      +"    -o CYJSFILE ............ subnet CYJS for Cytoscape import\n"
-      +"  options:\n"
-      +"    -dbhost DBHOST ......... ["+DBHOST+"]\n"
-      +"    -dbname DBNAME ......... ["+DBNAME+"] \n"
-      +"    -dbusr DBUSR ........... ["+DBUSR+"] \n"
-      +"    -dbpw DBPW ............. \n"
-      +"    -rgt ................... output reduced-graph, targets+query\n"
-      +"    -rgtp .................. output reduced-graph, targets+CCPs+query\n"
-      +"    -scaf_min SCAFMIN ...... min scaffold weight [0-1] ("+String.format("%.1f%%",scaf_min)+")\n"
-      +"    -v ..................... verbose\n"
-      +"    -vv .................... very verbose\n"
-      +"    -h ..................... this help\n");
-    System.exit(1);
-  }
   private static int verbose=0;
   private static String ofile=null;
   private static String ofile_rgt=null;
@@ -66,43 +44,70 @@ public class carlsbadone_app
   private static String kid=null;
   private static Boolean rgt=false;
   private static Boolean rgtp=false;
+
   /////////////////////////////////////////////////////////////////////////////
-  private static void ParseCommand(String args[])
+  public static void main(String [] args) throws Exception
   {
-    if (args.length==0) Help("");
-    for (int i=0;i<args.length;++i)
-    {
-      if (args[i].equals("-o")) ofile=args[++i];
-      else if (args[i].equals("-tid")) tid=Integer.parseInt(args[++i]);
-      else if (args[i].equals("-cid")) cid=Integer.parseInt(args[++i]);
-      else if (args[i].equals("-kid")) kid=args[++i];
-      else if (args[i].equals("-scaf_min")) scaf_min=Float.parseFloat(args[++i]);
-      else if (args[i].equals("-dbhost")) DBHOST=args[++i];
-      else if (args[i].equals("-dbname")) DBNAME=args[++i];
-      else if (args[i].equals("-dbusr")) DBUSR=args[++i];
-      else if (args[i].equals("-dbpw")) DBPW=args[++i];
-      else if (args[i].equals("-rgt")) rgt=true;
-      else if (args[i].equals("-rgtp")) rgtp=true;
-      else if (args[i].equals("-v")) verbose=1;
-      else if (args[i].equals("-vv")) verbose=2;
-      else if (args[i].equals("-h")) Help("");
-      else Help("Unknown option: "+args[i]);
+    Options opts = new Options();
+    String HELPHEADER = (APPNAME+": Carlsbad one-click subnet extraction application");
+    String HELPFOOTER = ("UNM Translational Informatics Division");
+    opts.addOption(Option.builder("tid").hasArg().type(Integer.class).desc("query target ID").build());
+    opts.addOption(Option.builder("cid").hasArg().type(Integer.class).desc("query compound ID").build());
+    opts.addOption(Option.builder("kid").hasArg().desc("query disease (KEGG) ID").build());
+    opts.addOption(Option.builder("o").hasArg().argName("CYJSFILE").desc("subnet CYJS for Cytoscape import").build());
+    opts.addOption(Option.builder("scaf_min").hasArg().type(Float.class).desc("min scaffold weight [0-1]").build());
+    opts.addOption(Option.builder("rgt").desc("output reduced-graph, targets+query").build());
+    opts.addOption(Option.builder("rgtp").desc("output reduced-graph, targets+CCPs+query").build());
+    opts.addOption(Option.builder("dbhost").hasArg().desc("db host ["+dbhost+"]").build());
+    opts.addOption(Option.builder("dbport").hasArg().type(Integer.class).desc("db port ["+dbport+"]").build());
+    opts.addOption(Option.builder("dbname").hasArg().desc("db name ["+dbname+"]").build());
+    opts.addOption(Option.builder("dbusr").hasArg().desc("db user ["+dbusr+"]").build());
+    opts.addOption(Option.builder("dbpw").hasArg().desc("db password").build());
+    opts.addOption("v", "verbose", false, "verbose.");
+    opts.addOption("vv", "vverbose", false, "very verbose.");
+    opts.addOption("h", "help", false, "Show this help.");
+    HelpFormatter helper = new HelpFormatter();
+    CommandLineParser clp = new PosixParser();
+    CommandLine cl = null;
+    try {
+      cl = clp.parse(opts, args);
+    } catch (ParseException e) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, e.getMessage(), true);
+      System.exit(0);
     }
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public static void main(String [] args)
-  {
-    ParseCommand(args);
+
+    if (cl.hasOption("tid")) tid = (Integer)(cl.getParsedOptionValue("tid"));
+    if (cl.hasOption("cid")) cid = (Integer)(cl.getParsedOptionValue("cid"));
+    if (cl.hasOption("kid")) kid = cl.getOptionValue("kid");
+    if (cl.hasOption("o")) ofile = cl.getOptionValue("o");
+    if (cl.hasOption("scaf_min")) scaf_min = (Float)(cl.getParsedOptionValue("scaf_min"));
+    if (cl.hasOption("rgtp")) rgtp = true;
+    if (cl.hasOption("rgt")) rgt = true;
+    if (cl.hasOption("dbhost")) dbhost = cl.getOptionValue("dbhost");
+    if (cl.hasOption("dbname")) dbname = cl.getOptionValue("dbname");
+    if (cl.hasOption("dbusr")) dbusr = cl.getOptionValue("dbusr");
+    if (cl.hasOption("dbpw")) dbpw = cl.getOptionValue("dbpw");
+    if (cl.hasOption("vv")) verbose = 2;
+    else if (cl.hasOption("v")) verbose = 1;
+    if (cl.hasOption("h")) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, HELPFOOTER, true);
+      System.exit(0);
+    }
+
+    if (verbose>0)
+    {
+      System.err.println("JRE_VERSION: "+JREUtils.JREVersion());
+      System.err.println("JChem version: "+com.chemaxon.version.VersionInfo.getVersion());
+    }
 
     java.util.Date t_0 = new java.util.Date();
 
     DBCon dbcon = null;
 
-    try {
-      dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW);
+    try { dbcon = new DBCon("postgres", dbhost, dbport, dbname, dbusr, dbpw); }
+    catch (Exception e) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, e.getMessage(), true);
     }
-    catch (SQLException e) { Help("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { Help("Connection failed:"+e.getMessage()); }
 
     File fout = (ofile!=null) ? (new File(ofile)) : null;
     File fout_cpd = new File("/tmp/carlsbad.sdf");
@@ -111,19 +116,25 @@ public class carlsbadone_app
     TargetList TARGETLIST = new TargetList();
     if (verbose>0) System.err.println("Loading targetlist...");
     try { TARGETLIST.loadAll(dbcon); }
-    catch (Exception e) { Help("ERROR: problem reading targetlist: "+e.getMessage()); }
+    catch (Exception e) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading targetlist: "+e.getMessage()), true);
+}
     System.err.println("targetlist count: "+TARGETLIST.size());
 
     CompoundList DRUGLIST = new CompoundList();
     if (verbose>0) System.err.println("Loading druglist...");
     try { DRUGLIST.loadAllDrugs(dbcon); }
-    catch (Exception e) { Help("ERROR: problem reading druglist: "+e.getMessage()); }
+    catch (Exception e) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading druglist: "+e.getMessage()), true);
+}
     System.err.println("druglist count: "+DRUGLIST.size());
 
     DiseaseList DISEASELIST = new DiseaseList();
     if (verbose>0) System.err.println("Loading diseaselist...");
     try { DISEASELIST.loadAll(dbcon); }
-    catch (Exception e) { Help("ERROR: problem reading diseaselist: "+e.getMessage()); }
+    catch (Exception e) {
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading diseaselist: "+e.getMessage()), true);
+    }
     System.err.println("diseaselist count: "+DISEASELIST.size());
 
     HashMap<String,Integer> counts=null;
@@ -172,7 +183,9 @@ public class carlsbadone_app
           counts = carlsbadone_utils.Disease2Network(dbcon, null, null, fout, fout_cpd, kid, scaf_min, "CARLSBAD Disease2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else
-      { Help("-tid, -cid or -kid required."); }
+      {
+        helper.printHelp(APPNAME, HELPHEADER, opts, ("-tid, -cid or -kid required."), true);
+      }
 
       for (String k: counts.keySet())
       {
