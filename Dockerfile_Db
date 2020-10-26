@@ -1,5 +1,5 @@
 #
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
@@ -11,15 +11,16 @@ RUN apt-get install -y tzdata
 RUN echo "=== Done installing Ubuntu."
 #
 ###
-RUN apt-get install -y postgresql-10
-RUN apt-cache policy postgresql-10
-RUN apt-get install -y postgresql-server-dev-10
-COPY conf/postgresql/pg_hba.conf /etc/postgresql/10/main/
-RUN chmod 640 /etc/postgresql/10/main/pg_hba.conf 
-RUN chown postgres /etc/postgresql/10/main/pg_hba.conf 
-COPY conf/postgresql/postgresql.conf /etc/postgresql/10/main/
-RUN chmod 644 /etc/postgresql/10/main/postgresql.conf
-RUN chown postgres /etc/postgresql/10/main/postgresql.conf
+RUN apt-get install -y postgresql-12
+RUN apt-cache policy postgresql-12
+RUN apt-get install -y postgresql-server-dev-12
+RUN apt-get install -y postgresql-12-rdkit
+COPY conf/postgresql/pg_hba.conf /etc/postgresql/12/main/
+RUN chmod 640 /etc/postgresql/12/main/pg_hba.conf 
+RUN chown postgres /etc/postgresql/12/main/pg_hba.conf 
+COPY conf/postgresql/postgresql.conf /etc/postgresql/12/main/
+RUN chmod 644 /etc/postgresql/12/main/postgresql.conf
+RUN chown postgres /etc/postgresql/12/main/postgresql.conf
 RUN echo "=== Done installing PostgreSQL."
 #
 RUN mkdir -p /home/data/CARLSBAD
@@ -45,5 +46,5 @@ RUN service postgresql stop
 RUN echo "=== Done instantiating and loading db."
 #
 # CMD must be in foreground.
-CMD ["sudo", "-u", "postgres", "/usr/lib/postgresql/10/bin/postgres", "-D", "/var/lib/postgresql/10/main", "-c", "config_file=/etc/postgresql/10/main/postgresql.conf"]
+CMD ["sudo", "-u", "postgres", "/usr/lib/postgresql/12/bin/postgres", "-D", "/var/lib/postgresql/12/main", "-c", "config_file=/etc/postgresql/12/main/postgresql.conf"]
 #

@@ -1,5 +1,5 @@
 #
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
@@ -56,7 +56,7 @@ RUN echo "=== Done starting Tomcat."
 #
 ###
 # psql useful for testing.
-RUN apt-get install -y postgresql-client-10
+RUN apt-get install -y postgresql-client-12
 COPY conf/postgresql/.pgpass /home/app
 RUN chmod 600 /home/app/.pgpass
 RUN echo "=== Done installing Postgresql (client)."

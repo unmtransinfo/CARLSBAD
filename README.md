@@ -83,7 +83,7 @@ mvn javadoc:javadoc
 * [DockerHub:carlsbad_db](https://hub.docker.com/repository/docker/unmtransinfo/carlsbad_db)
 * [DockerHub:carlsbad_ui](https://hub.docker.com/repository/docker/unmtransinfo/carlsbad_ui)
 
-Based on Ubuntu 18.04-LTS.
+Based on Ubuntu 20.04-LTS.
 In accordance with the guideline ___one service per container___, CARLSBAD is organized
 into images `carlsbad_db` and `carlsbad_ui`, built from separate
 [Dockerfile\_Db](Dockerfile_Db) and [Dockerfile\_UI](Dockerfile_UI).
