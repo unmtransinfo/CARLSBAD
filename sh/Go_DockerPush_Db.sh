@@ -10,8 +10,6 @@ if [ $(whoami) != "root" ]; then
 	exit
 fi
 #
-DOCKER_ID_USER="unmtransinfo"
-#
 if [ ! "$DOCKER_ID_USER" ]; then
 	echo "ERROR: \$DOCKER_ID_USER not defined."
 	exit
@@ -25,7 +23,9 @@ docker login
 #
 TAG="v1.0.0"
 #
-docker tag ${INAME}:latest $DOCKER_ID_USER/${INAME}:${TAG}
+DOCKER_ID_ORG="unmtransinfo"
 #
-docker push $DOCKER_ID_USER/${INAME}:${TAG}
+docker tag ${INAME}:latest $DOCKER_ID_ORG/${INAME}:${TAG}
+#
+docker push $DOCKER_ID_ORG/${INAME}:${TAG}
 #
