@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###
 #
 INAME="carlsbad_ui"
@@ -20,9 +20,9 @@ docker images
 #
 docker login
 #
-TAG="latest"
+TAG="v1.0.0"
 #
-docker tag ${INAME}:${TAG} $DOCKER_ID_USER/${INAME}:${TAG}
+docker tag ${INAME}:latest $DOCKER_ID_USER/${INAME}:${TAG}
 #
 docker push $DOCKER_ID_USER/${INAME}:${TAG}
 #

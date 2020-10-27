@@ -3,10 +3,10 @@ FROM ubuntu:20.04
 WORKDIR /home/app
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
+RUN apt-get install -y apt-utils
 RUN apt-get install -y sudo
 RUN apt-get install -y zip
 RUN apt-get install -y inetutils-ping
-RUN apt-get install -y apt-utils
 ENV TZ=America/Denver
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
 RUN apt-get install -y tzdata

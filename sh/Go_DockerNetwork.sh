@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###
 # https://docs.docker.com/network/
 # https://docs.docker.com/network/bridge/

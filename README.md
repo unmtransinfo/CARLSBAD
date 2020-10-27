@@ -2,7 +2,7 @@
 
 Code for the CarlsbadOne web app and related libs and tools.
 
-See <http://carlsbad.health.unm.edu> for more information.
+See <http://datascience.unm.edu/carlsbad-platform/> for more information.
 
 * The CARLSBAD Database: A Confederated Database of Chemical Bioactivities, S. L.
 Mathias, J. Hines-Kay, J. J. Yang, G. Zahoransky-Kohalmi, C. G. Bologa, O. Ursu and
@@ -107,3 +107,10 @@ See:
 * [Go\_DockerRun.sh](sh/Go_DockerRun.sh)
 * [Go\_DockerNetwork.sh](sh/Go_DockerNetwork.sh)
 * [Go\_DockerClean.sh](sh/Go_DockerClean.sh)
+
+Docker\_UI container may be served via Apache-proxy configured thus:
+
+```
+ProxyPass /carlsbad http://localhost:9091/carlsbad
+ProxyPassReverse /carlsbad http://localhost:9091/carlsbad
+```

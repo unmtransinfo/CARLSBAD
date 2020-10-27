@@ -55,10 +55,9 @@ docker container logs "${INAME_UI}_container"
 ###
 docker container ls -a
 #
-printf "CARLSBAD PostgreSQL Endpoint: localhost:%s\n" "${DOCKERPORT_UI}"
-#
-printf "Tomcat Web Application Manager: http://localhost:%s/manager/html\n" "${DOCKERPORT_UI}"
-printf "CARLSBAD Web Application: http://localhost:%s/${INAME_UI}\n" "${DOCKERPORT_UI}"
+printf "CARLSBAD PostgreSQL Endpoint: localhost:${DOCKERPORT_DB}\n" 
+printf "Tomcat Web Application Manager: http://localhost:${DOCKERPORT_UI}/manager/html\n" 
+printf "CARLSBAD-One Web Application: http://localhost:${DOCKERPORT_UI}/carlsbad/carlsbadone\n" 
 #
 ${cwd}/sh/Go_DockerNetwork.sh
 #
