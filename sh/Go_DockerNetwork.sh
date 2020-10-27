@@ -18,6 +18,7 @@ if [ $(whoami) != "root" ]; then
 fi
 #
 ###
+docker network rm $NETNAME
 docker network create $NETNAME
 #
 docker network connect $NETNAME ${INAME_DB}_container

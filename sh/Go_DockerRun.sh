@@ -12,7 +12,8 @@ fi
 #
 cwd=$(pwd)
 #
-VTAG="latest"
+#VTAG="latest"
+VTAG="v1.0.0"
 #
 ###
 # PostgreSQL db
@@ -24,14 +25,15 @@ APPPORT_DB=5432
 docker run -dit \
 	--name "${INAME_DB}_container" \
 	-p ${DOCKERPORT_DB}:${APPPORT_DB} \
-	${INAME_DB}:${VTAG}
+	unmtransinfo/${INAME_DB}:${VTAG}
 #
 docker container logs "${INAME_DB}_container"
 #
 #
 ###
-echo "Sleep while db server starting up..."
-sleep 10
+NSEC="60"
+echo "Sleep ${NSEC} seconds while db server starting up..."
+sleep $NSEC
 ###
 # Test db before proceeding.
 docker exec "${INAME_DB}_container" sudo -u postgres psql -l
@@ -48,7 +50,7 @@ APPPORT_UI=8080
 docker run -dit \
 	--name "${INAME_UI}_container" \
 	-p ${DOCKERPORT_UI}:${APPPORT_UI} \
-	${INAME_UI}:${VTAG}
+	unmtransinfo/${INAME_UI}:${VTAG}
 #
 docker container logs "${INAME_UI}_container"
 #
@@ -59,5 +61,5 @@ printf "CARLSBAD PostgreSQL Endpoint: localhost:${DOCKERPORT_DB}\n"
 printf "Tomcat Web Application Manager: http://localhost:${DOCKERPORT_UI}/manager/html\n" 
 printf "CARLSBAD-One Web Application: http://localhost:${DOCKERPORT_UI}/carlsbad/carlsbadone\n" 
 #
-${cwd}/sh/Go_DockerNetwork.sh
+printf "Next run Go_DockerNetwork.sh"
 #
