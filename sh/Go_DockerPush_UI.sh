@@ -9,6 +9,9 @@ if [ $(whoami) != "root" ]; then
 	echo "${0} should be run as root or via sudo."
 	exit
 fi
+#
+DOCKER_ID_USER="unmtransinfo"
+#
 if [ ! "$DOCKER_ID_USER" ]; then
 	echo "ERROR: \$DOCKER_ID_USER not defined."
 	exit
