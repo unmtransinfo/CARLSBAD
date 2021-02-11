@@ -47,6 +47,10 @@
   <servlet>
     <servlet-name>cyview</servlet-name>
     <servlet-class>edu.unm.health.biocomp.carlsbad.cyview_servlet</servlet-class>
+    <init-param> <param-name>APPNAME</param-name>
+      <param-value>Carlsbad:CyView</param-value> </init-param>
+    <init-param> <param-name>PROXY_PREFIX</param-name>
+      <param-value>/tomcat</param-value></init-param>
   </servlet>
   <servlet-mapping>
     <servlet-name>cyview</servlet-name>

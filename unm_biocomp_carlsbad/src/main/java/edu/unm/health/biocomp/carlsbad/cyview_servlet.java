@@ -43,34 +43,34 @@ public class cyview_servlet extends HttpServlet
   public void init(ServletConfig conf) throws ServletException
   {
     super.init(conf);
-    CONTEXT=getServletContext();
-    CONTEXTPATH=CONTEXT.getContextPath();
-    try { APPNAME=conf.getInitParameter("APPNAME"); }
-    catch (Exception e) { APPNAME=this.getServletName(); }
-    DEMOFILE=CONTEXT.getRealPath("")+"/data/"+conf.getInitParameter("DEMOFILE");
-    PROXY_PREFIX=((PROXY_PREFIX!=null)?conf.getInitParameter("PROXY_PREFIX"):"");
+    CONTEXT = getServletContext();
+    CONTEXTPATH = CONTEXT.getContextPath();
+    try { APPNAME = conf.getInitParameter("APPNAME"); }
+    catch (Exception e) { APPNAME = this.getServletName(); }
+    try { PROXY_PREFIX = conf.getInitParameter("PROXY_PREFIX"); }
+    catch (Exception e) { PROXY_PREFIX = "/tomcat"; }
+    DEMOFILE = CONTEXT.getRealPath("")+"/data/"+conf.getInitParameter("DEMOFILE");
   }
   /////////////////////////////////////////////////////////////////////////////
   public void doGet(HttpServletRequest request,HttpServletResponse response)
 	throws IOException,ServletException
   {
-    SERVERNAME=request.getServerName();
-    if (SERVERNAME.equals("localhost")) SERVERNAME=InetAddress.getLocalHost().getHostAddress(); //May cause COR rule violation (cross-origin request).
-    SERVERPORT=request.getServerPort();
+    SERVERNAME = request.getServerName();
+    if (SERVERNAME.equals("localhost")) SERVERNAME = InetAddress.getLocalHost().getHostAddress(); //May cause COR rule violation (cross-origin request).
+    SERVERPORT = request.getServerPort();
     //SERVERSCHEME=request.getServerScheme(); //"http" or "https"
     SERVERSCHEME="http";
-    rb=ResourceBundle.getBundle("LocalStrings",request.getLocale());
-
-    //PROXY_PREFIX = (Pattern.compile(".*Jetty.*$", Pattern.CASE_INSENSITIVE).matcher(CONTEXT.getServerInfo()).matches())?"/jetty":"/tomcat";
+    rb = ResourceBundle.getBundle("LocalStrings",request.getLocale());
 
     ArrayList<String> cssincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/biocomp.css", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/css/cyview.css"));
     ArrayList<String> jsincludes = new ArrayList<String>(Arrays.asList(((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cyview.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/biocomp.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/ddtip.js", ((PROXY_PREFIX!=null)?PROXY_PREFIX:"")+CONTEXTPATH+"/js/cytoscape.min.js"));
 
     initialize(request);
     response.setContentType("text/html");
-    out=response.getWriter();
+    out = response.getWriter();
 
     ERRORS.add("ServerInfo: "+CONTEXT.getServerInfo());
+    ERRORS.add("PROXY_PREFIX: "+PROXY_PREFIX); 
     ERRORS.add("ContextPath: "+CONTEXT.getContextPath()); 
 
     String netjs=null;
@@ -145,11 +145,11 @@ public class cyview_servlet extends HttpServlet
       }
       else {
         //ERRORS.add("DEBUG: infile: "+params.getVal("infile"));
-        buff=new BufferedReader(new FileReader(ifile));
+        buff = new BufferedReader(new FileReader(ifile));
       }
     } else {
       //ERRORS.add("DEBUG: DEMOFILE="+DEMOFILE);
-      buff=new BufferedReader(new FileReader(DEMOFILE));
+      buff = new BufferedReader(new FileReader(DEMOFILE));
     }
     CYJSTXT="";
     while (true)
