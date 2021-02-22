@@ -19,11 +19,6 @@ import edu.unm.health.biocomp.util.db.*; //DBCon
 */
 public class CCPList extends HashMap<Integer,CCP>
 {
-  private static final String DBHOST="habanero.health.unm.edu";
-  private static final String DBNAME="carlsbad";
-  private static final String DBUSR="dbc";
-  private static final String DBPW="chem!nfo";
-
   private java.util.Date t_loaded;
   
   /////////////////////////////////////////////////////////////////////////////
@@ -85,16 +80,12 @@ public class CCPList extends HashMap<Integer,CCP>
   /////////////////////////////////////////////////////////////////////////////
   /**	Load scaffolds from db.
   */
-  public Boolean loadScaffolds(HashSet<Integer> ids)
+  public Boolean loadScaffolds(DBCon dbcon, HashSet<Integer> ids)
 	throws IOException,SQLException
   {
+    if (dbcon==null) return false;
     if (ids.size()==0) return false;
     Boolean human_only=true; //hard-coded for now
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
-    if (dbcon==null) return false;
 
     ResultSet rset = carlsbad_utils.GetScaffolds(dbcon,ids);
     while (rset.next()) //id, smiles, natoms
@@ -126,16 +117,12 @@ public class CCPList extends HashMap<Integer,CCP>
   /////////////////////////////////////////////////////////////////////////////
   /**	Load mcess from db.
   */
-  public Boolean loadMCESs(HashSet<Integer> ids)
+  public Boolean loadMCESs(DBCon dbcon, HashSet<Integer> ids)
 	throws IOException,SQLException
   {
+    if (dbcon==null) return false;
     if (ids.size()==0) return false;
     Boolean human_only=true; //hard-coded for now
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
-    if (dbcon==null) return false;
 
     ResultSet rset = carlsbad_utils.GetMCESs(dbcon,ids);
     while (rset.next()) //id, smarts

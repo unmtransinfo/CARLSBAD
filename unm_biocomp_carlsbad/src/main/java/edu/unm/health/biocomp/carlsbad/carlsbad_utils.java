@@ -1112,6 +1112,7 @@ public class carlsbad_utils
         }
       }
     }
+    //System.err.println("DEBUG: ReadCompoundData new compounds: "+n_new_cpd);
     return n_new_cpd;
   }
 
@@ -1685,15 +1686,17 @@ public class carlsbad_utils
     sql+=("\n\t\t)\n"
 	+"ORDER BY\n"
         +"\ttid");
-    ResultSet rset=dbcon.executeSql(sql);
+    //System.err.println("DEBUG: Targets2Compounds: "+sql);
+    ResultSet rset = dbcon.executeSql(sql);
     while (rset.next())	//tid,cid
     {
-      Integer cid=rset.getInt("cid");
-      Integer tid=rset.getInt("tid");
-      if (t2c_global.get(tid)==null) t2c_global.put(tid,new HashSet<Integer>());
+      Integer cid = rset.getInt("cid");
+      Integer tid = rset.getInt("tid");
+      if (t2c_global.get(tid)==null) t2c_global.put(tid, new HashSet<Integer>());
       t2c_global.get(tid).add(cid);
       ++n;
     }
+    //System.err.println("DEBUG: Targets2Compounds compounds: "+n);
     return n;
   }
 
@@ -1733,15 +1736,17 @@ public class carlsbad_utils
     sql+=("\n\t\t)");
     if (human) sql+=("\n\tAND target.species='human'");
     sql+=("\nORDER BY cid");
-    ResultSet rset=dbcon.executeSql(sql);
+    //System.err.println("DEBUG: Compounds2Targets: "+sql);
+    ResultSet rset = dbcon.executeSql(sql);
     while (rset.next())	//cid,tid
     {
-      Integer tid=rset.getInt("tid");
-      Integer cid=rset.getInt("cid");
-      if (c2t_global.get(cid)==null) c2t_global.put(cid,new HashSet<Integer>());
+      Integer tid = rset.getInt("tid");
+      Integer cid = rset.getInt("cid");
+      if (c2t_global.get(cid)==null) c2t_global.put(cid, new HashSet<Integer>());
       c2t_global.get(cid).add(tid);
       ++n;
     }
+    //System.err.println("DEBUG: Compounds2Targets targets: "+n);
     return n;
   }
 
@@ -1776,12 +1781,13 @@ public class carlsbad_utils
       sql+=("\n\t\t"+scafid);
     }
     sql+=("\n\t\t)\nORDER BY scafid");
-    ResultSet rset=dbcon.executeSql(sql);
+    //System.err.println("DEBUG: Scaffolds2Compounds: "+sql);
+    ResultSet rset = dbcon.executeSql(sql);
     while (rset.next())	//scafid,cid
     {
-      Integer scafid=rset.getInt("scafid");
-      Integer cid=rset.getInt("cid");
-      if (s2c_global.get(scafid)==null) s2c_global.put(scafid,new HashSet<Integer>());
+      Integer scafid = rset.getInt("scafid");
+      Integer cid = rset.getInt("cid");
+      if (s2c_global.get(scafid)==null) s2c_global.put(scafid, new HashSet<Integer>());
       s2c_global.get(scafid).add(cid);
       ++n;
     }
@@ -1826,13 +1832,14 @@ public class carlsbad_utils
       sql+=("\n\t\t"+scafid);
     }
     sql+=("\n\t\t)\nORDER BY scafid");
+    //System.err.println("DEBUG: Scaffolds2Targets: "+sql);
     ResultSet rset=dbcon.executeSql(sql);
     int n=0;
     while (rset.next())	//scafid,tid
     {
-      Integer scafid=rset.getInt("scafid");
-      Integer tid=rset.getInt("tid");
-      if (s2t_global.get(scafid)==null) s2t_global.put(scafid,new HashSet<Integer>());
+      Integer scafid = rset.getInt("scafid");
+      Integer tid = rset.getInt("tid");
+      if (s2t_global.get(scafid)==null) s2t_global.put(scafid, new HashSet<Integer>());
       s2t_global.get(scafid).add(tid);
       ++n;
     }
@@ -1865,16 +1872,18 @@ public class carlsbad_utils
       sql+=("\n\t\t"+mcesid);
     }
     sql+=("\n\t\t)\nORDER BY mcesid");
-    ResultSet rset=dbcon.executeSql(sql);
+    //System.err.println("DEBUG: Mcess2Compounds: "+sql);
+    ResultSet rset = dbcon.executeSql(sql);
     int n=0;
     while (rset.next())	//mcesid,cid
     {
-      Integer mcesid=rset.getInt("mcesid");
-      Integer cid=rset.getInt("cid");
-      if (m2c_global.get(mcesid)==null) m2c_global.put(mcesid,new HashSet<Integer>());
+      Integer mcesid = rset.getInt("mcesid");
+      Integer cid = rset.getInt("cid");
+      if (m2c_global.get(mcesid)==null) m2c_global.put(mcesid, new HashSet<Integer>());
       m2c_global.get(mcesid).add(cid);
       ++n;
     }
+    //System.err.println("DEBUG: Mcess2Compounds compounds: "+n);
     return n;
   }
 
@@ -1912,16 +1921,18 @@ public class carlsbad_utils
       sql+=("\n\t\t"+mcesid);
     }
     sql+=("\n\t\t)\nORDER BY mcesid");
-    ResultSet rset=dbcon.executeSql(sql);
+    //System.err.println("DEBUG: Mcess2Targets: "+sql);
+    ResultSet rset = dbcon.executeSql(sql);
     int n=0;
     while (rset.next())	//mcesid,tid
     {
-      Integer mcesid=rset.getInt("mcesid");
-      Integer tid=rset.getInt("tid");
-      if (m2t_global.get(mcesid)==null) m2t_global.put(mcesid,new HashSet<Integer>());
+      Integer mcesid = rset.getInt("mcesid");
+      Integer tid = rset.getInt("tid");
+      if (m2t_global.get(mcesid)==null) m2t_global.put(mcesid, new HashSet<Integer>());
       m2t_global.get(mcesid).add(tid);
       ++n;
     }
+    //System.err.println("DEBUG: Mcess2Targets targets: "+n);
     return n;
   }
   /////////////////////////////////////////////////////////////////////////////

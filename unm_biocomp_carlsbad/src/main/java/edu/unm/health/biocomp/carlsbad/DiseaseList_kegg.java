@@ -24,12 +24,6 @@ import edu.unm.health.biocomp.util.db.*; //DBCon
 */
 public class DiseaseList_kegg extends HashMap<String,String>
 {
-
-  private static String DBHOST="habanero.health.unm.edu";
-  private static String DBNAME="carlsbad";
-  private static String DBUSR="dbc";
-  private static String DBPW="chem!nfo";
-
   private HashMap<String,String> _name2id;
   private HashMap<String, HashSet<Integer> > _id2tids; //Carlsbad TIDs
   private java.util.Date _t_loaded;
@@ -114,13 +108,9 @@ public class DiseaseList_kegg extends HashMap<String,String>
   /**	Loads CARLSBAD targets (TIDs) using Kegg gene links mapped to
 	Uniprots and NCBI GIs.
   */
-  public boolean loadTargets()
+  public boolean loadTargets(DBCon dbcon)
     throws IOException,SQLException
   {
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
     if (dbcon==null) return false;
 
     int n_linked_uniprot=0;
@@ -203,19 +193,18 @@ public class DiseaseList_kegg extends HashMap<String,String>
   /////////////////////////////////////////////////////////////////////////////
   /*	Testing purposes only.
   */
-  public static void main(String[] args)
-	throws IOException,SQLException
-  {
-    java.util.Date t_0 = new java.util.Date();
-    DiseaseList_kegg dlist = new DiseaseList_kegg();
-    dlist.loadFromKegg();
-    System.err.println("DEBUG: disease count (all): "+dlist.size());
-    int n_all = dlist.size();
-    System.err.println("DEBUG: loading targets...");
-    dlist.loadTargets();
-    dlist.removeTargetless();
-    System.err.println("DEBUG: disease count (with targets): "+dlist.size());
-    System.err.println("DEBUG: timestamp: "+dlist.getTimestamp().toString());
-    System.err.println("Total elapsed time: "+time_utils.TimeDeltaStr(t_0,new java.util.Date()));
-  }
+//  public static void main(String[] args) throws IOException,SQLException
+//  {
+//    java.util.Date t_0 = new java.util.Date();
+//    DiseaseList_kegg dlist = new DiseaseList_kegg();
+//    dlist.loadFromKegg();
+//    System.err.println("DEBUG: disease count (all): "+dlist.size());
+//    int n_all = dlist.size();
+//    System.err.println("DEBUG: loading targets...");
+//    dlist.loadTargets();
+//    dlist.removeTargetless();
+//    System.err.println("DEBUG: disease count (with targets): "+dlist.size());
+//    System.err.println("DEBUG: timestamp: "+dlist.getTimestamp().toString());
+//    System.err.println("Total elapsed time: "+time_utils.TimeDeltaStr(t_0,new java.util.Date()));
+//  }
 }

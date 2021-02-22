@@ -16,14 +16,6 @@ import edu.unm.health.biocomp.util.db.*; //DBCon
 */
 public class DiseaseList extends HashMap<String,Disease>
 {
-
-  private static String DBHOST="habanero.health.unm.edu";
-  private static String DBNAME="carlsbad";
-  //private static String DBUSR="dbc";
-  //private static String DBPW="chem!nfo";
-  private static String DBUSR="jjyang";
-  private static String DBPW="assword";
-
   private HashMap<String,String> name2id;
   private java.util.Date t_loaded;
   
@@ -49,17 +41,6 @@ public class DiseaseList extends HashMap<String,Disease>
   public java.util.Date getTimestamp()
   {
     return this.t_loaded;
-  }
-  /////////////////////////////////////////////////////////////////////////////
-  public boolean loadAll()
-    throws IOException,SQLException
-  {
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
-    if (dbcon==null) return false;
-    return loadAll(dbcon);
   }
   /////////////////////////////////////////////////////////////////////////////
   public boolean loadAll(DBCon dbcon)
@@ -143,23 +124,4 @@ public class DiseaseList extends HashMap<String,Disease>
       return (dA.getCompoundCount()==dB.getCompoundCount());
     }
   };
-  /////////////////////////////////////////////////////////////////////////////
-  /*	Testing purposes only.
-  */
-  public static void main(String[] args)
-	throws IOException,SQLException
-  {
-    java.util.Date t_0 = new java.util.Date();
-    DiseaseList dlist = new DiseaseList();
-    dlist.loadAll();
-    for (String kid: dlist.keySet())
-    {
-      Disease disease = dlist.get(kid);
-      System.err.println(kid+": \""+disease.getName()+"\" [n_tgt="+disease.getTargetCount()+"]");
-    }
-    System.err.println("disease count: "+dlist.size());
-    System.err.println("name count: "+dlist.nameCount());
-    System.err.println("timestamp: "+dlist.getTimestamp().toString());
-    System.err.println("Total elapsed time: "+time_utils.TimeDeltaStr(t_0,new java.util.Date()));
-  }
 }

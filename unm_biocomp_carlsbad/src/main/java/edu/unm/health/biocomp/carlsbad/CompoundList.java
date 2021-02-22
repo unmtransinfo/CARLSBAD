@@ -19,10 +19,6 @@ import edu.unm.health.biocomp.util.db.*; //DBCon
 */
 public class CompoundList extends HashMap<Integer,Compound>
 {
-  private static final String DBHOST="habanero.health.unm.edu";
-  private static final String DBNAME="carlsbad";
-  private static final String DBUSR="dbc";
-  private static final String DBPW="chem!nfo";
   public static final  String[] id_types = new String[]{"CAS Registry No.", "ChEBI", "ChEMBL ID",
 	"ChEMBL Ligand", "DrugBank", "iPHACE", "IUPHAR Ligand ID", "NURSA Ligand", "PDSP Record Number",
 	"PharmGKB Drug", "PubChem CID", "PubChem SID", "RCSB PDB Ligand", "SMDL ID"};
@@ -107,18 +103,14 @@ public class CompoundList extends HashMap<Integer,Compound>
   /**	Load from db.
 	Also need IDs.
   */
-  public Boolean load(HashSet<Integer> cids)
+  public Boolean load(DBCon dbcon, HashSet<Integer> cids)
 	throws IOException,SQLException
   {
+    if (dbcon==null) return false;
     if (cids.size()==0) return false;
     Boolean human_only=true; //hard-coded for now
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
-    if (dbcon==null) return false;
 
-    ResultSet rset = carlsbad_utils.GetCompounds(dbcon,cids);
+    ResultSet rset = carlsbad_utils.GetCompounds(dbcon, cids);
     while (rset.next()) //cid, smiles, synonym 
     {
       Integer cid=rset.getInt("cid");
@@ -135,14 +127,14 @@ public class CompoundList extends HashMap<Integer,Compound>
         if (!this.name2id.containsKey(synonym)) this.name2id.put(synonym,cid);
       }
 
-      ResultSet rset2 = carlsbad_utils.GetCompoundTargets(dbcon,cid,human_only);
+      ResultSet rset2 = carlsbad_utils.GetCompoundTargets(dbcon, cid, human_only);
       while (rset2.next()) //tid
       {
         Integer tid=rset2.getInt("tid");
         this.get(cid).addTID(tid);
       }
     }
-    rset = carlsbad_utils.GetCompoundsIDs(dbcon,cids);
+    rset = carlsbad_utils.GetCompoundsIDs(dbcon, cids);
     while (rset.next()) //cid,id_type,id
     {
       Integer cid=rset.getInt("cid");
@@ -219,18 +211,6 @@ public class CompoundList extends HashMap<Integer,Compound>
     this.refreshTimestamp();
     return true;
   }
-  /////////////////////////////////////////////////////////////////////////////
-  public boolean loadAllDrugs()
-	throws IOException,SQLException
-  {
-    DBCon dbcon = null;
-    try { dbcon = new DBCon("postgres",DBHOST,5432,DBNAME,DBUSR,DBPW); }
-    catch (SQLException e) { System.err.println("Connection failed:"+e.getMessage()); }
-    catch (Exception e) { System.err.println("Connection failed:"+e.getMessage()); }
-    if (dbcon==null) return false;
-    return loadAllDrugs(dbcon);
-  }
-
   /////////////////////////////////////////////////////////////////////////////
   public boolean loadAllDrugs(DBCon dbcon)
 	throws IOException,SQLException

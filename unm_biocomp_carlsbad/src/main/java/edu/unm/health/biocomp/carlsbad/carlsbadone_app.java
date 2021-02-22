@@ -52,7 +52,7 @@ public class carlsbadone_app
     String HELPHEADER = (APPNAME+": Carlsbad one-click subnet extraction application");
     String HELPFOOTER = ("UNM Translational Informatics Division");
     opts.addOption(Option.builder("tid").hasArg().type(Integer.class).desc("query target ID").build());
-    opts.addOption(Option.builder("cid").hasArg().type(Integer.class).desc("query compound ID").build());
+    opts.addOption(Option.builder("cid").hasArg().type(Integer.class).desc("query compound ID (e.g. 5442)").build());
     opts.addOption(Option.builder("kid").hasArg().desc("query disease (KEGG) ID").build());
     opts.addOption(Option.builder("o").hasArg().argName("CYJSFILE").desc("subnet CYJS for Cytoscape import").build());
     opts.addOption(Option.builder("scaf_min").hasArg().type(Float.class).desc("min scaffold weight [0-1]").build());
@@ -76,11 +76,11 @@ public class carlsbadone_app
       System.exit(0);
     }
 
-    if (cl.hasOption("tid")) tid = (Integer)(cl.getParsedOptionValue("tid"));
-    if (cl.hasOption("cid")) cid = (Integer)(cl.getParsedOptionValue("cid"));
+    if (cl.hasOption("tid")) tid = Integer.parseInt(cl.getOptionValue("tid"));
+    if (cl.hasOption("cid")) cid = Integer.parseInt(cl.getOptionValue("cid"));
     if (cl.hasOption("kid")) kid = cl.getOptionValue("kid");
     if (cl.hasOption("o")) ofile = cl.getOptionValue("o");
-    if (cl.hasOption("scaf_min")) scaf_min = (Float)(cl.getParsedOptionValue("scaf_min"));
+    if (cl.hasOption("scaf_min")) scaf_min = Float.parseFloat(cl.getOptionValue("scaf_min"));
     if (cl.hasOption("rgtp")) rgtp = true;
     if (cl.hasOption("rgt")) rgt = true;
     if (cl.hasOption("dbhost")) dbhost = cl.getOptionValue("dbhost");
@@ -106,7 +106,8 @@ public class carlsbadone_app
 
     try { dbcon = new DBCon("postgres", dbhost, dbport, dbname, dbusr, dbpw); }
     catch (Exception e) {
-      helper.printHelp(APPNAME, HELPHEADER, opts, e.getMessage(), true);
+      helper.printHelp(APPNAME, HELPHEADER, opts, "ERROR: "+e.getMessage(), true);
+      System.exit(0);
     }
 
     File fout = (ofile!=null) ? (new File(ofile)) : null;
@@ -114,26 +115,29 @@ public class carlsbadone_app
 
     //Initialize lists:
     TargetList TARGETLIST = new TargetList();
-    if (verbose>0) System.err.println("Loading targetlist...");
+    if (verbose>0) System.err.println("Loading TargetList...");
     try { TARGETLIST.loadAll(dbcon); }
     catch (Exception e) {
-      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading targetlist: "+e.getMessage()), true);
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading TargetList: "+e.getMessage()), true);
+      System.exit(0);
 }
     System.err.println("targetlist count: "+TARGETLIST.size());
 
     CompoundList DRUGLIST = new CompoundList();
-    if (verbose>0) System.err.println("Loading druglist...");
+    if (verbose>0) System.err.println("Loading CompoundList...");
     try { DRUGLIST.loadAllDrugs(dbcon); }
     catch (Exception e) {
-      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading druglist: "+e.getMessage()), true);
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading CompoundList: "+e.getMessage()), true);
+      System.exit(0);
 }
     System.err.println("druglist count: "+DRUGLIST.size());
 
     DiseaseList DISEASELIST = new DiseaseList();
-    if (verbose>0) System.err.println("Loading diseaselist...");
+    if (verbose>0) System.err.println("Loading DiseaseList...");
     try { DISEASELIST.loadAll(dbcon); }
     catch (Exception e) {
-      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading diseaselist: "+e.getMessage()), true);
+      helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: problem reading DiseaseList: "+e.getMessage()), true);
+      System.exit(0);
     }
     System.err.println("diseaselist count: "+DISEASELIST.size());
 
@@ -145,7 +149,8 @@ public class carlsbadone_app
 
     Integer n_max_a=10000;
     Integer n_max_c=10000;
-    String kgtype = rgt ? "rgt" : (rgtp ? "rgtp" : "full");
+    String kgtype = (rgt?"rgt":(rgtp?"rgtp":"full"));
+    System.err.println("KGType: "+kgtype);
     try
     {
       if (tid!=null)
@@ -153,23 +158,23 @@ public class carlsbadone_app
         if (TARGETLIST.containsKey(tid))
           System.err.println("query target: ("+tid+") "+TARGETLIST.get(tid).getName());
         if (kgtype=="rgt")
-          counts=carlsbadone_utils.Target2Network(dbcon, fout, null, null, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Target2Network(dbcon, fout, null, null, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         else if (kgtype=="rgtp")
-          counts=carlsbadone_utils.Target2Network(dbcon, null, fout, null, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Target2Network(dbcon, null, fout, null, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         else 
-          counts=carlsbadone_utils.Target2Network(dbcon, null, null, fout, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Target2Network(dbcon, null, null, fout, fout_cpd, tid, scaf_min, "CARLSBAD Target2Network one-click Subnet", n_max_a, n_max_c, cpdlist, ccplist, sqls);
         tids.add(tid);
       }
       else if (cid!=null)
       {
         if (DRUGLIST.containsKey(cid))
-          System.err.println("query drug: ("+cid+") "+DRUGLIST.get(cid).getName());
+          System.err.println("Query drug: ("+cid+") "+DRUGLIST.get(cid).getName());
         if (kgtype=="rgt")
-          counts=carlsbadone_utils.Compound2Network(dbcon, fout, null, null, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Compound2Network(dbcon, fout, null, null, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
         else if (kgtype=="rgtp")
-          counts=carlsbadone_utils.Compound2Network(dbcon, null, fout, null, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Compound2Network(dbcon, null, fout, null, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
         else
-          counts=carlsbadone_utils.Compound2Network(dbcon, null, null, fout, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
+          counts = carlsbadone_utils.Compound2Network(dbcon, null, null, fout, fout_cpd, cid, scaf_min, "CARLSBAD Compound2Network one-click Subnet", n_max_a, n_max_c, tids, cpdlist, ccplist, sqls);
       }
       else if (kid!=null)
       {
@@ -184,23 +189,19 @@ public class carlsbadone_app
       }
       else
       {
-        helper.printHelp(APPNAME, HELPHEADER, opts, ("-tid, -cid or -kid required."), true);
+        helper.printHelp(APPNAME, HELPHEADER, opts, ("ERROR: -tid, -cid or -kid required."), true);
+        System.exit(0);
       }
 
-      for (String k: counts.keySet())
-      {
-        System.err.print(k+": "+counts.get(k));
-        if (  (k.equals("n_node_cpd") && counts.get(k)==n_max_c)
-            ||(k.equals("n_edge_act") && counts.get(k)==n_max_a))
-             System.err.print(" (MAX)");
-        System.err.println("");
+      if (counts!=null) {
+        for (String k: counts.keySet()) {
+          System.err.print(k+": "+counts.get(k));
+          if (  (k.equals("n_node_cpd") && counts.get(k)==n_max_c)
+              ||(k.equals("n_edge_act") && counts.get(k)==n_max_a))
+               System.err.print(" (MAX)");
+          System.err.println("");
+        }
       }
-
-    }
-    catch (SQLException e)
-    {
-      //System.err.println("ERROR: SQLException: "+e.getMessage()+"\nsql:"+sqls.get(sqls.size()-1));
-      System.err.println("ERROR: SQLException: "+e.getMessage());
     }
     catch (Exception e)
     {
