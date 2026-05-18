@@ -133,6 +133,12 @@ public class Target2Network_Task
       System.err.println("ERROR: Target2Network_Task Exception "+this.errtxt);
       return false;
     }
+    catch (Throwable t)
+    {
+      this.errtxt=t.toString();
+      System.err.println("ERROR: Target2Network_Task Throwable "+this.errtxt);
+      return false;
+    }
     return true;
   }
   class Status implements TaskStatus
