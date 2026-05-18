@@ -45,11 +45,10 @@ public class cyview_servlet extends HttpServlet
     super.init(conf);
     CONTEXT = getServletContext();
     CONTEXTPATH = CONTEXT.getContextPath();
-    try { APPNAME = conf.getInitParameter("APPNAME"); }
-    catch (Exception e) { APPNAME = this.getServletName(); }
-    try { PROXY_PREFIX = conf.getInitParameter("PROXY_PREFIX"); }
-    catch (Exception e) { PROXY_PREFIX = "/tomcat"; }
-    DEMOFILE = CONTEXT.getRealPath("")+"/data/"+conf.getInitParameter("DEMOFILE");
+    // read servlet parameters (from ConfigUtils, supporting Environment Variables):
+    APPNAME = ConfigUtils.getConfig(conf, "APPNAME", this.getServletName());
+    PROXY_PREFIX = ConfigUtils.getConfig(conf, "PROXY_PREFIX", "");
+    DEMOFILE = CONTEXT.getRealPath("") + "/data/" + ConfigUtils.getConfig(conf, "DEMOFILE", "carlsbad_rgt.cyjs");
   }
   /////////////////////////////////////////////////////////////////////////////
   public void doGet(HttpServletRequest request,HttpServletResponse response)
@@ -208,7 +207,7 @@ public class cyview_servlet extends HttpServlet
     Iterator<String> fitr = root.fieldNames();
     while (fitr.hasNext()) {
       String field=fitr.next();
-      if (field=="data" || field=="elements") continue;
+      if (field.equals("data") || field.equals("elements")) continue;
       else {
         js+=(field+": "+root.get(field).toString()+",\n");
       }
