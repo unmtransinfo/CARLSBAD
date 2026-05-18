@@ -1,0 +1,37 @@
+
+services:
+  db:
+    image: unmtransinfo/carlsbad_db:v1.0.0
+    container_name: carlsbad_db
+    environment:
+      DBNAME: ${DBNAME:-carlsbad}
+      DBUSR: ${DBUSR:-batman}
+      DBPW: ${DBPW:-foobar}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    shm_size: '1g'
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: carlsbad_ui
+    environment:
+      DBHOST: db
+      DBNAME: ${DBNAME:-carlsbad}
+      DBUSR: ${DBUSR:-batman}
+      DBPW: ${DBPW:-foobar}
+      DBPORT: 5432
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
