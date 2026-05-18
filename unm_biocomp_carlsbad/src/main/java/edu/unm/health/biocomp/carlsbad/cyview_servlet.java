@@ -148,7 +148,12 @@ public class cyview_servlet extends HttpServlet
       }
     } else {
       //ERRORS.add("DEBUG: DEMOFILE="+DEMOFILE);
-      buff = new BufferedReader(new FileReader(DEMOFILE));
+      File dfile = new File(DEMOFILE);
+      if (!dfile.exists()) {
+        ERRORS.add("ERROR: default demo file not found: "+DEMOFILE);
+        return;
+      }
+      buff = new BufferedReader(new FileReader(dfile));
     }
     CYJSTXT="";
     while (true)
@@ -281,7 +286,7 @@ public class cyview_servlet extends HttpServlet
       +("<TR><TD ALIGN=\"RIGHT\"><B>layout:</B></TD><TD>\n"+layout_menu+"\n<BUTTON TYPE=\"BUTTON\" onClick=\"redo_layout(this.form)\"><B>ReLayout</B></BUTTON></TD></TR>\n")
       +("<TR><TD ALIGN=\"RIGHT\"><B>tgtLabels:</B><BR></TD><TD>"+tgt_label_menu+"</TD></TR>\n")
       +("<TR><TD ALIGN=\"RIGHT\"><B>cpdLabels:</B></TD><TD>"+cpd_label_menu+"</TD></TR>\n")
-      +("<TR><TD ALIGN=\"RIGHT\"><BUTTON TYPE=\"BUTTON\" onClick=\"window.location.replace('"+response.encodeURL(SERVLETNAME)+"')\"><B>Reset</B></BUTTON></TD>")
+      +("<TR><TD ALIGN=\"RIGHT\"><BUTTON TYPE=\"BUTTON\" onClick=\"window.location.reload()\"><B>Reset</B></BUTTON></TD>")
       +("<TD><BUTTON TYPE=\"BUTTON\" onClick=\"write2div('log', netSummary(), true)\"><B>NetSummary</B></BUTTON></TD></TR>\n")
       +("</TABLE>\n")
       +("</FORM>\n");
