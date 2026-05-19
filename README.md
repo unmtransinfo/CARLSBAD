@@ -20,6 +20,28 @@ See <https://datascience.unm.edu/carlsbad/> for more information.
   * Requires ChemAxon-Hub Artifactory credentials.
 
 
+## Developer Setup / Quick Start
+
+### 1. Set Up Proprietary Dependencies (`libs/`)
+Because proprietary ChemAxon and UNM SNAPSHOT `.jar` dependency files are not tracked in Git, the `libs/` folder must be populated manually before compiling or building images:
+* Secure the `libs/` folder containing the required `.jar` files (e.g., copied from a secure team share or backup) and place it directly in the root of your local workspace.
+* Alternatively, configure your local `~/.m2/settings.xml` with ChemAxon Hub Artifactory credentials to download dependencies.
+
+### 2. Start Development Server (Containerized - Easiest)
+This is the recommended and fastest way to start the development environment:
+1. Ensure **Docker Desktop** (or the Docker daemon) is running.
+2. In the repository root, start the containers in development mode:
+   ```bash
+   ./sh/deploy.sh dev
+   ```
+   This will spin up both the **CARLSBAD Database** and the **Web UI** containers.
+3. Access the Web UI in your browser at:
+   👉 [http://localhost:8080/carlsbad/carlsbadone](http://localhost:8080/carlsbad/carlsbadone)
+4. Press `Ctrl + C` in the terminal to gracefully stop the containers.
+
+---
+
+
 ## Compiling
 
 ```
@@ -45,6 +67,42 @@ or
 ```
 mvn --projects carlsbad_war tomcat7:redeploy
 ```
+
+## Containerized Deployment (Recommended)
+
+A unified Docker Compose orchestration system is provided to spin up both the **CARLSBAD Database** and **Web UI** containers automatically. This is the fastest and most reliable way to run the application locally.
+
+### Orchestration Command
+
+Run the deployment script located in the `sh/` directory with the desired mode:
+
+```bash
+# Start in DEVELOPMENT mode (interactive logs, remote debugging, direct DB access)
+./sh/deploy.sh dev
+
+# Start in PRODUCTION mode (detached background, secure)
+./sh/deploy.sh prod
+```
+
+> [!IMPORTANT]
+> **Local Dependency Directory (`libs/`):**
+> To build the Docker images locally, the `libs/` directory **must** be present in your local workspace containing the proprietary ChemAxon and UNM SNAPSHOT `.jar` dependency files. 
+> Because these files are very large, the `libs/` directory is untracked via `.gitignore` to keep GitHub pushes lightweight and fast. **Do not delete `libs/` from your local workspace.**
+
+
+### Environment Overview
+
+#### Development Mode (`dev`)
+* **Web UI:** Accessible on the host at [http://localhost:8080/carlsbad/carlsbadone](http://localhost:8080/carlsbad/carlsbadone).
+* **Remote Debugging:** Port `8000` is exposed on the host with JPDA transport enabled (`-agentlib:jdwp`), allowing you to attach an IDE debugger to the servlets.
+* **Database Connection:** Port `5432` is exposed on the host for direct administration via external database clients (e.g., DBeaver, pgAdmin, or local `psql`).
+* **Logs & Lifecycle:** Runs in the foreground, showing live interleaved container outputs. Press `Ctrl + C` to gracefully stop.
+
+#### Production Mode (`prod`)
+* **Detached Execution:** Runs in the background (detached `-d` mode).
+* **Port Mapping:** Exposes port `8080` for the Web UI.
+* **Hardened Security:** Remote debugging (port `8000`) and external database ports (port `5432`) are kept internal to the Docker bridge network to protect the environment.
+
 
 ## Db configuration
 

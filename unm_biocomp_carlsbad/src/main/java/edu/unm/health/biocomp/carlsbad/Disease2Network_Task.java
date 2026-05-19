@@ -138,6 +138,12 @@ public class Disease2Network_Task
       System.err.println("ERROR: Disease2Network_Task Exception "+this.errtxt);
       return false;
     }
+    catch (Throwable t)
+    {
+      this.errtxt=t.toString();
+      System.err.println("ERROR: Disease2Network_Task Throwable "+this.errtxt);
+      return false;
+    }
     return true;
   }
   class Status implements TaskStatus

@@ -1229,38 +1229,23 @@ public class carlsbadone_servlet extends HttpServlet
     CONTEXT=getServletContext();
     CONTEXTPATH=CONTEXT.getContextPath();
 
-    // read servlet parameters (from web.xml):
-    UPLOADDIR=conf.getInitParameter("UPLOADDIR");
-    if (UPLOADDIR==null)
-      throw new ServletException("Please supply UPLOADDIR parameter");
-    SCRATCHDIR=conf.getInitParameter("SCRATCHDIR");
-    if (SCRATCHDIR==null) SCRATCHDIR="/tmp";
-    HELP_FILE=CONTEXT.getRealPath("")+"/"+conf.getInitParameter("HELP_FILE");
-    DBHOST=conf.getInitParameter("DBHOST");
-    if (DBHOST==null)
-      throw new ServletException("Please supply DBHOST parameter");
-    DBNAME=conf.getInitParameter("DBNAME");
-    if (DBNAME==null)
-      throw new ServletException("Please supply DBNAME parameter");
-    DBSCHEMA=conf.getInitParameter("DBSCHEMA");
-    if (DBSCHEMA==null)
-      throw new ServletException("Please supply DBSCHEMA parameter");
-    DBUSR=conf.getInitParameter("DBUSR");
-    if (DBUSR==null)
-      throw new ServletException("Please supply DBUSR parameter");
-    DBPW=conf.getInitParameter("DBPW");
-    if (DBPW==null)
-      throw new ServletException("Please supply DBPW parameter");
-    APPNAME=conf.getInitParameter("APPNAME");
-    if (APPNAME==null) { APPNAME=this.getServletName(); }
-    try { DBPORT=Integer.parseInt(conf.getInitParameter("DBPORT")); }
-    catch (NumberFormatException e) { DBPORT=5432; }
-    try { N_MAX=Integer.parseInt(conf.getInitParameter("N_MAX")); }
-    catch (Exception e) { N_MAX=10000; }
-    try { CYVIEW=conf.getInitParameter("CYVIEW"); }
-    catch (Exception e) { CYVIEW="cyview"; }
-    DEBUG=(conf.getInitParameter("DEBUG")!=null && conf.getInitParameter("DEBUG").equalsIgnoreCase("true"));
-    PROXY_PREFIX=((conf.getInitParameter("PROXY_PREFIX")!=null)?conf.getInitParameter("PROXY_PREFIX"):"");
+    // read servlet parameters (from ConfigUtils, supporting Environment Variables):
+    UPLOADDIR = ConfigUtils.getConfig(conf, "UPLOADDIR", "/tmp");
+    SCRATCHDIR = ConfigUtils.getConfig(conf, "SCRATCHDIR", "/tmp");
+    HELP_FILE = CONTEXT.getRealPath("") + "/" + ConfigUtils.getConfig(conf, "HELP_FILE", "carlsbadone_help.html");
+    
+    DBHOST = ConfigUtils.getConfig(conf, "DBHOST", "localhost");
+    DBNAME = ConfigUtils.getConfig(conf, "DBNAME", "carlsbad");
+    DBSCHEMA = ConfigUtils.getConfig(conf, "DBSCHEMA", "public");
+    DBUSR = ConfigUtils.getConfig(conf, "DBUSR", "batman");
+    DBPW = ConfigUtils.getConfig(conf, "DBPW", "foobar");
+    DBPORT = ConfigUtils.getConfigInt(conf, "DBPORT", 5432);
+    
+    APPNAME = ConfigUtils.getConfig(conf, "APPNAME", this.getServletName());
+    N_MAX = ConfigUtils.getConfigInt(conf, "N_MAX", 10000);
+    CYVIEW = ConfigUtils.getConfig(conf, "CYVIEW", "cyview");
+    DEBUG = ConfigUtils.getConfigBool(conf, "DEBUG", false);
+    PROXY_PREFIX = ConfigUtils.getConfig(conf, "PROXY_PREFIX", "");
 
     // This connection only used for deployment and one-time initialization of lists.
     DBCon dbcon=null;

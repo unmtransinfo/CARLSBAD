@@ -1,0 +1,18 @@
+
+services:
+  ui:
+    # In development, we might want to mount the local WAR for faster feedback
+    # and expose the debug port if needed.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8000:8000" # Debug port
+    environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+      DEBUG: "true"
+
+  db:
+    ports:
+      - "5432:5432" # Expose DB for local tools in dev
