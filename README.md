@@ -46,6 +46,36 @@ or
 mvn --projects carlsbad_war tomcat7:redeploy
 ```
 
+## Containerized Deployment (Recommended)
+
+A unified Docker Compose orchestration system is provided to spin up both the **CARLSBAD Database** and **Web UI** containers automatically. This is the fastest and most reliable way to run the application locally.
+
+### Orchestration Command
+
+Run the deployment script located in the `sh/` directory with the desired mode:
+
+```bash
+# Start in DEVELOPMENT mode (interactive logs, remote debugging, direct DB access)
+./sh/deploy.sh dev
+
+# Start in PRODUCTION mode (detached background, secure)
+./sh/deploy.sh prod
+```
+
+### Environment Overview
+
+#### Development Mode (`dev`)
+* **Web UI:** Accessible on the host at [http://localhost:8080/carlsbad/carlsbadone](http://localhost:8080/carlsbad/carlsbadone).
+* **Remote Debugging:** Port `8000` is exposed on the host with JPDA transport enabled (`-agentlib:jdwp`), allowing you to attach an IDE debugger to the servlets.
+* **Database Connection:** Port `5432` is exposed on the host for direct administration via external database clients (e.g., DBeaver, pgAdmin, or local `psql`).
+* **Logs & Lifecycle:** Runs in the foreground, showing live interleaved container outputs. Press `Ctrl + C` to gracefully stop.
+
+#### Production Mode (`prod`)
+* **Detached Execution:** Runs in the background (detached `-d` mode).
+* **Port Mapping:** Exposes port `8080` for the Web UI.
+* **Hardened Security:** Remote debugging (port `8000`) and external database ports (port `5432`) are kept internal to the Docker bridge network to protect the environment.
+
+
 ## Db configuration
 
 ```
