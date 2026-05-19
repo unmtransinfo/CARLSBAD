@@ -22,21 +22,12 @@ See <https://datascience.unm.edu/carlsbad/> for more information.
 
 ## Developer Setup / Quick Start
 
-For anyone new pulling this repository, follow these steps to get the development environment running:
-
-### 1. Pull the Latest Changes
-Run the following commands in your terminal to ensure you are up to date:
-```bash
-git checkout main
-git pull origin main
-```
-
-### 2. Set Up Proprietary Dependencies (`libs/`)
+### 1. Set Up Proprietary Dependencies (`libs/`)
 Because proprietary ChemAxon and UNM SNAPSHOT `.jar` dependency files are not tracked in Git, the `libs/` folder must be populated manually before compiling or building images:
 * Secure the `libs/` folder containing the required `.jar` files (e.g., copied from a secure team share or backup) and place it directly in the root of your local workspace.
 * Alternatively, configure your local `~/.m2/settings.xml` with ChemAxon Hub Artifactory credentials to download dependencies.
 
-### 3. Start Development Server (Containerized - Easiest)
+### 2. Start Development Server (Containerized - Easiest)
 This is the recommended and fastest way to start the development environment:
 1. Ensure **Docker Desktop** (or the Docker daemon) is running.
 2. In the repository root, start the containers in development mode:
