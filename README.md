@@ -62,6 +62,12 @@ Run the deployment script located in the `sh/` directory with the desired mode:
 ./sh/deploy.sh prod
 ```
 
+> [!IMPORTANT]
+> **Local Dependency Directory (`libs/`):**
+> To build the Docker images locally, the `libs/` directory **must** be present in your local workspace containing the proprietary ChemAxon and UNM SNAPSHOT `.jar` dependency files. 
+> Because these files are very large, the `libs/` directory is untracked via `.gitignore` to keep GitHub pushes lightweight and fast. **Do not delete `libs/` from your local workspace.**
+
+
 ### Environment Overview
 
 #### Development Mode (`dev`)
