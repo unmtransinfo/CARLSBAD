@@ -9,6 +9,9 @@ jobs:
   build-and-push:
     name: Build & Push UI Image
     runs-on: ubuntu-latest
+    env:
+      LIBS_TGZ_BASE64: ${{ secrets.LIBS_TGZ_BASE64 }}
+      LIBS_DOWNLOAD_URL: ${{ secrets.LIBS_DOWNLOAD_URL }}
 
     steps:
       - name: Checkout Code
@@ -16,16 +19,16 @@ jobs:
 
       # --- Step to restore untracked proprietary dependencies ---
       - name: Restore Proprietary Dependencies (Base64)
-        if: "${{ secrets.LIBS_TGZ_BASE64 != '' }}"
+        if: ${{ env.LIBS_TGZ_BASE64 != '' }}
         run: |
           echo "Restoring libs/ folder from LIBS_TGZ_BASE64 secret..."
-          echo "${{ secrets.LIBS_TGZ_BASE64 }}" | base64 --decode | tar -xzf -
+          echo "$LIBS_TGZ_BASE64" | base64 --decode | tar -xzf -
 
       - name: Restore Proprietary Dependencies (Signed URL)
-        if: "${{ secrets.LIBS_DOWNLOAD_URL != '' && secrets.LIBS_TGZ_BASE64 == '' }}"
+        if: ${{ env.LIBS_DOWNLOAD_URL != '' && env.LIBS_TGZ_BASE64 == '' }}
         run: |
           echo "Downloading libs/ archive from LIBS_DOWNLOAD_URL secret..."
-          curl -sSL -o libs.tar.gz "${{ secrets.LIBS_DOWNLOAD_URL }}"
+          curl -sSL -o libs.tar.gz "$LIBS_DOWNLOAD_URL"
           tar -xzf libs.tar.gz
           rm -f libs.tar.gz
 
