@@ -169,3 +169,33 @@ Docker\_UI container may be served via Apache-proxy configured thus:
 ProxyPass /carlsbad http://localhost:9091/carlsbad
 ProxyPassReverse /carlsbad http://localhost:9091/carlsbad
 ```
+
+## GitHub Actions CI/CD
+
+An automated GitHub Actions workflow is set up to build and push the `carlsbad_ui` Docker image to Docker Hub whenever changes are merged into the `master` branch.
+
+The workflow is defined in [.github/workflows/docker-publish.yml](file:///Users/bivek/Desktop/CARLSBAD/.github/workflows/docker-publish.yml).
+
+### Required GitHub Secrets
+
+To allow the workflow to successfully build the Docker image and push to Docker Hub, you must configure the following **Repository Secrets** in your GitHub repository (`Settings > Secrets and variables > Actions > Repository secrets`):
+
+#### 1. Docker Hub Credentials
+* `DOCKERHUB_USERNAME`: Your Docker Hub username or organization name.
+* `DOCKERHUB_TOKEN`: A Personal Access Token (PAT) created under your Docker Hub Account settings.
+
+#### 2. Proprietary Dependencies (`libs/`) (One of the following is required)
+Because the `libs/` directory containing ChemAxon and UNM SNAPSHOT libraries is untracked by Git, you must supply it in the CI runner:
+
+* **Option A (Recommended - Base64 Secret):**
+  Compress your local `libs/` directory into a tarball, base64-encode it, and save the resulting string as `LIBS_TGZ_BASE64` in GitHub Secrets.
+  
+  You can generate this base64 string using:
+  ```bash
+  tar -czf - libs/ | base64 | pbcopy
+  ```
+  *(Paste the copied string directly into the secret value)*
+
+* **Option B (Secure Download URL):**
+  Upload a compressed archive of `libs/` to a secure/private cloud storage bucket (AWS S3, Google Cloud Storage, etc.) and save the secure signed URL as a secret named `LIBS_DOWNLOAD_URL`.
+
