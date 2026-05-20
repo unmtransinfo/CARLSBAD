@@ -34,11 +34,21 @@ jobs:
 
       - name: Check libs/ Directory Structure
         run: |
+          echo "=== CI Dependency Restoration Diagnostics ==="
+          echo "LIBS_TGZ_BASE64 secret length: ${#LIBS_TGZ_BASE64} characters"
+          echo "LIBS_DOWNLOAD_URL secret length: ${#LIBS_DOWNLOAD_URL} characters"
+          echo "============================================="
+          
           if [ -d "libs" ]; then
-            echo "libs/ directory found. Number of files:"
+            echo "SUCCESS: libs/ directory successfully restored."
+            echo "Number of files in libs/:"
             ls -1 libs/ | wc -l
           else
-            echo "WARNING: libs/ directory not found! Docker build will likely fail."
+            echo "ERROR: libs/ directory not found!"
+            echo "This repository requires proprietary dependencies to build."
+            echo "Please ensure you have configured either the LIBS_TGZ_BASE64 or LIBS_DOWNLOAD_URL repository secret in GitHub Settings (Settings > Secrets and variables > Actions)."
+            echo "Refer to the README.md file under 'GitHub Actions CI/CD' for detailed setup instructions."
+            exit 1
           fi
 
       # --- Set up Docker Buildx ---
